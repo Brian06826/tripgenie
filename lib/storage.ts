@@ -1,17 +1,30 @@
 import type { Trip } from './types'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { join } from 'path'
 
 const TRIP_PREFIX = 'trip:'
 
-// In-memory fallback for local dev without Vercel KV.
-// Anchored to globalThis so it survives Next.js hot-module reloads and
-// is shared across the API route and page route module instances in dev.
-const g = globalThis as typeof globalThis & { __tripMemStore?: Map<string, string> }
-if (!g.__tripMemStore) g.__tripMemStore = new Map()
-const memStore = g.__tripMemStore
+// File-based fallback for local dev without Vercel KV.
+// Next.js 16 (Turbopack) runs route handlers and server components in separate
+// V8 contexts, so in-memory stores (even globalThis) are not shared. A file on
+// disk is the only reliable cross-context store in dev.
+const DEV_STORE_DIR = join(process.cwd(), '.next', 'dev-trips')
+
+function devRead(key: string): string | null {
+  const file = join(DEV_STORE_DIR, `${key.replace(/[^a-z0-9_-]/gi, '_')}.json`)
+  if (!existsSync(file)) return null
+  return readFileSync(file, 'utf8')
+}
+
+function devWrite(key: string, value: string): void {
+  if (!existsSync(DEV_STORE_DIR)) mkdirSync(DEV_STORE_DIR, { recursive: true })
+  const file = join(DEV_STORE_DIR, `${key.replace(/[^a-z0-9_-]/gi, '_')}.json`)
+  writeFileSync(file, value, 'utf8')
+}
 
 export async function saveTrip(id: string, trip: Trip): Promise<void> {
   if (!process.env.KV_REST_API_URL) {
-    memStore.set(`${TRIP_PREFIX}${id}`, JSON.stringify(trip))
+    devWrite(`${TRIP_PREFIX}${id}`, JSON.stringify(trip))
     return
   }
   const { kv } = await import('@vercel/kv')
@@ -20,8 +33,13 @@ export async function saveTrip(id: string, trip: Trip): Promise<void> {
 
 export async function getTrip(id: string): Promise<Trip | null> {
   if (!process.env.KV_REST_API_URL) {
-    const raw = memStore.get(`${TRIP_PREFIX}${id}`)
-    return raw ? JSON.parse(raw) : null
+    const raw = devRead(`${TRIP_PREFIX}${id}`)
+    if (!raw) return null
+    try {
+      return JSON.parse(raw) as Trip
+    } catch {
+      return null
+    }
   }
   const { kv } = await import('@vercel/kv')
   const raw = await kv.get<string>(`${TRIP_PREFIX}${id}`)
