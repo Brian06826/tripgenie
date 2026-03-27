@@ -69,7 +69,7 @@ export function ChatInput() {
           rows={4}
           maxLength={500}
           disabled={loading}
-          className="w-full border border-gray-200 rounded-xl p-4 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange disabled:opacity-50"
+          className="w-full border border-gray-200 rounded-xl p-4 text-base resize-none focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange disabled:opacity-50"
         />
 
         {/* Quick suggestions */}
