@@ -41,7 +41,7 @@ export default function HomePage() {
 
       {/* Example trips */}
       <section className="max-w-xl mx-auto px-4 pb-12">
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">
           範例行程 / Example Trips
         </h2>
         <div className="space-y-2">
