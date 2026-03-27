@@ -2,8 +2,12 @@ import type { Trip } from './types'
 
 const TRIP_PREFIX = 'trip:'
 
-// In-memory fallback for local dev without Vercel KV
-const memStore = new Map<string, string>()
+// In-memory fallback for local dev without Vercel KV.
+// Anchored to globalThis so it survives Next.js hot-module reloads and
+// is shared across the API route and page route module instances in dev.
+const g = globalThis as typeof globalThis & { __tripMemStore?: Map<string, string> }
+if (!g.__tripMemStore) g.__tripMemStore = new Map()
+const memStore = g.__tripMemStore
 
 export async function saveTrip(id: string, trip: Trip): Promise<void> {
   if (!process.env.KV_REST_API_URL) {
