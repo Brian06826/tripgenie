@@ -17,14 +17,14 @@ const EXAMPLE_TRIPS = [
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-dvh bg-gray-50">
       {/* Hero header */}
       <header
         className="text-white px-4 pt-10 pb-8 text-center"
         style={{ background: 'linear-gradient(180deg, #1a3a5c 0%, #2d5a8e 100%)' }}
       >
         <div className="max-w-xl mx-auto">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">
+          <h1 className="text-3xl font-bold tracking-tight mb-2 text-balance">
             Trip<span className="text-orange">Genie</span> ✨
           </h1>
           <p className="text-sm opacity-75 mb-1">AI 旅行行程規劃器</p>
