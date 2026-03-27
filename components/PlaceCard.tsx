@@ -66,7 +66,8 @@ export function PlaceCard({ place }: { place: Place }) {
           href={place.googleMapsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-1 text-center text-xs font-semibold bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 transition-colors"
+          aria-label={`Open ${place.name} on Google Maps`}
+          className="flex-1 text-center text-xs font-semibold bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         >
           📍 Google Maps
         </a>
@@ -74,7 +75,8 @@ export function PlaceCard({ place }: { place: Place }) {
           href={place.yelpUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-1 text-center text-xs font-semibold bg-red-50 text-red-500 py-2 rounded-lg hover:bg-red-100 transition-colors"
+          aria-label={`Open ${place.name} on Yelp`}
+          className="flex-1 text-center text-xs font-semibold bg-red-50 text-red-500 py-2 rounded-lg hover:bg-red-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
         >
           🔥 Yelp
         </a>
