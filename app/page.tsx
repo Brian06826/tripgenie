@@ -23,13 +23,15 @@ export default function HomePage() {
         className="text-white px-4 pt-10 pb-8 text-center"
         style={{ background: 'linear-gradient(180deg, #1a3a5c 0%, #2d5a8e 100%)' }}
       >
-        <h1 className="text-3xl font-bold tracking-tight mb-2">
-          Trip<span className="text-orange">Genie</span> ✨
-        </h1>
-        <p className="text-sm opacity-75 mb-1">AI 旅行行程規劃器</p>
-        <p className="text-xs opacity-55">
-          自然語言輸入 → 靚嘅可分享行程頁面
-        </p>
+        <div className="max-w-xl mx-auto">
+          <h1 className="text-3xl font-bold tracking-tight mb-2">
+            Trip<span className="text-orange">Genie</span> ✨
+          </h1>
+          <p className="text-sm opacity-75 mb-1">AI 旅行行程規劃器</p>
+          <p className="text-xs opacity-55">
+            自然語言輸入 → 靚嘅可分享行程頁面
+          </p>
+        </div>
       </header>
 
       {/* Chat input */}
