@@ -80,7 +80,7 @@ export function ChatInput() {
               type="button"
               onClick={() => setPrompt(s)}
               disabled={loading}
-              className="text-xs border border-gray-200 rounded-full px-3 py-2 min-h-[44px] hover:border-orange hover:text-orange transition-colors disabled:opacity-50"
+              className="text-xs border border-gray-200 rounded-full px-3 py-2 min-h-[44px] hover:border-orange hover:text-orange transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50"
             >
               {s}
             </button>
@@ -90,7 +90,7 @@ export function ChatInput() {
         <button
           type="submit"
           disabled={!prompt.trim() || loading}
-          className="w-full bg-orange text-white py-3 rounded-xl font-semibold text-sm disabled:opacity-50 hover:opacity-90 transition-opacity"
+          className="w-full bg-orange text-white py-3 rounded-xl font-semibold text-sm disabled:opacity-50 hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
         >
           {loading ? '⏳ 生成中...' : '✨ 生成行程 / Generate Itinerary'}
         </button>
