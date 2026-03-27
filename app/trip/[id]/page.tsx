@@ -38,7 +38,7 @@ export default async function TripPage({ params }: Props) {
       {/* Header */}
       <header
         className="text-white px-4 pt-8 pb-6"
-        style={{ background: 'linear-gradient(180deg, #1a3a5c 0%, #2d5a8e 100%)' }}
+        style={{ background: 'linear-gradient(180deg, var(--color-navy) 0%, var(--color-navy-mid) 100%)' }}
       >
         <div className="max-w-xl mx-auto">
           <p className="text-xs text-orange font-semibold mb-1">✨ TripGenie</p>

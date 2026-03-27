@@ -21,7 +21,7 @@ export default function HomePage() {
       {/* Hero header */}
       <header
         className="text-white px-4 pt-10 pb-8 text-center"
-        style={{ background: 'linear-gradient(180deg, #1a3a5c 0%, #2d5a8e 100%)' }}
+        style={{ background: 'linear-gradient(180deg, var(--color-navy) 0%, var(--color-navy-mid) 100%)' }}
       >
         <div className="max-w-xl mx-auto">
           <h1 className="text-3xl font-bold tracking-tight mb-2 text-balance">
