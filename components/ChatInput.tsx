@@ -80,7 +80,7 @@ export function ChatInput() {
               type="button"
               onClick={() => setPrompt(s)}
               disabled={loading}
-              className="text-xs border border-gray-200 rounded-full px-3 py-1 hover:border-orange hover:text-orange transition-colors disabled:opacity-50"
+              className="text-xs border border-gray-200 rounded-full px-3 py-2 min-h-[44px] hover:border-orange hover:text-orange transition-colors disabled:opacity-50"
             >
               {s}
             </button>
