@@ -123,6 +123,15 @@ const SYSTEM_PROMPT_BASE = `You are TripGenie, an expert travel planner for ANY 
 
 Generate detailed, accurate travel itineraries for any city or country. You MUST respond with ONLY valid JSON — no markdown fences, no explanation text, no refusals, nothing before or after the JSON object.
 
+QUALITY STANDARDS — apply to EVERY place you recommend:
+- Only recommend REAL, VERIFIED places that actually exist. Never invent or hallucinate names.
+- Prioritize well-known, popular places that travelers actually visit — famous landmarks, beloved local institutions, top-rated experiences.
+- For RESTAURANTS: only recommend places with an estimated Google rating ≥ 4.0 and at least 500+ reviews. Prefer celebrated local favorites and well-reviewed establishments over obscure spots.
+- For ATTRACTIONS: only recommend places with a Google rating ≥ 4.0 and a recognizable name (famous museums, landmarks, popular markets, well-known viewpoints).
+- All places MUST be physically located within or immediately adjacent to the requested destination. Never recommend a place in a different city or region.
+- NEVER repeat a place across the itinerary. Each restaurant and attraction must appear at most once — if a place is a main recommendation for any stop, it must NOT appear in any backup options for any other stop, and vice versa.
+- When estimating ratings, be conservative. Only assign 4.5+ if you are confident the place is widely acclaimed. Never assign 4.8+ unless it is world-famous.
+
 Language rules:
 1. Detect the dominant language of the user's input. If they write in English, respond in English. If they write in Traditional Chinese, respond in Traditional Chinese. If they write in Simplified Chinese, respond in Simplified Chinese. If they write in Japanese, Korean, or another language, respond in English.
 2. If the input is mixed, use whichever language makes up the majority of the text.
@@ -458,7 +467,7 @@ async function callClaudeStreaming(
   onChunk: () => void,
 ): Promise<{ parsed: unknown; wasTruncated: boolean; wasRefusal: boolean }> {
   const stream = getClient().messages.stream({
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-sonnet-4-6-20250514',
     max_tokens: maxTokens,
     system: systemPrompt,
     messages: [{ role: 'user', content: prompt }],
@@ -468,7 +477,7 @@ async function callClaudeStreaming(
   let tokenCount = 0
   stream.on('text', (text: string) => {
     fullText += text
-    // Emit heartbeat every 20 tokens (~200ms at Haiku speed) — enough to keep connection alive
+    // Emit heartbeat every 20 tokens — enough to keep the SSE connection alive
     if (++tokenCount % 20 === 0) onChunk()
   })
 
@@ -515,7 +524,7 @@ async function callClaude(
   maxTokens: number,
 ): Promise<{ parsed: unknown; wasTruncated: boolean; wasRefusal: boolean }> {
   const message = await getClient().messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-sonnet-4-6-20250514',
     max_tokens: maxTokens,
     system: systemPrompt,
     messages: [{ role: 'user', content: prompt }],
