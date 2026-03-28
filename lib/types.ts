@@ -35,7 +35,7 @@ export const PlaceGenerationSchema = z.object({
   yelpRating: z.number().min(1).max(5).optional(),
   yelpReviewCount: z.number().optional(),
   address: z.string(),
-  parking: ParkingSchema,
+  parking: ParkingSchema.optional(),
   tips: z.string().optional(),
   priceRange: z.string().optional(),
   backupOptions: z.array(BackupOptionSchema).optional(),

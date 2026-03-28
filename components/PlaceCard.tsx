@@ -48,10 +48,12 @@ export function PlaceCard({ place }: { place: Place }) {
       )}
 
       {/* Parking */}
-      <div className="text-xs text-gray-500 bg-gray-50 px-2 py-1.5 rounded-md mb-3">
-        <span className="font-semibold text-gray-600">Parking</span> {place.parking.details}
-        {place.parking.tips && ` · ${place.parking.tips}`}
-      </div>
+      {place.parking && (
+        <div className="text-xs text-gray-500 bg-gray-50 px-2 py-1.5 rounded-md mb-3">
+          <span className="font-semibold text-gray-600">Parking</span> {place.parking.details}
+          {place.parking.tips && ` · ${place.parking.tips}`}
+        </div>
+      )}
 
       {/* Tips */}
       {place.tips && (

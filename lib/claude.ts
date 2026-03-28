@@ -13,7 +13,62 @@ function getClient(): Anthropic {
   return _client
 }
 
-const SYSTEM_PROMPT = `You are TripGenie, an expert travel planner for ANY destination worldwide.
+// ---------------------------------------------------------------------------
+// Trip length detection
+// ---------------------------------------------------------------------------
+
+const CHINESE_DIGITS: Record<string, number> = {
+  '一': 1, '二': 2, '兩': 2, '三': 3, '四': 4, '五': 5,
+  '六': 6, '七': 7, '八': 8, '九': 9, '十': 10,
+}
+
+export function detectTripDays(prompt: string): number {
+  const p = prompt.toLowerCase()
+
+  // Explicit 1-day signals
+  if (/(一日|一天|day.?trip|1.?day|one.?day|1日|1天)/i.test(prompt)) return 1
+
+  // "一週" / "一星期" / "a week" → 7
+  if (/(一週|一星期|a week|7.?day)/i.test(prompt)) return 7
+
+  // Arabic digits: "3 days", "5-day", "10日", "4天", "3日4夜" etc.
+  const arabicMatch = prompt.match(/(\d+)\s*[-–]?\s*(day|days|日|天|夜|nights?)/i)
+  if (arabicMatch) return parseInt(arabicMatch[1], 10)
+
+  // Chinese numeral: "三日", "五天", "四夜", "三日四夜"
+  for (const [char, val] of Object.entries(CHINESE_DIGITS)) {
+    if (new RegExp(`${char}(日|天|夜|晚)`).test(prompt)) return val
+  }
+
+  // "X nights" → X+1 days (approximate)
+  const nightMatch = prompt.match(/(\d+)\s*night/i)
+  if (nightMatch) return parseInt(nightMatch[1], 10) + 1
+
+  // Default: assume 2-day if no signal
+  return 2
+}
+
+// ---------------------------------------------------------------------------
+// Tier selection
+// ---------------------------------------------------------------------------
+
+type Tier = 1 | 2 | 3
+
+function getTier(days: number): Tier {
+  if (days <= 2) return 1
+  if (days <= 4) return 2
+  return 3
+}
+
+function getMaxTokens(tier: Tier): number {
+  return tier === 1 ? 8000 : 6000
+}
+
+// ---------------------------------------------------------------------------
+// System prompts
+// ---------------------------------------------------------------------------
+
+const SYSTEM_PROMPT_BASE = `You are TripGenie, an expert travel planner for ANY destination worldwide.
 
 Generate detailed, accurate travel itineraries for any city or country. You MUST respond with ONLY valid JSON — no markdown fences, no explanation text, no refusals, nothing before or after the JSON object.
 
@@ -23,8 +78,9 @@ Language rules:
 3. If the user explicitly requests a language (e.g. "reply in Chinese", "用英文回覆", "respond in English"), always use that language regardless of input language.
 4. Set the "language" field accordingly: "en" for English, "zh-TW" for Traditional Chinese, "zh-HK" for Cantonese/Hong Kong Chinese, "zh-CN" for Simplified Chinese.
 5. ALL descriptive text (title, day titles, descriptions, tips, parking/transit details) must be in the detected/requested language.
-6. Place names: ALWAYS populate both "name" (English or romanized) and "nameLocal" (local script characters) when both exist, regardless of output language.
+6. Place names: ALWAYS populate both "name" (English or romanized) and "nameLocal" (local script characters) when both exist, regardless of output language.`
 
+const SCHEMA_FULL = `
 The JSON must match this exact schema:
 {
   "title": "string (trip title in the output language)",
@@ -37,20 +93,20 @@ The JSON must match this exact schema:
       "places": [
         {
           "name": "string (English or romanized name)",
-          "nameLocal": "string (local script — include whenever it exists, regardless of output language)",
+          "nameLocal": "string (local script — include whenever it exists)",
           "type": "attraction | restaurant | hotel | transport | other",
           "description": "string (2-3 sentences with specific menu items for restaurants, highlights for attractions)",
           "arrivalTime": "string (e.g. '10:00 AM', optional)",
           "duration": "string (e.g. '2-3 hours', optional)",
           "googleRating": number (1-5, your best estimate, optional),
           "googleReviewCount": number (approximate, optional),
-          "yelpRating": number (1-5, only include for US destinations where Yelp is used, optional),
+          "yelpRating": number (1-5, only include for US destinations, optional),
           "yelpReviewCount": number (approximate, only for US destinations, optional),
           "address": "string (full street address in local format)",
           "parking": {
             "available": boolean,
             "type": "free | paid | street | valet | structure",
-            "details": "string (for international cities, describe subway/transit access if driving is not typical)",
+            "details": "string (for international cities, describe subway/transit access)",
             "tips": "string (optional)"
           },
           "tips": "string (insider tips, optional)",
@@ -87,6 +143,105 @@ Rules:
 - Be specific: name actual dishes, actual subway lines/exits, real addresses in local format
 - For non-US destinations, omit yelpRating/yelpReviewCount (Yelp is not used outside North America)`
 
+const SCHEMA_MEDIUM = `
+The JSON must match this exact schema:
+{
+  "title": "string",
+  "destination": "string",
+  "language": "en | zh-TW | zh-HK | zh-CN",
+  "days": [
+    {
+      "dayNumber": 1,
+      "title": "string",
+      "places": [
+        {
+          "name": "string (English or romanized name)",
+          "nameLocal": "string (local script, when it exists)",
+          "type": "attraction | restaurant | hotel | transport | other",
+          "description": "string (1 sentence only — name 1 signature dish or highlight)",
+          "arrivalTime": "string (optional)",
+          "duration": "string (optional)",
+          "googleRating": number (optional),
+          "googleReviewCount": number (optional),
+          "yelpRating": number (US only, optional),
+          "yelpReviewCount": number (US only, optional),
+          "address": "string",
+          "tips": "string (1 sentence, optional)",
+          "priceRange": "$ | $$ | $$$ | $$$$ (restaurants only, optional)",
+          "backupOptions": [
+            {
+              "name": "string",
+              "nameLocal": "string (optional)",
+              "description": "string (1 sentence)",
+              "googleRating": number,
+              "address": "string"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Rules:
+- Generate itineraries for ANY destination worldwide.
+- Each day: exactly 5 stops — 1 morning attraction, 1 lunch, 1-2 afternoon attractions, 1 dinner, 1 evening activity.
+- Meals at noon and 6 PM only. No restaurants at other times.
+- Include exactly 1 backupOption per restaurant and attraction (skip hotel, transport, other).
+- Omit parking entirely — do NOT include a parking field.
+- Descriptions: 1 sentence max. Be specific (dish names, highlights).
+- Be specific: real addresses, actual subway lines for international cities.
+- For non-US destinations, omit yelpRating/yelpReviewCount.`
+
+const SCHEMA_LEAN = `
+The JSON must match this exact schema:
+{
+  "title": "string",
+  "destination": "string",
+  "language": "en | zh-TW | zh-HK | zh-CN",
+  "days": [
+    {
+      "dayNumber": 1,
+      "title": "string",
+      "places": [
+        {
+          "name": "string (English or romanized name)",
+          "nameLocal": "string (local script, when it exists)",
+          "type": "attraction | restaurant | hotel | transport | other",
+          "description": "string (1 sentence — 1 key highlight or signature dish)",
+          "arrivalTime": "string (optional)",
+          "googleRating": number (optional),
+          "address": "string",
+          "priceRange": "$ | $$ | $$$ | $$$$ (restaurants only, optional)"
+        }
+      ]
+    }
+  ]
+}
+
+Rules:
+- Generate itineraries for ANY destination worldwide.
+- Each day: exactly 3-4 stops — 1 attraction, 1 lunch, 1 attraction or dinner, 1 dinner or evening activity.
+- Meals at noon and 6 PM only.
+- NO backupOptions — omit entirely.
+- NO parking field — omit entirely.
+- NO tips field — omit entirely.
+- Descriptions: 1 sentence max. Be specific (dish names, one highlight).
+- Real addresses. For international cities, a brief transit note is fine inside description.
+- For non-US destinations, omit yelpRating/yelpReviewCount.`
+
+function buildSystemPrompt(tier: Tier): string {
+  switch (tier) {
+    case 1: return SYSTEM_PROMPT_BASE + SCHEMA_FULL
+    case 2: return SYSTEM_PROMPT_BASE + SCHEMA_MEDIUM
+    case 3: return SYSTEM_PROMPT_BASE + SCHEMA_LEAN
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Retry prompt builders
+// ---------------------------------------------------------------------------
+
 function buildRetryPrompt(originalPrompt: string, zodErrors: string): string {
   return `Previous attempt failed JSON validation. Errors: ${zodErrors}
 
@@ -97,10 +252,10 @@ Original request: ${originalPrompt}`
 
 function buildConciseRetryPrompt(originalPrompt: string): string {
   return `Response was cut off due to length. Regenerate the same itinerary but be more concise:
-- descriptions: 1-2 sentences max
-- tips: 1 sentence max
-- parking/transit details: brief (e.g. "Take the JR Yamanote Line" not a paragraph)
-- Still include all places and backup options
+- descriptions: 1 sentence max
+- tips: omit
+- parking: omit
+- Still include all days and places
 
 Return ONLY valid JSON. No markdown, no explanation, no refusals.
 
@@ -116,45 +271,50 @@ Request: ${originalPrompt}`
 }
 
 function looksLikeRefusal(text: string): boolean {
-  // A valid JSON response starts with { (after trimming)
   if (text.trimStart().startsWith('{')) return false
-  // If we get here, it's plain text — definitely a refusal or error
   return true
 }
 
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
 export async function generateTrip(userPrompt: string): Promise<TripGeneration> {
+  const days = detectTripDays(userPrompt)
+  const tier = getTier(days)
+  const systemPrompt = buildSystemPrompt(tier)
+  const maxTokens = getMaxTokens(tier)
+
   // Attempt 1
   let firstParsed: unknown
   let truncated = false
   let wasRefusal = false
 
   try {
-    const { parsed, wasTruncated, wasRefusal: refusal } = await callClaude(userPrompt)
+    const { parsed, wasTruncated, wasRefusal: refusal } = await callClaude(userPrompt, systemPrompt, maxTokens)
     firstParsed = parsed
     truncated = wasTruncated
     wasRefusal = refusal
   } catch (err) {
-    // JSON parse failed entirely on attempt 1 — retry concise
     console.error('Attempt 1 parse error:', err)
     try {
-      const { parsed } = await callClaude(buildConciseRetryPrompt(userPrompt))
+      const { parsed } = await callClaude(buildConciseRetryPrompt(userPrompt), systemPrompt, maxTokens)
       const r = TripGenerationSchema.safeParse(parsed)
       if (r.success) return r.data
       throw new Error(`Validation failed after concise retry: ${JSON.stringify(r.error.issues)}`)
-    } catch (retryErr) {
+    } catch {
       throw new Error(`Unable to generate itinerary. Please rephrase your request and try again.`)
     }
   }
 
-  // If Claude refused, force it with the refusal retry prompt
   if (wasRefusal) {
     console.warn('Claude refused — retrying with forced JSON prompt')
     try {
-      const { parsed } = await callClaude(buildRefusalRetryPrompt(userPrompt))
+      const { parsed } = await callClaude(buildRefusalRetryPrompt(userPrompt), systemPrompt, maxTokens)
       const r = TripGenerationSchema.safeParse(parsed)
       if (r.success) return r.data
     } catch {
-      // fall through to final error
+      // fall through
     }
     throw new Error(`Unable to generate itinerary for this destination. Please try rephrasing your request.`)
   }
@@ -162,7 +322,7 @@ export async function generateTrip(userPrompt: string): Promise<TripGeneration> 
   const firstResult = TripGenerationSchema.safeParse(firstParsed)
   if (firstResult.success) return firstResult.data
 
-  // Attempt 2: truncated → concise, otherwise → Zod error feedback
+  // Attempt 2
   const retryPrompt = truncated
     ? buildConciseRetryPrompt(userPrompt)
     : buildRetryPrompt(userPrompt, JSON.stringify(firstResult.error.issues.map(e => ({
@@ -171,7 +331,7 @@ export async function generateTrip(userPrompt: string): Promise<TripGeneration> 
       }))))
 
   try {
-    const { parsed: retryParsed } = await callClaude(retryPrompt)
+    const { parsed: retryParsed } = await callClaude(retryPrompt, systemPrompt, maxTokens)
     const retryResult = TripGenerationSchema.safeParse(retryParsed)
     if (retryResult.success) return retryResult.data
     throw new Error(`Validation failed: ${JSON.stringify(retryResult.error.issues)}`)
@@ -180,11 +340,19 @@ export async function generateTrip(userPrompt: string): Promise<TripGeneration> 
   }
 }
 
-async function callClaude(prompt: string): Promise<{ parsed: unknown; wasTruncated: boolean; wasRefusal: boolean }> {
+// ---------------------------------------------------------------------------
+// Claude call
+// ---------------------------------------------------------------------------
+
+async function callClaude(
+  prompt: string,
+  systemPrompt: string,
+  maxTokens: number,
+): Promise<{ parsed: unknown; wasTruncated: boolean; wasRefusal: boolean }> {
   const message = await getClient().messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 8000,
-    system: SYSTEM_PROMPT,
+    max_tokens: maxTokens,
+    system: systemPrompt,
     messages: [{ role: 'user', content: prompt }],
   })
 
@@ -193,24 +361,20 @@ async function callClaude(prompt: string): Promise<{ parsed: unknown; wasTruncat
 
   const wasTruncated = message.stop_reason === 'max_tokens'
 
-  // Strip any accidental markdown fences
   let text = content.text.trim()
     .replace(/^```json\s*/i, '')
     .replace(/^```\s*/i, '')
     .replace(/\s*```$/i, '')
     .trim()
 
-  // Detect refusals before attempting JSON parse
   if (looksLikeRefusal(text)) {
     console.warn('Refusal detected. Response preview:', text.slice(0, 200))
     return { parsed: null, wasTruncated, wasRefusal: true }
   }
 
-  // Try direct parse
   try {
     return { parsed: JSON.parse(text), wasTruncated, wasRefusal: false }
   } catch {
-    // Fallback: extract outermost {...}
     const start = text.indexOf('{')
     const end = text.lastIndexOf('}')
     if (start !== -1 && end > start) {
