@@ -1,14 +1,7 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-
-const LOADING_MESSAGES = [
-  '🔍 搜尋最佳餐廳中... / Finding the best restaurants...',
-  '📍 整理地點資訊... / Organizing places...',
-  '🅿️ 搵緊泊車資訊... / Looking up parking...',
-  '⭐ 確認 Yelp + Google 評分... / Checking ratings...',
-  '✨ 生成分享頁面... / Building your itinerary...',
-]
+import { TripLoadingOverlay } from '@/components/TripLoadingOverlay'
 
 const SUGGESTIONS = [
   '一日遊 Long Beach，海鮮晚餐，情侶',
@@ -20,23 +13,18 @@ const SUGGESTIONS = [
 export function ChatInput() {
   const [prompt, setPrompt] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loadingPhase, setLoadingPhase] = useState<'generating' | 'saving'>('generating')
   const [error, setError] = useState('')
-  const [loadingMsg, setLoadingMsg] = useState(0)
   const router = useRouter()
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const isChinese = /[\u4e00-\u9fff\u3400-\u4dbf\uff00-\uffef]/.test(prompt)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!prompt.trim() || loading) return
 
     setLoading(true)
+    setLoadingPhase('generating')
     setError('')
-    setLoadingMsg(0)
-
-    // Rotate loading messages
-    intervalRef.current = setInterval(() => {
-      setLoadingMsg(prev => (prev + 1) % LOADING_MESSAGES.length)
-    }, 3000)
 
     try {
       const res = await fetch('/api/generate', {
@@ -88,7 +76,10 @@ export function ChatInput() {
           if (event.type === 'error') {
             throw new Error(event.message ?? 'Generation failed. Please try again.')
           }
-          // 'chunk' and 'saving' events: no-op — just heartbeats keeping the connection alive
+          if (event.type === 'saving') {
+            setLoadingPhase('saving')
+          }
+          // 'chunk' and 'heartbeat' events: no-op — just keepalives
         }
       }
 
@@ -97,12 +88,13 @@ export function ChatInput() {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
       setLoading(false)
     } finally {
-      if (intervalRef.current) clearInterval(intervalRef.current)
+      // nothing to clean up
     }
   }
 
   return (
     <div className="w-full max-w-xl mx-auto px-4">
+      {loading && <TripLoadingOverlay isChinese={isChinese} phase={loadingPhase} />}
       <form onSubmit={handleSubmit} className="space-y-3">
         <textarea
           value={prompt}
@@ -139,21 +131,6 @@ export function ChatInput() {
           {loading ? '⏳ Generating... / 生成中...' : '✨ Generate Itinerary / 生成行程'}
         </button>
       </form>
-
-      {/* Loading state */}
-      {loading && (
-        <div className="mt-4 text-center">
-          <div className="text-sm text-gray-500 animate-pulse">
-            {LOADING_MESSAGES[loadingMsg]}
-          </div>
-          <div className="mt-2 w-full bg-gray-100 rounded-full h-1.5">
-            <div
-              className="bg-orange h-1.5 rounded-full"
-              style={{ animation: 'loadprogress 20s linear forwards' }}
-            />
-          </div>
-        </div>
-      )}
 
       {/* Error state */}
       {error && (

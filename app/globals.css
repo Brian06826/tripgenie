@@ -24,3 +24,32 @@ body {
   from { width: 5%; }
   to { width: 95%; }
 }
+
+/* TripLoadingOverlay animations */
+@keyframes tgPlanefly {
+  from { transform: translateX(-100px); }
+  to   { transform: translateX(calc(100vw + 100px)); }
+}
+@keyframes tgPlanebob {
+  0%, 100% { transform: translateY(0px); }
+  35%       { transform: translateY(-10px); }
+  70%       { transform: translateY(7px); }
+}
+@keyframes tgFadeInUp {
+  from { opacity: 0; transform: translateY(9px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes tgCloudFloat {
+  0%, 100% { transform: translateX(0px) translateY(0px); }
+  50%       { transform: translateX(10px) translateY(-5px); }
+}
+
+.tg-plane-fly {
+  animation: tgPlanefly 7s linear infinite;
+}
+.tg-plane-bob {
+  animation: tgPlanebob 3s ease-in-out infinite;
+}
+.tg-msg-fadein {
+  animation: tgFadeInUp 0.45s ease-out both;
+}
