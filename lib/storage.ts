@@ -23,8 +23,20 @@ function devWrite(key: string, value: string): void {
   writeFileSync(file, value, 'utf8')
 }
 
+function useKv(): boolean {
+  // On Vercel the filesystem is read-only — always require KV there.
+  // Locally, fall back to file storage when KV isn't configured.
+  if (process.env.VERCEL) {
+    if (!process.env.KV_REST_API_URL) {
+      throw new Error('KV_REST_API_URL is not set. Add Vercel KV to your project (see README).')
+    }
+    return true
+  }
+  return !!process.env.KV_REST_API_URL
+}
+
 export async function saveTrip(id: string, trip: Trip): Promise<void> {
-  if (!process.env.KV_REST_API_URL) {
+  if (!useKv()) {
     devWrite(`${TRIP_PREFIX}${id}`, JSON.stringify(trip))
     return
   }
@@ -33,7 +45,7 @@ export async function saveTrip(id: string, trip: Trip): Promise<void> {
 }
 
 export const getTrip = cache(async function getTrip(id: string): Promise<Trip | null> {
-  if (!process.env.KV_REST_API_URL) {
+  if (!useKv()) {
     const raw = devRead(`${TRIP_PREFIX}${id}`)
     if (!raw) return null
     try {
