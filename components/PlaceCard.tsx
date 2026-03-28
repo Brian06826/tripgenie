@@ -34,13 +34,13 @@ export function PlaceCard({ place }: { place: Place }) {
         <div className="flex gap-2 mb-2">
           {place.googleRating && (
             <span className="text-xs border border-blue-200 text-blue-600 px-2 py-0.5 rounded-md">
-              ⭐ Google {place.googleRating.toFixed(1)}
+              Google {place.googleRating.toFixed(1)}
               {place.googleReviewCount && ` · ${place.googleReviewCount.toLocaleString()}+`}
             </span>
           )}
           {place.yelpRating && (
             <span className="text-xs border border-red-200 text-red-500 px-2 py-0.5 rounded-md">
-              ⭐ Yelp {place.yelpRating.toFixed(1)}
+              Yelp {place.yelpRating.toFixed(1)}
               {place.yelpReviewCount && ` · ${place.yelpReviewCount.toLocaleString()}+`}
             </span>
           )}
@@ -49,14 +49,14 @@ export function PlaceCard({ place }: { place: Place }) {
 
       {/* Parking */}
       <div className="text-xs text-gray-500 bg-gray-50 px-2 py-1.5 rounded-md mb-3">
-        🅿️ {place.parking.details}
+        <span className="font-semibold text-gray-600">Parking</span> {place.parking.details}
         {place.parking.tips && ` · ${place.parking.tips}`}
       </div>
 
       {/* Tips */}
       {place.tips && (
         <p className="text-xs text-amber-700 bg-amber-50 px-2 py-1.5 rounded-md mb-3">
-          💡 {place.tips}
+          <span className="font-semibold">Tip</span> {place.tips}
         </p>
       )}
 
@@ -69,7 +69,7 @@ export function PlaceCard({ place }: { place: Place }) {
           aria-label={`Open ${place.name} on Google Maps`}
           className="flex-1 text-center text-xs font-semibold bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         >
-          📍 Google Maps
+          Google Maps
         </a>
         <a
           href={place.yelpUrl}
@@ -78,7 +78,7 @@ export function PlaceCard({ place }: { place: Place }) {
           aria-label={`Open ${place.name} on Yelp`}
           className="flex-1 text-center text-xs font-semibold bg-red-50 text-red-500 py-2 rounded-lg hover:bg-red-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
         >
-          🔥 Yelp
+          Yelp
         </a>
       </div>
     </div>
