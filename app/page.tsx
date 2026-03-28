@@ -1,17 +1,16 @@
-import Link from 'next/link'
 import { ChatInput } from '@/components/ChatInput'
+import { ExampleTripLink } from '@/components/ExampleTripLink'
 
-// Pre-built example trips (use real IDs once seeded)
 const EXAMPLE_TRIPS = [
   {
-    title: 'Long Beach 一日遊 🌊',
-    subtitle: '情侶 · Yelp 高分餐廳 · Metro 交通',
-    href: '/trip/longbeach-demo',
+    title: 'Long Beach Day Trip 🌊',
+    subtitle: 'Couple · Highly-rated restaurants · Scenic waterfront',
+    href: '/trip/example-longbeach',
   },
   {
-    title: 'San Diego 5日4夜 🐬',
-    subtitle: 'SeaWorld + 海鮮 + Old Town',
-    href: '/trip/sandiego-demo',
+    title: 'San Diego 5-Day Getaway 🐬',
+    subtitle: 'SeaWorld · Seafood · Old Town',
+    href: '/trip/example-sandiego',
   },
 ]
 
@@ -46,14 +45,12 @@ export default function HomePage() {
         </h2>
         <div className="space-y-2">
           {EXAMPLE_TRIPS.map(trip => (
-            <Link
+            <ExampleTripLink
               key={trip.href}
               href={trip.href}
-              className="block bg-white rounded-xl border border-gray-100 px-4 py-3 hover:border-orange/30 transition-colors"
-            >
-              <div className="font-semibold text-gray-900 text-sm">{trip.title}</div>
-              <div className="text-xs text-gray-400 mt-0.5">{trip.subtitle}</div>
-            </Link>
+              title={trip.title}
+              subtitle={trip.subtitle}
+            />
           ))}
         </div>
       </section>
