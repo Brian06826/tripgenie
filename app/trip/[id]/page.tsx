@@ -36,11 +36,24 @@ export default async function TripPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header
-        className="text-white px-4 pt-8 pb-6"
-        style={{ background: 'linear-gradient(180deg, var(--color-navy) 0%, var(--color-navy-mid) 100%)' }}
-      >
-        <div className="max-w-xl mx-auto">
+      <header className="relative text-white px-4 pt-8 pb-6 overflow-hidden">
+        {/* Background: hero image or navy gradient */}
+        {trip.heroImageUrl ? (
+          <>
+            <img
+              src={trip.heroImageUrl}
+              alt={trip.destination}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            {/* Dark overlay for text legibility */}
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.72) 100%)' }} />
+          </>
+        ) : (
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, var(--color-navy) 0%, var(--color-navy-mid) 100%)' }} />
+        )}
+
+        {/* Content */}
+        <div className="relative max-w-xl mx-auto">
           <p className="text-xs text-orange font-semibold mb-1">✨ TripGenie</p>
           <h1 className="text-2xl font-bold leading-tight mb-1">{trip.title}</h1>
           <p className="text-sm opacity-70 mb-4">
@@ -54,6 +67,22 @@ export default async function TripPage({ params }: Props) {
             </span>
             <ShareButton tripId={id} />
           </div>
+
+          {/* Photo credit (Unsplash attribution requirement) */}
+          {trip.heroImageCredit && (
+            <p className="mt-2 text-right text-xs opacity-50">
+              Photo by{' '}
+              <a
+                href={trip.heroImageCredit.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:opacity-75"
+              >
+                {trip.heroImageCredit.name}
+              </a>
+              {' '}on Unsplash
+            </p>
+          )}
         </div>
       </header>
 

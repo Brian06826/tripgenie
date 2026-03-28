@@ -4,6 +4,7 @@ import { generateTrip } from '@/lib/claude'
 import { saveTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildYelpUrl } from '@/lib/url-helpers'
 import { generateAndUploadOgImage } from '@/lib/og'
+import { fetchHeroImage } from '@/lib/unsplash'
 import type { Trip } from '@/lib/types'
 
 export const maxDuration = 60
@@ -51,8 +52,15 @@ export async function POST(request: Request) {
       days,
     }
 
-    // Generate OG image (non-blocking failure)
-    const ogImageUrl = await generateAndUploadOgImage(trip)
+    // Fetch hero + OG image in parallel (non-blocking failures)
+    const [heroResult, ogImageUrl] = await Promise.all([
+      fetchHeroImage(generation.destination),
+      generateAndUploadOgImage(trip),
+    ])
+    if (heroResult) {
+      trip.heroImageUrl = heroResult.imageUrl
+      trip.heroImageCredit = heroResult.credit
+    }
     if (ogImageUrl) trip.ogImageUrl = ogImageUrl
 
     await saveTrip(tripId, trip)
