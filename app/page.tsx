@@ -25,11 +25,11 @@ export default function HomePage() {
       >
         <div className="max-w-xl mx-auto">
           <h1 className="text-3xl font-bold tracking-tight mb-2 text-balance">
-            Trip<span className="text-orange">Genie</span>
+            Trip<span className="text-orange">Genie</span> ✨
           </h1>
-          <p className="text-sm opacity-75 mb-1">AI 旅行行程規劃器</p>
-          <p className="text-xs opacity-55">
-            自然語言輸入 → 靚嘅可分享行程頁面
+          <p className="text-sm opacity-80 mb-1">AI-Powered Trip Planner | AI 旅行行程規劃器</p>
+          <p className="text-xs opacity-60">
+            Describe your trip → Beautiful shareable itinerary / 自然語言輸入 → 靚嘅可分享行程頁面
           </p>
         </div>
       </header>

@@ -65,7 +65,7 @@ export function ChatInput() {
         <textarea
           value={prompt}
           onChange={e => setPrompt(e.target.value)}
-          placeholder={'描述你的旅行計劃... 例如：5日4夜 San Diego，一日去 SeaWorld，要海鮮餐廳，情侶旅行\n\nOr in English: 5-day San Diego trip, one day at SeaWorld, seafood restaurants, couple'}
+          placeholder={'Describe your trip... e.g. 5-day San Diego with SeaWorld, seafood restaurants, couple / 描述你的旅行計劃...'}
           aria-label="Describe your trip / 描述你的旅行計劃"
           rows={4}
           maxLength={500}
@@ -94,7 +94,7 @@ export function ChatInput() {
           disabled={!prompt.trim() || loading}
           className="w-full bg-orange text-white py-3 rounded-xl font-semibold text-sm disabled:opacity-50 hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
         >
-          {loading ? '⏳ 生成中...' : '✨ 生成行程 / Generate Itinerary'}
+          {loading ? '⏳ Generating... / 生成中...' : '✨ Generate Itinerary / 生成行程'}
         </button>
       </form>
 
