@@ -57,6 +57,7 @@ export const TripGenerationSchema = z.object({
 // Full Place with URLs added server-side
 export const PlaceSchema = PlaceGenerationSchema.extend({
   googleMapsUrl: z.string(),
+  googleReviewsUrl: z.string(),
   yelpUrl: z.string(),
   backupOptions: z.array(BackupOptionFullSchema).optional(),
 })

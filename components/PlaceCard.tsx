@@ -69,7 +69,16 @@ export function PlaceCard({ place }: { place: Place }) {
           aria-label={`Open ${place.name} on Google Maps`}
           className="flex-1 flex items-center justify-center text-xs font-semibold bg-blue-50 text-blue-600 min-h-[44px] rounded-lg hover:bg-blue-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         >
-          Google Maps
+          Maps
+        </a>
+        <a
+          href={place.googleReviewsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Search Google Reviews for ${place.name}`}
+          className="flex-1 flex items-center justify-center text-xs font-semibold bg-blue-50 text-blue-600 min-h-[44px] rounded-lg hover:bg-blue-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+        >
+          Reviews
         </a>
         <a
           href={place.yelpUrl}

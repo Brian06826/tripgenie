@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { nanoid } from 'nanoid'
 import { generateTrip } from '@/lib/claude'
 import { saveTrip } from '@/lib/storage'
-import { buildGoogleMapsUrl, buildYelpUrl } from '@/lib/url-helpers'
+import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
 import { generateAndUploadOgImage } from '@/lib/og'
 import { fetchHeroImage } from '@/lib/unsplash'
 import type { Trip } from '@/lib/types'
@@ -36,6 +36,7 @@ export async function POST(request: Request) {
       places: day.places.map(place => ({
         ...place,
         googleMapsUrl: buildGoogleMapsUrl(place.name, generation.destination),
+        googleReviewsUrl: buildGoogleReviewsUrl(place.name, generation.destination),
         yelpUrl: buildYelpUrl(place.name, generation.destination),
         backupOptions: place.backupOptions?.map(b => ({
           ...b,
