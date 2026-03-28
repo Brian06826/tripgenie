@@ -1,8 +1,10 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getTrip } from '@/lib/storage'
+import { EXAMPLE_TRIPS } from '@/lib/example-trips'
 import { TripItinerary } from '@/components/TripItinerary'
 import { ShareButton } from '@/components/ShareButton'
+import { ExampleTripViewer } from '@/components/ExampleTripViewer'
 
 export const revalidate = false // cache forever
 
@@ -10,7 +12,7 @@ type Props = { params: Promise<{ id: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
-  const trip = await getTrip(id)
+  const trip = EXAMPLE_TRIPS[id] ?? await getTrip(id)
   if (!trip) return { title: 'Trip not found' }
 
   return {
@@ -28,6 +30,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TripPage({ params }: Props) {
   const { id } = await params
+
+  // Example trips: served from hardcoded data with a client-side skeleton
+  if (EXAMPLE_TRIPS[id]) {
+    return <ExampleTripViewer trip={EXAMPLE_TRIPS[id]} />
+  }
+
   const trip = await getTrip(id)
   if (!trip) notFound()
 
