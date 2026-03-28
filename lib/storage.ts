@@ -1,65 +1,78 @@
-import { cache } from 'react'
-import type { Trip } from './types'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
-import { join } from 'path'
+import { Trip as TripItinerary } from './types';
 
-const TRIP_PREFIX = 'trip:'
+const isProduction = !!process.env.REDIS_URL;
 
-// File-based fallback for local dev without Vercel KV.
-// Next.js 16 (Turbopack) runs route handlers and server components in separate
-// V8 contexts, so in-memory stores (even globalThis) are not shared. A file on
-// disk is the only reliable cross-context store in dev.
-const DEV_STORE_DIR = join(process.cwd(), '.next', 'dev-trips')
+let redisClient: any = null;
 
-function devRead(key: string): string | null {
-  const file = join(DEV_STORE_DIR, `${key.replace(/[^a-z0-9_-]/gi, '_')}.json`)
-  if (!existsSync(file)) return null
-  return readFileSync(file, 'utf8')
-}
-
-function devWrite(key: string, value: string): void {
-  if (!existsSync(DEV_STORE_DIR)) mkdirSync(DEV_STORE_DIR, { recursive: true })
-  const file = join(DEV_STORE_DIR, `${key.replace(/[^a-z0-9_-]/gi, '_')}.json`)
-  writeFileSync(file, value, 'utf8')
-}
-
-function useKv(): boolean {
-  // On Vercel the filesystem is read-only — always require KV there.
-  // Locally, fall back to file storage when KV isn't configured.
-  if (process.env.VERCEL) {
-    if (!process.env.KV_REST_API_URL) {
-      throw new Error('KV_REST_API_URL is not set. Add Vercel KV to your project (see README).')
-    }
-    return true
+async function getRedis() {
+  if (!redisClient) {
+    const Redis = (await import('ioredis')).default;
+    redisClient = new Redis(process.env.REDIS_URL!, {
+      maxRetriesPerRequest: 3,
+      lazyConnect: true,
+      tls: process.env.REDIS_URL?.startsWith('rediss://') ? {} : undefined,
+    });
+    await redisClient.connect();
   }
-  return !!process.env.KV_REST_API_URL
+  return redisClient;
 }
 
-export async function saveTrip(id: string, trip: Trip): Promise<void> {
-  if (!useKv()) {
-    devWrite(`${TRIP_PREFIX}${id}`, JSON.stringify(trip))
-    return
-  }
-  const { kv } = await import('@vercel/kv')
-  await kv.set(`${TRIP_PREFIX}${id}`, JSON.stringify(trip))
-}
-
-export const getTrip = cache(async function getTrip(id: string): Promise<Trip | null> {
-  if (!useKv()) {
-    const raw = devRead(`${TRIP_PREFIX}${id}`)
-    if (!raw) return null
-    try {
-      return JSON.parse(raw) as Trip
-    } catch {
-      return null
-    }
-  }
-  const { kv } = await import('@vercel/kv')
-  const raw = await kv.get<string>(`${TRIP_PREFIX}${id}`)
-  if (!raw) return null
+async function redisGet(id: string): Promise<TripItinerary | null> {
   try {
-    return JSON.parse(typeof raw === 'string' ? raw : JSON.stringify(raw)) as Trip
-  } catch {
-    return null
+    const redis = await getRedis();
+    const data = await redis.get(`trip:${id}`);
+    if (!data) return null;
+    return JSON.parse(data) as TripItinerary;
+  } catch (error) {
+    console.error('Redis GET error:', error);
+    return null;
   }
-})
+}
+
+async function redisSet(id: string, trip: TripItinerary): Promise<void> {
+  try {
+    const redis = await getRedis();
+    await redis.set(`trip:${id}`, JSON.stringify(trip), 'EX', 2592000);
+  } catch (error) {
+    console.error('Redis SET error:', error);
+    throw error;
+  }
+}
+
+async function fileGet(id: string): Promise<TripItinerary | null> {
+  try {
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    const dir = path.join(process.cwd(), '.next', 'dev-trips');
+    const filePath = path.join(dir, `${id}.json`);
+    const data = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(data) as TripItinerary;
+  } catch {
+    return null;
+  }
+}
+
+async function fileSet(id: string, trip: TripItinerary): Promise<void> {
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  const dir = path.join(process.cwd(), '.next', 'dev-trips');
+  await fs.mkdir(dir, { recursive: true });
+  const filePath = path.join(dir, `${id}.json`);
+  await fs.writeFile(filePath, JSON.stringify(trip, null, 2));
+}
+
+export async function saveTrip(id: string, trip: TripItinerary): Promise<void> {
+  if (isProduction) {
+    await redisSet(id, trip);
+  } else {
+    await fileSet(id, trip);
+  }
+}
+
+export async function getTrip(id: string): Promise<TripItinerary | null> {
+  if (isProduction) {
+    return redisGet(id);
+  } else {
+    return fileGet(id);
+  }
+}
