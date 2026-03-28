@@ -1,24 +1,29 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import type { DayPlan } from '@/lib/types'
 import { PlaceCard } from './PlaceCard'
 import { AlternativesPanel } from './AlternativesPanel'
 
 export function TripItinerary({ initialDays }: { initialDays: DayPlan[] }) {
   const [days, setDays] = useState(initialDays)
+  const [swappedKey, setSwappedKey] = useState<string | null>(null)
 
-  function handleSwap(dayIndex: number, placeIndex: number, backupIndex: number) {
-    setDays(prev =>
-      prev.map((day, di) => {
-        if (di !== dayIndex) return day
+  const handleSwap = useCallback((dayIndex: number, placeIndex: number, backupIndex: number) => {
+    setDays(prev => {
+      const day = prev[dayIndex]
+      const place = day.places[placeIndex]
+      const backup = place.backupOptions![backupIndex]
+      setSwappedKey(`${dayIndex}-${placeIndex}`)
+      setTimeout(() => setSwappedKey(null), 2000)
+      return prev.map((d, di) => {
+        if (di !== dayIndex) return d
         return {
-          ...day,
-          places: day.places.map((place, pi) => {
-            if (pi !== placeIndex) return place
-            const backup = place.backupOptions![backupIndex]
+          ...d,
+          places: d.places.map((p, pi) => {
+            if (pi !== placeIndex) return p
             return {
-              ...place,
+              ...p,
               name: backup.name,
               nameLocal: backup.nameLocal,
               description: backup.description,
@@ -34,8 +39,8 @@ export function TripItinerary({ initialDays }: { initialDays: DayPlan[] }) {
           }),
         }
       })
-    )
-  }
+    })
+  }, [])
 
   return (
     <>
@@ -48,12 +53,15 @@ export function TripItinerary({ initialDays }: { initialDays: DayPlan[] }) {
 
           {day.places.map((place, placeIndex) => {
             const hasAlternatives = (place.backupOptions?.length ?? 0) > 0
+            const justSwapped = swappedKey === `${dayIndex}-${placeIndex}`
             return (
               <div
                 key={place.name}
                 className={hasAlternatives ? 'lg:grid lg:grid-cols-[1fr_260px] lg:gap-3 lg:items-start' : ''}
               >
-                <PlaceCard place={place} />
+                <div className={justSwapped ? 'ring-2 ring-orange rounded-xl transition-shadow duration-500' : ''}>
+                  <PlaceCard place={place} />
+                </div>
                 {hasAlternatives && (
                   <AlternativesPanel
                     backups={place.backupOptions!}
