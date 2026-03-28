@@ -54,7 +54,7 @@ export default async function TripPage({ params }: Props) {
 
         {/* Content */}
         <div className="relative max-w-4xl mx-auto">
-          <p className="text-xs text-orange font-semibold mb-1">✨ TripGenie</p>
+          <p className="text-xs text-orange font-semibold mb-1">TripGenie</p>
           <h1 className="text-2xl font-bold leading-tight mb-1">{trip.title}</h1>
           <p className="text-sm opacity-70 mb-4">
             {trip.destination} · {Math.max(...trip.days.map(d => d.dayNumber))} day{Math.max(...trip.days.map(d => d.dayNumber)) !== 1 ? 's' : ''}
@@ -97,7 +97,7 @@ export default async function TripPage({ params }: Props) {
 
         {/* Footer */}
         <footer className="text-center text-xs text-gray-400 py-8">
-          Made with ✨ <a href="/" className="text-orange underline">TripGenie</a>
+          Made with <a href="/" className="text-orange underline">TripGenie</a>
         </footer>
       </main>
     </div>
