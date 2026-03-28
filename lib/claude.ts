@@ -111,8 +111,8 @@ function getTier(days: number): Tier {
   return 3
 }
 
-function getMaxTokens(tier: Tier): number {
-  return tier === 1 ? 8000 : 6000
+function getMaxTokens(_tier: Tier): number {
+  return 12000
 }
 
 // ---------------------------------------------------------------------------
@@ -321,6 +321,57 @@ Generate the travel itinerary for this request as a JSON object matching the sch
 Request: ${originalPrompt}`
 }
 
+// Attempt to close an incomplete JSON string that was cut off by max_tokens.
+// Walks the text tracking string state and bracket stack, then:
+//   1. Closes any unclosed string literal
+//   2. Strips trailing commas (invalid after truncation)
+//   3. Appends closing } or ] for every unclosed container
+// Returns null if the result still can't be parsed.
+function repairTruncatedJson(raw: string): string | null {
+  let inString = false
+  let escaped = false
+  const stack: Array<'{' | '['> = []
+
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i]
+    if (escaped) { escaped = false; continue }
+    if (ch === '\\' && inString) { escaped = true; continue }
+    if (ch === '"') { inString = !inString; continue }
+    if (inString) continue
+    if (ch === '{' || ch === '[') stack.push(ch as '{' | '[')
+    else if (ch === '}' || ch === ']') stack.pop()
+  }
+
+  let s = raw
+
+  // Close an unclosed string literal
+  if (inString) s += '"'
+
+  // Strip trailing whitespace and commas (common artifact of truncation)
+  s = s.trimEnd()
+  while (s.endsWith(',')) s = s.slice(0, -1).trimEnd()
+
+  // Close every unclosed container in reverse stack order
+  for (let i = stack.length - 1; i >= 0; i--) {
+    s += stack[i] === '{' ? '}' : ']'
+  }
+
+  try {
+    JSON.parse(s)
+    return s
+  } catch {
+    // Still invalid — try dropping the last incomplete property (after last comma)
+    const lastComma = s.lastIndexOf(',')
+    if (lastComma > 0) {
+      let trimmed = s.slice(0, lastComma).trimEnd()
+      // Re-close containers from scratch on the trimmed string
+      const repaired = repairTruncatedJson(trimmed)
+      return repaired
+    }
+    return null
+  }
+}
+
 function looksLikeRefusal(text: string): boolean {
   if (text.trimStart().startsWith('{')) return false
   return true
@@ -438,12 +489,21 @@ async function callClaudeStreaming(
   try {
     return { parsed: JSON.parse(text), wasTruncated, wasRefusal: false }
   } catch {
+    // Try extracting outermost {...}
     const start = text.indexOf('{')
     const end = text.lastIndexOf('}')
     if (start !== -1 && end > start) {
       try {
         return { parsed: JSON.parse(text.slice(start, end + 1)), wasTruncated, wasRefusal: false }
       } catch {}
+    }
+    // If truncated, attempt structural repair before giving up
+    if (wasTruncated) {
+      const repaired = repairTruncatedJson(start !== -1 ? text.slice(start) : text)
+      if (repaired !== null) {
+        console.warn('Streaming response repaired after truncation')
+        return { parsed: JSON.parse(repaired), wasTruncated: true, wasRefusal: false }
+      }
     }
     throw new Error(`Failed to parse streaming Claude response. stop_reason=${finalMessage.stop_reason}, length=${text.length}`)
   }
@@ -485,8 +545,13 @@ async function callClaude(
     if (start !== -1 && end > start) {
       try {
         return { parsed: JSON.parse(text.slice(start, end + 1)), wasTruncated, wasRefusal: false }
-      } catch {
-        // extraction also failed
+      } catch {}
+    }
+    if (wasTruncated) {
+      const repaired = repairTruncatedJson(start !== -1 ? text.slice(start) : text)
+      if (repaired !== null) {
+        console.warn('Response repaired after truncation')
+        return { parsed: JSON.parse(repaired), wasTruncated: true, wasRefusal: false }
       }
     }
     throw new Error(`Failed to parse Claude response as JSON. stop_reason=${message.stop_reason}, length=${text.length}`)
