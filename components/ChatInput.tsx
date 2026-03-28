@@ -55,7 +55,7 @@ export function ChatInput() {
       if (!res.ok) {
         // Surface a clean message — hide internal Zod/JSON details
         const raw = data.error ?? ''
-        if (raw.includes('Unable to generate') || raw.includes('rephrase')) {
+        if (raw.includes('Unable to generate') || raw.includes('rephrase') || raw.includes('too long')) {
           throw new Error(raw)
         }
         throw new Error('Unable to generate itinerary. Please try again or rephrase your request.')

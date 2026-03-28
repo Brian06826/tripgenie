@@ -69,7 +69,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ tripId, success: true })
   } catch (err) {
     console.error('Generation error:', err)
-    const message = err instanceof Error ? err.message : 'Generation failed'
+    const raw = err instanceof Error ? err.message : ''
+    const isTimeout = raw.includes('timeout') || raw.includes('timed out') || raw.includes('Request timeout')
+    const message = isTimeout
+      ? 'Generation took too long — please try a shorter or simpler trip description.'
+      : (raw.includes('Unable to generate') || raw.includes('rephrase') ? raw : 'Generation failed')
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

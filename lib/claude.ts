@@ -8,7 +8,7 @@ function getClient(): Anthropic {
     if (!process.env.ANTHROPIC_API_KEY) {
       throw new Error('ANTHROPIC_API_KEY is not configured. Add it in Vercel Dashboard → Settings → Environment Variables.')
     }
-    _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: 55000 })
   }
   return _client
 }
@@ -183,7 +183,7 @@ export async function generateTrip(userPrompt: string): Promise<TripGeneration> 
 async function callClaude(prompt: string): Promise<{ parsed: unknown; wasTruncated: boolean; wasRefusal: boolean }> {
   const message = await getClient().messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 16000,
+    max_tokens: 8000,
     system: SYSTEM_PROMPT,
     messages: [{ role: 'user', content: prompt }],
   })
