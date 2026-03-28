@@ -4,7 +4,11 @@ export function buildGoogleMapsUrl(name: string, city: string): string {
 }
 
 export function buildYelpUrl(name: string, city: string): string {
-  const desc = encodeURIComponent(name)
-  const loc = encodeURIComponent(city)
-  return `https://www.yelp.com/search?find_desc=${desc}&find_loc=${loc}`
+  const slug = (s: string) =>
+    s.toLowerCase()
+      .replace(/&/g, 'and')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-')
+  return `https://www.yelp.com/biz/${slug(name)}-${slug(city)}`
 }
