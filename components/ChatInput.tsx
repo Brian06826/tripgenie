@@ -45,9 +45,20 @@ export function ChatInput() {
         body: JSON.stringify({ prompt }),
       })
 
-      const data = await res.json()
+      let data: { tripId?: string; error?: string }
+      try {
+        data = await res.json()
+      } catch {
+        throw new Error('Server error. Please try again.')
+      }
+
       if (!res.ok) {
-        throw new Error(data.error || 'Generation failed')
+        // Surface a clean message — hide internal Zod/JSON details
+        const raw = data.error ?? ''
+        if (raw.includes('Unable to generate') || raw.includes('rephrase')) {
+          throw new Error(raw)
+        }
+        throw new Error('Unable to generate itinerary. Please try again or rephrase your request.')
       }
 
       router.push(`/trip/${data.tripId}`)
@@ -115,8 +126,15 @@ export function ChatInput() {
 
       {/* Error state */}
       {error && (
-        <div className="mt-4 bg-red-50 border border-red-100 rounded-xl p-3 text-sm text-red-600">
-          ⚠️ {error}
+        <div className="mt-4 bg-red-50 border border-red-100 rounded-xl p-4">
+          <p className="text-sm text-red-600 mb-3">⚠️ {error}</p>
+          <button
+            type="button"
+            onClick={() => { setError(''); handleSubmit({ preventDefault: () => {} } as React.FormEvent) }}
+            className="w-full bg-red-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-red-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+          >
+            Try Again / 重試
+          </button>
         </div>
       )}
     </div>

@@ -51,7 +51,7 @@ export const TripGenerationSchema = z.object({
   title: z.string(),
   destination: z.string(),
   days: z.array(DayPlanGenerationSchema),
-  language: z.enum(['en', 'zh-TW', 'zh-HK']),
+  language: z.enum(['en', 'zh-TW', 'zh-HK', 'zh-CN']),
 })
 
 // Full Place with URLs added server-side
