@@ -35,11 +35,15 @@ export async function POST(request: Request) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
       }
 
+      // Send IMMEDIATELY — Vercel's 60s timeout is first-byte only.
+      // This heartbeat resets the clock before we even call Claude.
+      send({ type: 'heartbeat' })
+
+      // Also pulse every 5 seconds so long retries/saves don't stall.
+      const pulse = setInterval(() => { try { send({ type: 'heartbeat' }) } catch {} }, 5000)
+
       try {
-        // generateTrip calls onChunk as Claude streams — each call keeps the connection alive
-        const generation = await generateTrip(prompt, () => {
-          send({ type: 'chunk' })
-        })
+        const generation = await generateTrip(prompt)
 
         const tripId = nanoid(8)
 
@@ -92,6 +96,7 @@ export async function POST(request: Request) {
               : 'Generation failed. Please try again.')
         send({ type: 'error', message })
       } finally {
+        clearInterval(pulse)
         controller.close()
       }
     },
