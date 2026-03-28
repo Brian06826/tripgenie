@@ -467,7 +467,7 @@ async function callClaudeStreaming(
   onChunk: () => void,
 ): Promise<{ parsed: unknown; wasTruncated: boolean; wasRefusal: boolean }> {
   const stream = getClient().messages.stream({
-    model: 'claude-sonnet-4-5-20241022',
+    model: 'claude-sonnet-4-5-20250929',
     max_tokens: maxTokens,
     system: systemPrompt,
     messages: [{ role: 'user', content: prompt }],
@@ -524,7 +524,7 @@ async function callClaude(
   maxTokens: number,
 ): Promise<{ parsed: unknown; wasTruncated: boolean; wasRefusal: boolean }> {
   const message = await getClient().messages.create({
-    model: 'claude-sonnet-4-5-20241022',
+    model: 'claude-sonnet-4-5-20250929',
     max_tokens: maxTokens,
     system: systemPrompt,
     messages: [{ role: 'user', content: prompt }],
