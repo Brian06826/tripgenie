@@ -16,18 +16,18 @@ export function buildGoogleReviewsUrl(name: string, city: string): string {
   return `https://www.google.com/search?q=${query}`
 }
 
+// Always-reliable Yelp search URL — use this as the primary Yelp link.
 export function buildYelpUrl(name: string, city: string): string {
+  return `https://www.yelp.com/search?find_desc=${encodeURIComponent(name)}&find_loc=${encodeURIComponent(city)}`
+}
+
+// Attempt a direct Yelp business page URL. Returns null if the name is mostly
+// non-ASCII (e.g. Chinese), where the slug would be unreliable and likely 404.
+export function buildYelpBizUrl(name: string, city: string): string | null {
   const nameSlug = slugify(name)
   const citySlug = slugify(city)
-
-  // Fall back to search if slug is unreliable — e.g. name is mostly non-ASCII
-  // (Chinese characters strip out entirely, leaving a slug too short to be trustworthy)
   const asciiChars = name.replace(/[^a-zA-Z0-9\s]/g, '').trim()
   const reliable = nameSlug.length >= 2 && asciiChars.length >= name.trim().length * 0.4
-
-  if (!reliable) {
-    return `https://www.yelp.com/search?find_desc=${encodeURIComponent(name)}&find_loc=${encodeURIComponent(city)}`
-  }
-
+  if (!reliable) return null
   return `https://www.yelp.com/biz/${nameSlug}-${citySlug}`
 }

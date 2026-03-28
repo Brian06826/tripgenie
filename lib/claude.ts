@@ -54,9 +54,15 @@ The JSON must match this exact schema:
 }
 
 Rules:
-- Each day MUST have 5-7 activities covering the FULL day: morning activity or breakfast spot, lunch restaurant, afternoon activity, dinner restaurant, AND at least one evening activity. Never end a day at dinner.
-- Evening activities: night market, dessert café, boba shop, bar or lounge, evening walk or waterfront promenade, night view spot, karaoke, arcade, or similar. Be specific and local.
-- ALWAYS include exactly 2 backupOptions for every restaurant and attraction place (skip hotel, transport, other)
+- Each day MUST follow this exact structure (5-6 stops, no more):
+  • 9:00–11:00 AM — 1 morning attraction or activity
+  • 12:00–1:00 PM — 1 lunch restaurant
+  • 2:00–5:00 PM — 1 or 2 afternoon attractions (budget travel time between stops)
+  • 6:00–7:30 PM — 1 dinner restaurant
+  • 8:00–9:30 PM — 1 evening activity (dessert café, boba, bar/lounge, night market, waterfront walk, night view)
+- Do NOT put restaurants at 3 PM, 11 AM, or any non-meal time. Meals are at noon and 6 PM only.
+- ALWAYS include exactly 2 backupOptions for every restaurant and attraction (skip hotel, transport, other)
+- Backup options MUST be different places — never repeat the main place name in its own backupOptions
 - ALWAYS include parking info for every place
 - Use the SAME language as the user's request (Chinese in → Chinese out)
 - Ratings are your best estimate from training data, labeled as approximate
