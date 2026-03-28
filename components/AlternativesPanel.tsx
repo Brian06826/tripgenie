@@ -19,7 +19,7 @@ function BackupList({ backups, onSwap }: { backups: BackupOption[]; onSwap: (i: 
             </div>
             <button
               onClick={() => onSwap(i)}
-              className="shrink-0 text-xs font-semibold bg-orange text-white px-2.5 py-1 rounded-md hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+              className="shrink-0 text-xs font-semibold bg-orange text-white px-3 py-2 min-h-[44px] rounded-md hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange"
             >
               Swap
             </button>
