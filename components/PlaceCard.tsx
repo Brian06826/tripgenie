@@ -81,40 +81,6 @@ export function PlaceCard({ place }: { place: Place }) {
           🔥 Yelp
         </a>
       </div>
-
-      {/* Backup restaurants */}
-      {place.backupOptions && place.backupOptions.length > 0 && (
-        <details className="mt-3">
-          <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700 font-medium">
-            🔄 備選餐廳 ({place.backupOptions.length})
-          </summary>
-          <div className="mt-2 space-y-2">
-            {place.backupOptions.map((backup, i) => (
-              <div key={i} className="text-xs border border-gray-100 rounded-lg p-2">
-                <div className="font-semibold text-gray-700">{backup.name}</div>
-                {backup.nameLocal && <div className="text-gray-400">{backup.nameLocal}</div>}
-                <div className="text-gray-500 mt-0.5">{backup.description}</div>
-                {(backup.yelpRating || backup.googleRating) && (
-                  <div className="flex gap-2 mt-1">
-                    {backup.googleRating && (
-                      <span className="text-blue-500">⭐ G {backup.googleRating.toFixed(1)}</span>
-                    )}
-                    {backup.yelpRating && (
-                      <span className="text-red-400">⭐ Y {backup.yelpRating.toFixed(1)}</span>
-                    )}
-                  </div>
-                )}
-                <div className="flex gap-2 mt-1.5">
-                  <a href={backup.googleMapsUrl} target="_blank" rel="noopener noreferrer"
-                     className="text-blue-500 underline">Maps</a>
-                  <a href={backup.yelpUrl} target="_blank" rel="noopener noreferrer"
-                     className="text-red-400 underline">Yelp</a>
-                </div>
-              </div>
-            ))}
-          </div>
-        </details>
-      )}
     </div>
   )
 }

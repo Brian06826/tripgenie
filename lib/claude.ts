@@ -54,7 +54,7 @@ The JSON must match this exact schema:
 }
 
 Rules:
-- ALWAYS include exactly 2 backupOptions for every restaurant place
+- ALWAYS include exactly 2 backupOptions for every restaurant and attraction place (skip hotel, transport, other)
 - ALWAYS include parking info for every place
 - Use the SAME language as the user's request (Chinese in → Chinese out)
 - Ratings are your best estimate from training data, labeled as approximate
@@ -89,7 +89,7 @@ export async function generateTrip(userPrompt: string): Promise<TripGeneration> 
 
 async function callClaude(prompt: string): Promise<unknown> {
   const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: 'claude-haiku-4-5-20251001',
     max_tokens: 8192,
     system: SYSTEM_PROMPT,
     messages: [{ role: 'user', content: prompt }],

@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import type { Trip } from './types'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
@@ -31,7 +32,7 @@ export async function saveTrip(id: string, trip: Trip): Promise<void> {
   await kv.set(`${TRIP_PREFIX}${id}`, JSON.stringify(trip))
 }
 
-export async function getTrip(id: string): Promise<Trip | null> {
+export const getTrip = cache(async function getTrip(id: string): Promise<Trip | null> {
   if (!process.env.KV_REST_API_URL) {
     const raw = devRead(`${TRIP_PREFIX}${id}`)
     if (!raw) return null
@@ -49,4 +50,4 @@ export async function getTrip(id: string): Promise<Trip | null> {
   } catch {
     return null
   }
-}
+})

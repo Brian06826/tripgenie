@@ -20,6 +20,21 @@
 - [ ] **[MEDIUM] Reduce emoji-as-design-element density** — ✨ appears in both H1 and the submit button; 🌊🐬 in trip titles; 🅿️💡🔥 inline in PlaceCard. Selective use is fine; saturation dilutes impact. Consider keeping only functional icons (type indicators) and removing decorative ✨ from the heading.
 - [ ] **[MEDIUM] Semantic color naming for ratings** — PlaceCard uses raw `blue-200`/`red-200` for Google/Yelp. Define `--color-google` and `--color-yelp` in globals.css so a brand color update doesn't require grep-and-replace.
 
+## From /autoplan review (2026-03-27)
+
+- [x] **[CRITICAL] Fix `proxy.ts` (was misnamed `middleware.ts`)** — Next.js 16 uses `proxy.ts` / `export function proxy`. Fixed export name and made `Ratelimit` a module-level singleton.
+- [ ] **[CRITICAL] Configure Upstash KV before first Vercel deploy** — File-based dev storage throws on Vercel read-only filesystem. Trips silently lost. Set `KV_REST_API_URL` + `KV_REST_API_TOKEN`.
+- [x] **[HIGH] Fix `og.tsx` day count** — Fixed in `lib/og.tsx` and `app/trip/[id]/page.tsx` (generateMetadata also had the bug).
+- [x] **[HIGH] Fix `handleSwap` priceRange leak** — Added `priceRange: undefined` to overwrite list. `components/TripItinerary.tsx`
+- [x] **[HIGH] Fix place key after swap** — Changed `key={placeIndex}` → `key={place.name}`. `components/TripItinerary.tsx`
+- [x] **[MEDIUM] Remove `sticky top-14` from AlternativesPanel** — Removed. Also changed `md:` → `lg:` breakpoints to match TripItinerary grid.
+- [x] **[MEDIUM] Wrap `getTrip` in React `cache()`** — Done. `lib/storage.ts`
+- [x] **[MEDIUM] Make `Ratelimit` a module-level singleton in middleware** — Done as part of proxy.ts rename.
+- [x] **[LOW] Delete `DayCard.tsx`** — Deleted.
+- [ ] **[LOW] Add `parking?.details` null guard in PlaceCard** — Defensive; Zod validates but guard is cheap. `components/PlaceCard.tsx:52`
+- [ ] **Phase B: Server-side swap persistence** — Swap currently not visible in shared link. Implement POST /api/swap that saves new trip variant with new nanoid.
+- [ ] **Phase B: Swap disclosure copy** — Add "Swaps are personal — not visible in shared link" near Swap button or Share bar.
+
 ## Ongoing
 
 - [ ] **Monitor Claude API costs** — No user auth = potential abuse. Set up Anthropic usage alerts. Rate limit is 3 req/hour per IP but a determined bad actor could still run up costs across IPs.

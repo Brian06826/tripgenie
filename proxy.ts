@@ -1,30 +1,32 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export async function proxy(req: NextRequest) {
-  if (!req.nextUrl.pathname.startsWith('/api/generate')) {
-    return NextResponse.next()
-  }
+// Module-level singleton — instantiated once, not per-request.
+// Only created when KV is configured (production); skipped in local dev.
+let ratelimit: import('@upstash/ratelimit').Ratelimit | null = null
 
-  // Skip rate limiting if KV not configured (local dev)
-  if (!process.env.KV_REST_API_URL) {
-    return NextResponse.next()
-  }
-
+async function getRatelimit() {
+  if (!process.env.KV_REST_API_URL) return null
+  if (ratelimit) return ratelimit
   const { Ratelimit } = await import('@upstash/ratelimit')
   const { kv } = await import('@vercel/kv')
-
-  const ratelimit = new Ratelimit({
+  ratelimit = new Ratelimit({
     redis: kv,
     limiter: Ratelimit.slidingWindow(3, '1 h'),
     analytics: false,
   })
+  return ratelimit
+}
+
+export async function proxy(req: NextRequest) {
+  const rl = await getRatelimit()
+  if (!rl) return NextResponse.next()
 
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
     ?? req.headers.get('x-real-ip')
     ?? 'anonymous'
 
-  const { success, limit, remaining } = await ratelimit.limit(ip)
+  const { success, limit, remaining } = await rl.limit(ip)
 
   if (!success) {
     return NextResponse.json(

@@ -55,7 +55,7 @@ export async function generateAndUploadOgImage(
               color: 'rgba(255,255,255,0.7)',
             }}
           >
-            {trip.destination} · {trip.days.length} day{trip.days.length !== 1 ? 's' : ''}
+            {trip.destination} · {Math.max(...trip.days.map(d => d.dayNumber))} day{Math.max(...trip.days.map(d => d.dayNumber)) !== 1 ? 's' : ''}
           </div>
         </div>
       ),
