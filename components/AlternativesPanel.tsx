@@ -14,12 +14,13 @@ function BackupList({ backups, onSwap }: { backups: BackupOption[]; onSwap: (i: 
             <div className="min-w-0">
               <div className="font-semibold text-xs text-gray-800 leading-tight">{backup.name}</div>
               {backup.nameLocal && (
-                <div className="text-xs text-gray-400">{backup.nameLocal}</div>
+                <div className="text-xs text-gray-500">{backup.nameLocal}</div>
               )}
             </div>
             <button
               onClick={() => onSwap(i)}
-              className="shrink-0 text-xs font-semibold bg-orange text-white px-3 py-2 min-h-[44px] rounded-md hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+              aria-label={`Swap with ${backup.name}`}
+              className="shrink-0 text-xs font-semibold bg-orange text-white px-3 py-2 min-h-[44px] rounded-md hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-1"
             >
               Swap
             </button>
@@ -30,13 +31,13 @@ function BackupList({ backups, onSwap }: { backups: BackupOption[]; onSwap: (i: 
           {(backup.googleRating || backup.yelpRating) && (
             <div className="flex gap-3 mt-1.5">
               {backup.googleRating && (
-                <span className="text-xs text-blue-500">
-                  ⭐ G {backup.googleRating.toFixed(1)}
+                <span className="text-xs text-blue-600">
+                  G {backup.googleRating.toFixed(1)}
                 </span>
               )}
               {backup.yelpRating && (
-                <span className="text-xs text-red-400">
-                  ⭐ Y {backup.yelpRating.toFixed(1)}
+                <span className="text-xs text-red-500">
+                  Y {backup.yelpRating.toFixed(1)}
                 </span>
               )}
             </div>
@@ -63,7 +64,7 @@ export function AlternativesPanel({ backups, onSwap }: Props) {
       {/* Desktop: sidebar panel */}
       <div className="hidden lg:flex lg:flex-col lg:justify-start">
         <div className="bg-gray-50 border border-gray-100 rounded-xl p-3">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2.5">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2.5">
             Alternatives
           </p>
           <BackupList backups={backups} onSwap={onSwap} />
