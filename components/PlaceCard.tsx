@@ -80,28 +80,15 @@ export function PlaceCard({ place }: { place: Place }) {
         >
           Reviews
         </a>
-        <div className="flex-1 flex flex-col gap-1">
-          <a
-            href={place.yelpUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Search Yelp for ${place.name}`}
-            className="flex items-center justify-center text-xs font-semibold bg-red-50 text-red-500 min-h-[44px] rounded-lg hover:bg-red-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-          >
-            Yelp
-          </a>
-          {place.yelpBizUrl && (
-            <a
-              href={place.yelpBizUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Yelp direct page for ${place.name}`}
-              className="text-center text-[10px] text-red-400 hover:text-red-500 leading-none py-0.5"
-            >
-              Direct link
-            </a>
-          )}
-        </div>
+        <a
+          href={place.yelpUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Search Yelp for ${place.name}`}
+          className="flex-1 flex items-center justify-center text-xs font-semibold bg-red-50 text-red-500 min-h-[44px] rounded-lg hover:bg-red-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+        >
+          Yelp
+        </a>
       </div>
     </div>
   )

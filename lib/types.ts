@@ -59,7 +59,6 @@ export const PlaceSchema = PlaceGenerationSchema.extend({
   googleMapsUrl: z.string(),
   googleReviewsUrl: z.string(),
   yelpUrl: z.string(),
-  yelpBizUrl: z.string().optional(),
   backupOptions: z.array(BackupOptionFullSchema).optional(),
 })
 
