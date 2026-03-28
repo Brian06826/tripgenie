@@ -69,28 +69,57 @@ Fix these issues and return ONLY valid JSON matching the schema. No markdown, no
 Original request: ${originalPrompt}`
 }
 
+function buildConciseRetryPrompt(originalPrompt: string): string {
+  return `Response was cut off due to length. Regenerate the same itinerary but be more concise:
+- descriptions: 1-2 sentences max
+- tips: 1 sentence max
+- parking details: brief (e.g. "Street parking, free" not a paragraph)
+- Still include all places and backup options
+
+Return ONLY valid JSON. No markdown, no explanation.
+
+Original request: ${originalPrompt}`
+}
+
 export async function generateTrip(userPrompt: string): Promise<TripGeneration> {
   // First attempt
-  const firstAttempt = await callClaude(userPrompt)
-  const firstResult = TripGenerationSchema.safeParse(firstAttempt)
+  let firstParsed: unknown
+  let truncated = false
+  try {
+    const { parsed, wasTruncated } = await callClaude(userPrompt)
+    firstParsed = parsed
+    truncated = wasTruncated
+  } catch (err) {
+    // JSON parse error on first attempt — retry with concise mode
+    console.error('First attempt JSON parse error:', err)
+    const { parsed: retryParsed } = await callClaude(buildConciseRetryPrompt(userPrompt))
+    const retryResult = TripGenerationSchema.safeParse(retryParsed)
+    if (retryResult.success) return retryResult.data
+    throw new Error(`Claude returned invalid JSON after parse-error retry: ${JSON.stringify(retryResult.error.issues)}`)
+  }
+
+  const firstResult = TripGenerationSchema.safeParse(firstParsed)
   if (firstResult.success) return firstResult.data
 
-  // Retry with error context (Zod v4 uses .issues)
-  const errors = JSON.stringify(firstResult.error.issues.map(e => ({
-    path: e.path.map(String).join('.'),
-    message: e.message,
-  })))
-  const retryAttempt = await callClaude(buildRetryPrompt(userPrompt, errors))
-  const retryResult = TripGenerationSchema.safeParse(retryAttempt)
+  // Retry: if truncated, ask for shorter response; otherwise send Zod errors
+  const retryPrompt = truncated
+    ? buildConciseRetryPrompt(userPrompt)
+    : buildRetryPrompt(userPrompt, JSON.stringify(firstResult.error.issues.map(e => ({
+        path: e.path.map(String).join('.'),
+        message: e.message,
+      }))))
+
+  const { parsed: retryParsed } = await callClaude(retryPrompt)
+  const retryResult = TripGenerationSchema.safeParse(retryParsed)
   if (retryResult.success) return retryResult.data
 
   throw new Error(`Claude returned invalid JSON after retry: ${JSON.stringify(retryResult.error.issues)}`)
 }
 
-async function callClaude(prompt: string): Promise<unknown> {
+async function callClaude(prompt: string): Promise<{ parsed: unknown; wasTruncated: boolean }> {
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 8192,
+    max_tokens: 12000,
     system: SYSTEM_PROMPT,
     messages: [{ role: 'user', content: prompt }],
   })
@@ -98,12 +127,25 @@ async function callClaude(prompt: string): Promise<unknown> {
   const content = message.content[0]
   if (content.type !== 'text') throw new Error('Unexpected Claude response type')
 
+  const wasTruncated = message.stop_reason === 'max_tokens'
+
   // Strip any accidental markdown fences
-  const text = content.text.trim()
+  let text = content.text.trim()
     .replace(/^```json\s*/i, '')
     .replace(/^```\s*/i, '')
     .replace(/\s*```$/i, '')
     .trim()
 
-  return JSON.parse(text)
+  // Try direct parse first
+  try {
+    return { parsed: JSON.parse(text), wasTruncated }
+  } catch {
+    // Fallback: extract outermost {...} in case there's leading/trailing non-JSON text
+    const start = text.indexOf('{')
+    const end = text.lastIndexOf('}')
+    if (start !== -1 && end > start) {
+      return { parsed: JSON.parse(text.slice(start, end + 1)), wasTruncated }
+    }
+    throw new Error(`Failed to parse Claude response as JSON. stop_reason=${message.stop_reason}, length=${text.length}`)
+  }
 }
