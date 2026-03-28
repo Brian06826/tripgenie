@@ -330,7 +330,7 @@ function looksLikeRefusal(text: string): boolean {
 // Public API
 // ---------------------------------------------------------------------------
 
-export async function generateTrip(userPrompt: string): Promise<TripGeneration> {
+export async function generateTrip(userPrompt: string, onChunk?: () => void): Promise<TripGeneration> {
   const validation = validateTripRequest(userPrompt)
   if (!validation.valid) throw new Error(validation.message)
 
@@ -339,13 +339,15 @@ export async function generateTrip(userPrompt: string): Promise<TripGeneration> 
   const systemPrompt = buildSystemPrompt(tier)
   const maxTokens = getMaxTokens(tier)
 
-  // Attempt 1
+  // Attempt 1 — use streaming if caller wants heartbeats, otherwise plain
   let firstParsed: unknown
   let truncated = false
   let wasRefusal = false
 
   try {
-    const { parsed, wasTruncated, wasRefusal: refusal } = await callClaude(userPrompt, systemPrompt, maxTokens)
+    const { parsed, wasTruncated, wasRefusal: refusal } = onChunk
+      ? await callClaudeStreaming(userPrompt, systemPrompt, maxTokens, onChunk)
+      : await callClaude(userPrompt, systemPrompt, maxTokens)
     firstParsed = parsed
     truncated = wasTruncated
     wasRefusal = refusal
@@ -397,6 +399,55 @@ export async function generateTrip(userPrompt: string): Promise<TripGeneration> 
 // ---------------------------------------------------------------------------
 // Claude call
 // ---------------------------------------------------------------------------
+
+async function callClaudeStreaming(
+  prompt: string,
+  systemPrompt: string,
+  maxTokens: number,
+  onChunk: () => void,
+): Promise<{ parsed: unknown; wasTruncated: boolean; wasRefusal: boolean }> {
+  const stream = getClient().messages.stream({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: maxTokens,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: prompt }],
+  })
+
+  let fullText = ''
+  let tokenCount = 0
+  stream.on('text', (text: string) => {
+    fullText += text
+    // Emit heartbeat every 20 tokens (~200ms at Haiku speed) — enough to keep connection alive
+    if (++tokenCount % 20 === 0) onChunk()
+  })
+
+  const finalMessage = await stream.finalMessage()
+  const wasTruncated = finalMessage.stop_reason === 'max_tokens'
+
+  let text = fullText.trim()
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim()
+
+  if (looksLikeRefusal(text)) {
+    console.warn('Refusal detected (stream). Preview:', text.slice(0, 200))
+    return { parsed: null, wasTruncated, wasRefusal: true }
+  }
+
+  try {
+    return { parsed: JSON.parse(text), wasTruncated, wasRefusal: false }
+  } catch {
+    const start = text.indexOf('{')
+    const end = text.lastIndexOf('}')
+    if (start !== -1 && end > start) {
+      try {
+        return { parsed: JSON.parse(text.slice(start, end + 1)), wasTruncated, wasRefusal: false }
+      } catch {}
+    }
+    throw new Error(`Failed to parse streaming Claude response. stop_reason=${finalMessage.stop_reason}, length=${text.length}`)
+  }
+}
 
 async function callClaude(
   prompt: string,

@@ -45,23 +45,54 @@ export function ChatInput() {
         body: JSON.stringify({ prompt }),
       })
 
-      let data: { tripId?: string; error?: string }
-      try {
-        data = await res.json()
-      } catch {
-        throw new Error('Server error. Please try again.')
-      }
-
+      // Early validation errors come back as plain JSON (400), not a stream
       if (!res.ok) {
-        // Surface a clean message — hide internal Zod/JSON details
-        const raw = data.error ?? ''
-        if (raw.includes('Unable to generate') || raw.includes('rephrase') || raw.includes('too long') || raw.includes('Please describe a trip')) {
-          throw new Error(raw)
-        }
-        throw new Error('Unable to generate itinerary. Please try again or rephrase your request.')
+        let msg = 'Unable to generate itinerary. Please try again or rephrase your request.'
+        try {
+          const data = await res.json()
+          const raw = data.error ?? ''
+          if (raw.includes('Unable to generate') || raw.includes('rephrase') || raw.includes('too long') || raw.includes('Please describe')) {
+            msg = raw
+          }
+        } catch {}
+        throw new Error(msg)
       }
 
-      router.push(`/trip/${data.tripId}`)
+      if (!res.body) throw new Error('Server error. Please try again.')
+
+      // Read SSE stream
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let buf = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buf += decoder.decode(value, { stream: true })
+
+        // SSE events are separated by \n\n
+        const events = buf.split('\n\n')
+        buf = events.pop() ?? ''
+
+        for (const raw of events) {
+          const line = raw.trim()
+          if (!line.startsWith('data: ')) continue
+          let event: { type: string; tripId?: string; message?: string }
+          try { event = JSON.parse(line.slice(6)) } catch { continue }
+
+          if (event.type === 'done' && event.tripId) {
+            router.push(`/trip/${event.tripId}`)
+            return
+          }
+          if (event.type === 'error') {
+            throw new Error(event.message ?? 'Generation failed. Please try again.')
+          }
+          // 'chunk' and 'saving' events: no-op — just heartbeats keeping the connection alive
+        }
+      }
+
+      throw new Error('Server error. Please try again.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
       setLoading(false)

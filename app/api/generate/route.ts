@@ -10,6 +10,7 @@ import type { Trip } from '@/lib/types'
 export const maxDuration = 60
 
 export async function POST(request: Request) {
+  // Validate request before starting the stream
   let body: { prompt?: string }
   try {
     body = await request.json()
@@ -25,55 +26,83 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'prompt too long (max 500 chars)' }, { status: 400 })
   }
 
-  try {
-    const generation = await generateTrip(prompt)
+  // Stream the generation so Vercel sees data before the 60s timeout
+  const encoder = new TextEncoder()
 
-    const tripId = nanoid(8)
+  const stream = new ReadableStream({
+    async start(controller) {
+      function send(data: object) {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
+      }
 
-    // Add server-side URLs to each place
-    const days = generation.days.map(day => ({
-      ...day,
-      places: day.places.map(place => ({
-        ...place,
-        googleMapsUrl: buildGoogleMapsUrl(place.name, generation.destination),
-        googleReviewsUrl: buildGoogleReviewsUrl(place.name, generation.destination),
-        yelpUrl: buildYelpUrl(place.name, generation.destination),
-        backupOptions: place.backupOptions?.map(b => ({
-          ...b,
-          googleMapsUrl: buildGoogleMapsUrl(b.name, generation.destination),
-          yelpUrl: buildYelpUrl(b.name, generation.destination),
-        })),
-      })),
-    }))
+      try {
+        // generateTrip calls onChunk as Claude streams — each call keeps the connection alive
+        const generation = await generateTrip(prompt, () => {
+          send({ type: 'chunk' })
+        })
 
-    const trip: Trip = {
-      ...generation,
-      id: tripId,
-      createdAt: new Date().toISOString(),
-      days,
-    }
+        const tripId = nanoid(8)
 
-    // Fetch hero + OG image in parallel (non-blocking failures)
-    const [heroResult, ogImageUrl] = await Promise.all([
-      fetchHeroImage(generation.destination),
-      generateAndUploadOgImage(trip),
-    ])
-    if (heroResult) {
-      trip.heroImageUrl = heroResult.imageUrl
-      trip.heroImageCredit = heroResult.credit
-    }
-    if (ogImageUrl) trip.ogImageUrl = ogImageUrl
+        const days = generation.days.map(day => ({
+          ...day,
+          places: day.places.map(place => ({
+            ...place,
+            googleMapsUrl: buildGoogleMapsUrl(place.name, generation.destination),
+            googleReviewsUrl: buildGoogleReviewsUrl(place.name, generation.destination),
+            yelpUrl: buildYelpUrl(place.name, generation.destination),
+            backupOptions: place.backupOptions?.map(b => ({
+              ...b,
+              googleMapsUrl: buildGoogleMapsUrl(b.name, generation.destination),
+              yelpUrl: buildYelpUrl(b.name, generation.destination),
+            })),
+          })),
+        }))
 
-    await saveTrip(tripId, trip)
+        const trip: Trip = {
+          ...generation,
+          id: tripId,
+          createdAt: new Date().toISOString(),
+          days,
+        }
 
-    return NextResponse.json({ tripId, success: true })
-  } catch (err) {
-    console.error('Generation error:', err)
-    const raw = err instanceof Error ? err.message : ''
-    const isTimeout = raw.includes('timeout') || raw.includes('timed out') || raw.includes('Request timeout')
-    const message = isTimeout
-      ? 'Generation took too long — please try a shorter or simpler trip description.'
-      : (raw.includes('Unable to generate') || raw.includes('rephrase') ? raw : 'Generation failed')
-    return NextResponse.json({ error: message }, { status: 500 })
-  }
+        // Hero + OG images — signal client we're in the save phase
+        send({ type: 'saving' })
+
+        const [heroResult, ogImageUrl] = await Promise.all([
+          fetchHeroImage(generation.destination),
+          generateAndUploadOgImage(trip),
+        ])
+        if (heroResult) {
+          trip.heroImageUrl = heroResult.imageUrl
+          trip.heroImageCredit = heroResult.credit
+        }
+        if (ogImageUrl) trip.ogImageUrl = ogImageUrl
+
+        await saveTrip(tripId, trip)
+
+        send({ type: 'done', tripId })
+      } catch (err) {
+        console.error('Generation error:', err)
+        const raw = err instanceof Error ? err.message : ''
+        const isTimeout = raw.includes('timeout') || raw.includes('timed out') || raw.includes('Request timeout')
+        const message = isTimeout
+          ? 'Generation took too long — please try a shorter or simpler trip description.'
+          : (raw.includes('Unable to generate') || raw.includes('rephrase') || raw.includes('Please describe') || raw.includes('too long')
+              ? raw
+              : 'Generation failed. Please try again.')
+        send({ type: 'error', message })
+      } finally {
+        controller.close()
+      }
+    },
+  })
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    },
+  })
 }
