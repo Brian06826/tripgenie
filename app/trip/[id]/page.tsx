@@ -95,6 +95,16 @@ export default async function TripPage({ params }: Props) {
 
         <TripItinerary initialDays={trip.days} />
 
+        {/* Create new trip CTA */}
+        <div className="mt-6 mb-4">
+          <a
+            href="/"
+            className="flex items-center justify-center w-full bg-orange text-white py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
+          >
+            建立新行程 / Create New Trip
+          </a>
+        </div>
+
         {/* Footer */}
         <footer className="text-center text-xs text-gray-400 py-8">
           Made with <a href="/" className="text-orange underline">TripGenie</a>
