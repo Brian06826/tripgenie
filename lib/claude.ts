@@ -14,6 +14,57 @@ function getClient(): Anthropic {
 }
 
 // ---------------------------------------------------------------------------
+// Input validation — no Claude API call, regex only
+// ---------------------------------------------------------------------------
+
+const TRAVEL_KEYWORDS_EN = /\b(trip|travel|tour|visit|vacation|itinerary|holiday|getaway|weekend|explore|stay|route|guide|attraction|hotel|restaurant|food|beach|mountain|museum|flight|cruise|road.?trip)\b/i
+const TRAVEL_KEYWORDS_CJK = /旅行|行程|遊|日遊|自由行|旅遊|景點|美食|住宿|酒店|觀光|出行|玩/
+const DURATION_EN = /\b(\d+\s*(days?|nights?|weeks?)|day.?trip|weekend|one.?day)\b/i
+const DURATION_CJK = /[一二三四五六七八九十\d]\s*(日|天|夜|晚|週)|週末|假期/
+
+// Patterns that are clearly not trip requests
+const GREETING = /^(hi|hello|hey|sup|yo|howdy|你好|哈囉|嗨|早安|晚安)[!.,?\s]*$/i
+const META_QUESTION = /^(what('s| is) your (name|purpose)|who are you|tell me about yourself|你係咪|你是誰|你叫什麼)/i
+const WHAT_IS = /^(what\s+(is|are|does|can)|什麼是|什麼叫|解釋|說明)\s+\w/i
+const HELP_NON_TRAVEL = /^(help me (with|to write|understand|explain|calculate|translate|code)|幫我(寫|翻|解|算|做功課))/i
+const PURE_QUESTION = /^(how (are|do|does|can|should|would)|why (is|are|do|does)|when (is|are|do)|where (is|are|do))\s/i
+
+const NOT_TRIP_MESSAGE =
+  "Please describe a trip! Include a destination and duration.\nFor example: '3 days Tokyo food trip' or '一日遊 Long Beach 情侶'"
+
+export function validateTripRequest(prompt: string): { valid: true } | { valid: false; message: string } {
+  const trimmed = prompt.trim()
+
+  if (trimmed.length < 2) {
+    return { valid: false, message: NOT_TRIP_MESSAGE }
+  }
+
+  // Fast-accept: any travel or duration keyword found
+  if (
+    TRAVEL_KEYWORDS_EN.test(trimmed) ||
+    TRAVEL_KEYWORDS_CJK.test(trimmed) ||
+    DURATION_EN.test(trimmed) ||
+    DURATION_CJK.test(trimmed)
+  ) {
+    return { valid: true }
+  }
+
+  // Fast-reject: clearly not a trip request
+  if (
+    GREETING.test(trimmed) ||
+    META_QUESTION.test(trimmed) ||
+    WHAT_IS.test(trimmed) ||
+    HELP_NON_TRAVEL.test(trimmed) ||
+    PURE_QUESTION.test(trimmed)
+  ) {
+    return { valid: false, message: NOT_TRIP_MESSAGE }
+  }
+
+  // Everything else: benefit of the doubt (bare city names, "Tokyo", "巴黎", etc.)
+  return { valid: true }
+}
+
+// ---------------------------------------------------------------------------
 // Trip length detection
 // ---------------------------------------------------------------------------
 
@@ -280,6 +331,9 @@ function looksLikeRefusal(text: string): boolean {
 // ---------------------------------------------------------------------------
 
 export async function generateTrip(userPrompt: string): Promise<TripGeneration> {
+  const validation = validateTripRequest(userPrompt)
+  if (!validation.valid) throw new Error(validation.message)
+
   const days = detectTripDays(userPrompt)
   const tier = getTier(days)
   const systemPrompt = buildSystemPrompt(tier)
