@@ -56,13 +56,13 @@ export default async function TripPage({ params }: Props) {
         <div className="relative max-w-4xl mx-auto">
           <p className="text-xs text-orange font-semibold mb-1">TripGenie</p>
           <h1 className="text-2xl font-bold leading-tight mb-1">{trip.title}</h1>
-          <p className="text-sm opacity-70 mb-4">
+          <p className="text-sm opacity-80 mb-4">
             {trip.destination} · {Math.max(...trip.days.map(d => d.dayNumber))} day{Math.max(...trip.days.map(d => d.dayNumber)) !== 1 ? 's' : ''}
           </p>
 
           {/* Share bar */}
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 flex items-center justify-between gap-3">
-            <span className="text-xs opacity-75 truncate font-mono">
+            <span className="text-xs opacity-90 truncate font-mono">
               tripgenie.app{tripUrl}
             </span>
             <ShareButton tripId={id} />
