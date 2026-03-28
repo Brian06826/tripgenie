@@ -41,9 +41,9 @@ export function TripItinerary({ initialDays }: { initialDays: DayPlan[] }) {
     <>
       {days.map((day, dayIndex) => (
         <section key={day.dayNumber} className="mb-6">
-          <div className="sticky top-0 bg-navy text-white px-4 py-2 rounded-lg mb-3 z-10">
-            <h2 className="font-bold text-sm">Day {day.dayNumber}</h2>
-            <p className="text-xs opacity-80">{day.title}</p>
+          <div className="sticky top-0 bg-navy text-white px-4 py-2.5 rounded-lg mb-3 z-10">
+            <h2 className="font-bold text-lg">Day {day.dayNumber}</h2>
+            <p className="text-sm opacity-80">{day.title}</p>
           </div>
 
           {day.places.map((place, placeIndex) => {
