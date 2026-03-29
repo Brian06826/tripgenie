@@ -14,7 +14,7 @@ export const BackupOptionSchema = z.object({
   description: z.string(),
   googleRating: z.number().min(1).max(5).optional(),
   yelpRating: z.number().min(1).max(5).optional(),
-  address: z.string(),
+  address: z.string().optional(),
 })
 
 // Full backup option with URLs added server-side
@@ -34,7 +34,7 @@ export const PlaceGenerationSchema = z.object({
   googleReviewCount: z.number().optional(),
   yelpRating: z.number().min(1).max(5).optional(),
   yelpReviewCount: z.number().optional(),
-  address: z.string(),
+  address: z.string().optional(),
   parking: ParkingSchema.optional(),
   tips: z.string().optional(),
   priceRange: z.string().optional(),
