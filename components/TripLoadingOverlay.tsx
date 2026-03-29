@@ -12,6 +12,8 @@ const EN = [
   'Comparing all the reviews... ⭐',
   'Scanning for must-try dishes... 🥢',
   'Reserving the best views... 🏔️',
+  'Verifying restaurants on Google... ✅',
+  'Optimizing your route... 📍',
 ]
 
 const ZH = [
@@ -25,6 +27,8 @@ const ZH = [
   '比較各大評分... ⭐',
   '搵緊必試美食... 🥢',
   '預留最靚嘅景色... 🏔️',
+  '喺 Google 驗證餐廳緊... ✅',
+  '優化你嘅路線... 📍',
 ]
 
 // Static positions — no Math.random() to avoid hydration mismatches
@@ -37,9 +41,10 @@ const STARS: [number, number, number][] = [
 interface Props {
   isChinese: boolean
   phase: 'generating' | 'saving'
+  estimatedSeconds: number
 }
 
-export function TripLoadingOverlay({ isChinese, phase }: Props) {
+export function TripLoadingOverlay({ isChinese, phase, estimatedSeconds }: Props) {
   const msgs = isChinese ? ZH : EN
   const [idx, setIdx] = useState(0)
   const [elapsed, setElapsed] = useState(0)
@@ -57,18 +62,20 @@ export function TripLoadingOverlay({ isChinese, phase }: Props) {
     return () => clearInterval(t)
   }, [])
 
-  // Fake progress — accelerates early, crawls near cap
+  // Fake progress — scale speed to estimated time
   useEffect(() => {
     const cap = phase === 'saving' ? 96 : 82
     const t = setInterval(() => {
       setProgress(p => {
         if (p >= cap) return cap
+        // Scale progress speed to estimated time
         const step = p < 40 ? 2.5 : p < 65 ? 1.2 : 0.4
-        return Math.min(p + step, cap)
+        const speedFactor = 30 / estimatedSeconds // faster for short trips
+        return Math.min(p + step * speedFactor, cap)
       })
     }, 900)
     return () => clearInterval(t)
-  }, [phase])
+  }, [phase, estimatedSeconds])
 
   // Jump to 88% when saving phase starts
   useEffect(() => {
@@ -78,6 +85,16 @@ export function TripLoadingOverlay({ isChinese, phase }: Props) {
   const savingMsg = isChinese ? '生成分享頁面緊... ✨' : 'Generating your shareable page... ✨'
   const displayMsg = phase === 'saving' ? savingMsg : msgs[idx]
   const msgKey = phase === 'saving' ? 'saving' : idx
+
+  // Format estimated time for display
+  const estLabel = estimatedSeconds >= 60
+    ? `~${Math.round(estimatedSeconds / 60)} min`
+    : `~${estimatedSeconds}s`
+
+  // Format elapsed
+  const elapsedLabel = elapsed >= 60
+    ? `${Math.floor(elapsed / 60)}m ${(elapsed % 60).toString().padStart(2, '0')}s`
+    : `${elapsed}s`
 
   return (
     <div
@@ -176,7 +193,9 @@ export function TripLoadingOverlay({ isChinese, phase }: Props) {
                 ? (isChinese ? '保存行程中...' : 'Saving your trip...')
                 : (isChinese ? 'AI 生成緊...' : 'AI is working its magic...')}
             </span>
-            <span className="text-white/40 text-xs tabular-nums">{elapsed}s</span>
+            <span className="text-white/40 text-xs tabular-nums">
+              ⏱️ {elapsedLabel} / {estLabel}
+            </span>
           </div>
         </div>
       </div>

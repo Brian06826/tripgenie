@@ -19,11 +19,34 @@ const PREFERENCE_CHIPS = [
   { emoji: '💑', label: 'Couple', keyword: 'romantic couple' },
 ] as const
 
+// Client-side trip length detection for time estimates
+function detectTripDays(prompt: string): number {
+  if (/(一日|一天|day.?trip|1.?day|one.?day|1日|1天)/i.test(prompt)) return 1
+  if (/(一週|一星期|a week|7.?day)/i.test(prompt)) return 7
+  const arabicMatch = prompt.match(/(\d+)\s*[-–]?\s*(day|days|日|天|夜|nights?)/i)
+  if (arabicMatch) return parseInt(arabicMatch[1], 10)
+  const cnDigits: Record<string, number> = { '一': 1, '二': 2, '兩': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10 }
+  for (const [char, val] of Object.entries(cnDigits)) {
+    if (new RegExp(`${char}(日|天|夜|晚)`).test(prompt)) return val
+  }
+  const nightMatch = prompt.match(/(\d+)\s*night/i)
+  if (nightMatch) return parseInt(nightMatch[1], 10) + 1
+  return 2
+}
+
+function getEstimatedSeconds(days: number): number {
+  if (days <= 1) return 30
+  if (days <= 3) return 120
+  if (days <= 5) return 180
+  return 300
+}
+
 export function ChatInput() {
   const [prompt, setPrompt] = useState('')
   const [activeChips, setActiveChips] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
   const [loadingPhase, setLoadingPhase] = useState<'generating' | 'saving'>('generating')
+  const [estimatedSeconds, setEstimatedSeconds] = useState(120)
   const [error, setError] = useState('')
   const router = useRouter()
   const isChinese = /[\u4e00-\u9fff\u3400-\u4dbf\uff00-\uffef]/.test(prompt)
@@ -48,6 +71,7 @@ export function ChatInput() {
 
     setLoading(true)
     setLoadingPhase('generating')
+    setEstimatedSeconds(getEstimatedSeconds(detectTripDays(prompt)))
     setError('')
 
     try {
@@ -118,7 +142,7 @@ export function ChatInput() {
 
   return (
     <div className="w-full max-w-xl mx-auto px-4">
-      {loading && <TripLoadingOverlay isChinese={isChinese} phase={loadingPhase} />}
+      {loading && <TripLoadingOverlay isChinese={isChinese} phase={loadingPhase} estimatedSeconds={estimatedSeconds} />}
       <form onSubmit={handleSubmit} className="space-y-3">
         <textarea
           value={prompt}
