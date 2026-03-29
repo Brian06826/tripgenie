@@ -220,6 +220,7 @@ CRITICAL TIMING RULE: When a stop involves travel time (e.g. "2-hour drive"), th
 
 RULES:
 - Follow the STOP COUNT PER DAY rules above strictly. Do not add extra stops beyond what is specified.
+- CROSS-DAY DEDUPLICATION (CRITICAL): NEVER recommend the same place on multiple days. Every stop across the entire trip must be unique. If Day 1 visits "Shibuya Crossing", no other day may include it. This applies to attractions, restaurants, AND backup options.
 - Exactly 1 backupOption per restaurant and attraction. Omit backupOptions for hotel/transport/other.
 - No place may appear as both a main stop and a backup option anywhere in the same itinerary.
 - Descriptions: 1 sentence max. Name a signature dish, landmark feature, or unique highlight.

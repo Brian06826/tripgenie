@@ -5,9 +5,22 @@ import type { DayPlan } from '@/lib/types'
 import { PlaceCard } from './PlaceCard'
 import { AlternativesPanel } from './AlternativesPanel'
 
-export function TripItinerary({ initialDays, validated = true, showYelp = true }: { initialDays: DayPlan[]; validated?: boolean; showYelp?: boolean }) {
+export function TripItinerary({
+  initialDays,
+  validated = true,
+  showYelp = true,
+  destination,
+  language,
+}: {
+  initialDays: DayPlan[]
+  validated?: boolean
+  showYelp?: boolean
+  destination?: string
+  language?: string
+}) {
   const [days, setDays] = useState(initialDays)
   const [swappedKey, setSwappedKey] = useState<string | null>(null)
+  const [editingKey, setEditingKey] = useState<string | null>(null)
   const [activeDay, setActiveDay] = useState(0)
   const sectionRefs = useRef<(HTMLElement | null)[]>([])
   const tabBarRef = useRef<HTMLDivElement>(null)
@@ -79,6 +92,75 @@ export function TripItinerary({ initialDays, validated = true, showYelp = true }
     })
   }, [])
 
+  const handleEdit = useCallback(async (dayIndex: number, placeIndex: number, instruction: string) => {
+    if (!destination) return
+    const key = `${dayIndex}-${placeIndex}`
+    setEditingKey(key)
+
+    try {
+      const currentPlace = days[dayIndex].places[placeIndex]
+      const res = await fetch('/api/edit-place', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          instruction,
+          currentPlace,
+          destination,
+          language: language ?? 'en',
+        }),
+      })
+
+      if (!res.ok) throw new Error('Edit failed')
+
+      const result = await res.json()
+
+      if (result.removed) {
+        // Remove the place from the day
+        setDays(prev => prev.map((d, di) => {
+          if (di !== dayIndex) return d
+          return { ...d, places: d.places.filter((_, pi) => pi !== placeIndex) }
+        }))
+      } else if (result.place) {
+        // Replace the place
+        setDays(prev => prev.map((d, di) => {
+          if (di !== dayIndex) return d
+          return {
+            ...d,
+            places: d.places.map((p, pi) => {
+              if (pi !== placeIndex) return p
+              return {
+                ...p,
+                name: result.place.name,
+                nameLocal: result.place.nameLocal,
+                type: result.place.type,
+                description: result.place.description,
+                arrivalTime: result.place.arrivalTime ?? p.arrivalTime,
+                duration: result.place.duration ?? p.duration,
+                googleRating: result.place.googleRating,
+                googleReviewCount: undefined,
+                yelpRating: result.place.yelpRating,
+                yelpReviewCount: undefined,
+                tips: result.place.tips,
+                priceRange: result.place.priceRange,
+                parking: undefined,
+                backupOptions: undefined,
+                googleMapsUrl: result.place.googleMapsUrl,
+                googleReviewsUrl: result.place.googleReviewsUrl,
+                yelpUrl: result.place.yelpUrl,
+              }
+            }),
+          }
+        }))
+        setSwappedKey(key)
+        setTimeout(() => setSwappedKey(null), 2000)
+      }
+    } catch (err) {
+      console.error('[edit] Failed:', err)
+    } finally {
+      setEditingKey(null)
+    }
+  }, [days, destination, language])
+
   return (
     <>
       {/* Sticky day tabs — only show for multi-day trips */}
@@ -116,7 +198,9 @@ export function TripItinerary({ initialDays, validated = true, showYelp = true }
 
           {day.places.map((place, placeIndex) => {
             const hasAlternatives = (place.backupOptions?.length ?? 0) > 0
-            const justSwapped = swappedKey === `${dayIndex}-${placeIndex}`
+            const key = `${dayIndex}-${placeIndex}`
+            const justSwapped = swappedKey === key
+            const isEditing = editingKey === key
             return (
               <div key={`${place.name}-${placeIndex}`}>
                 {/* Travel time connector */}
@@ -136,6 +220,8 @@ export function TripItinerary({ initialDays, validated = true, showYelp = true }
                       place={place}
                       verifyStatus={place.type === 'restaurant' && validated ? 'verified' : 'none'}
                       showYelp={showYelp}
+                      onEdit={destination ? (instruction) => handleEdit(dayIndex, placeIndex, instruction) : undefined}
+                      editLoading={isEditing}
                     />
                   </div>
                   {hasAlternatives && (

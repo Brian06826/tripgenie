@@ -143,7 +143,7 @@ export async function validateRestaurants(generation: TripGeneration): Promise<T
     refs.map(async ({ di, pi }): Promise<ValidationEntry> => {
       const place = generation.days[di].places[pi]
       try {
-        const found = await findPlace(`${place.name} ${dest}`, apiKey)
+        const found = await findPlace(`${place.name} restaurant ${dest}`, apiKey)
 
         if (!found) {
           console.log(`[Google Places] FAIL "${place.name}" — not found on Google`)
@@ -298,7 +298,11 @@ export async function geocodeAllPlaces(generation: TripGeneration): Promise<Geoc
       tasks.push(
         (async () => {
           try {
-            const found = await findPlace(`${place.name} ${dest}`, apiKey)
+            const typeHint = place.type === 'restaurant' ? 'restaurant'
+              : place.type === 'hotel' ? 'hotel'
+              : place.type === 'attraction' ? 'attraction'
+              : ''
+            const found = await findPlace(`${place.name} ${typeHint} ${dest}`.trim(), apiKey)
             if (found?.geometry?.location) {
               results.push({
                 dayIndex: di,

@@ -1,3 +1,6 @@
+'use client'
+
+import { useState, useRef } from 'react'
 import type { Place } from '@/lib/types'
 
 const TYPE_ICONS: Record<Place['type'], string> = {
@@ -10,7 +13,31 @@ const TYPE_ICONS: Record<Place['type'], string> = {
 
 type VerifyStatus = 'pending' | 'verified' | 'none'
 
-export function PlaceCard({ place, verifyStatus = 'none', showYelp = true }: { place: Place; verifyStatus?: VerifyStatus; showYelp?: boolean }) {
+export function PlaceCard({
+  place,
+  verifyStatus = 'none',
+  showYelp = true,
+  onEdit,
+  editLoading = false,
+}: {
+  place: Place
+  verifyStatus?: VerifyStatus
+  showYelp?: boolean
+  onEdit?: (instruction: string) => void
+  editLoading?: boolean
+}) {
+  const [editing, setEditing] = useState(false)
+  const [editText, setEditText] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  function handleSubmitEdit() {
+    const instruction = editText.trim()
+    if (!instruction || !onEdit) return
+    onEdit(instruction)
+    setEditText('')
+    setEditing(false)
+  }
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-3 transition-all duration-300">
       {/* Time + type */}
@@ -22,7 +49,7 @@ export function PlaceCard({ place, verifyStatus = 'none', showYelp = true }: { p
         </div>
       )}
 
-      {/* Name + verification badge */}
+      {/* Name + verification badge + edit button */}
       <div className="flex items-center gap-2 mb-0.5">
         <h3 className="font-bold text-gray-900 text-base">{place.name}</h3>
         {verifyStatus === 'pending' && (
@@ -35,9 +62,48 @@ export function PlaceCard({ place, verifyStatus = 'none', showYelp = true }: { p
             ✓ Verified
           </span>
         )}
+        {onEdit && !editLoading && (
+          <button
+            onClick={() => {
+              setEditing(!editing)
+              setTimeout(() => inputRef.current?.focus(), 50)
+            }}
+            className="ml-auto shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
+            aria-label={`Edit ${place.name}`}
+          >
+            ✏️
+          </button>
+        )}
+        {editLoading && (
+          <span className="ml-auto text-[10px] text-orange bg-orange/10 px-2 py-1 rounded-full animate-pulse">
+            Updating...
+          </span>
+        )}
       </div>
       {place.nameLocal && (
         <p className="text-sm text-gray-500 mb-2">{place.nameLocal}</p>
+      )}
+
+      {/* Inline edit input */}
+      {editing && onEdit && (
+        <div className="flex gap-2 mb-3">
+          <input
+            ref={inputRef}
+            type="text"
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSubmitEdit(); if (e.key === 'Escape') setEditing(false) }}
+            placeholder="e.g. change to Japanese, make cheaper, remove..."
+            className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent"
+          />
+          <button
+            onClick={handleSubmitEdit}
+            disabled={!editText.trim()}
+            className="shrink-0 px-3 py-2 bg-orange text-white text-sm font-semibold rounded-lg hover:opacity-90 disabled:opacity-40 transition-opacity"
+          >
+            Go
+          </button>
+        </div>
       )}
 
       {/* Description */}
