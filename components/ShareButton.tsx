@@ -1,85 +1,33 @@
 'use client'
-import { useState, useRef, useEffect, useCallback } from 'react'
-import { createPortal } from 'react-dom'
+import { useState, useRef, useEffect } from 'react'
 
-function generateQrSvg(data: string, size: number): string {
+function generateQrUrl(data: string, size: number): string {
   const encoded = encodeURIComponent(data)
   return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encoded}&margin=8`
 }
 
 export function ShareButton({ tripId, tripTitle }: { tripId: string; tripTitle?: string }) {
-  const [showPanel, setShowPanel] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [panelStyle, setPanelStyle] = useState<React.CSSProperties>({})
-  const [mounted, setMounted] = useState(false)
-  const buttonRef = useRef<HTMLButtonElement>(null)
-  const panelRef = useRef<HTMLDivElement>(null)
-  const url = typeof window !== 'undefined' ? `${window.location.origin}/trip/${tripId}` : `/trip/${tripId}`
+  const [url, setUrl] = useState(`/trip/${tripId}`)
+  const dialogRef = useRef<HTMLDialogElement>(null)
 
-  // Track client mount for portal
-  useEffect(() => { setMounted(true) }, [])
-
-  // Position the panel below the button
-  const updatePosition = useCallback(() => {
-    if (!buttonRef.current) return
-    const rect = buttonRef.current.getBoundingClientRect()
-    // Panel is 288px wide (w-72). Align right edge to button right edge.
-    const right = window.innerWidth - rect.right
-    // If panel would overflow left side, align to left edge instead
-    const panelWidth = 288
-    let left: number | undefined
-    let rightPos: number | undefined
-    if (rect.right - panelWidth < 8) {
-      left = Math.max(8, rect.left)
-    } else {
-      rightPos = right
-    }
-    setPanelStyle({
-      position: 'fixed',
-      top: rect.bottom + 8,
-      ...(left !== undefined ? { left } : { right: rightPos }),
-      zIndex: 9999,
-    })
-  }, [])
-
+  // Set full URL on client only (avoid SSR hydration mismatch)
   useEffect(() => {
-    if (!showPanel) return
-    updatePosition()
-    window.addEventListener('scroll', updatePosition, true)
-    window.addEventListener('resize', updatePosition)
-    return () => {
-      window.removeEventListener('scroll', updatePosition, true)
-      window.removeEventListener('resize', updatePosition)
-    }
-  }, [showPanel, updatePosition])
+    setUrl(`${window.location.origin}/trip/${tripId}`)
+  }, [tripId])
 
-  // Close panel on outside click or Escape
-  useEffect(() => {
-    if (!showPanel) return
-    function handleClick(e: MouseEvent) {
-      if (
-        panelRef.current && !panelRef.current.contains(e.target as Node) &&
-        buttonRef.current && !buttonRef.current.contains(e.target as Node)
-      ) {
-        setShowPanel(false)
-      }
-    }
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setShowPanel(false)
-    }
-    document.addEventListener('mousedown', handleClick)
-    document.addEventListener('keydown', handleKey)
-    return () => {
-      document.removeEventListener('mousedown', handleClick)
-      document.removeEventListener('keydown', handleKey)
-    }
-  }, [showPanel])
+  function openPanel() {
+    dialogRef.current?.showModal()
+  }
+
+  function closePanel() {
+    dialogRef.current?.close()
+  }
 
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(url)
     } catch {
-      // Fallback for older browsers / insecure contexts
       const textarea = document.createElement('textarea')
       textarea.value = url
       textarea.style.position = 'fixed'
@@ -101,62 +49,83 @@ export function ShareButton({ tripId, tripTitle }: { tripId: string; tripTitle?:
           text: 'Check out my trip itinerary!',
           url,
         })
+        closePanel()
       } catch {
-        handleCopy()
+        // User cancelled — stay on panel
       }
     } else {
       handleCopy()
     }
   }
 
-  const panel = showPanel && mounted ? createPortal(
-    <div
-      ref={panelRef}
-      className="w-72 bg-white rounded-xl shadow-xl border border-gray-200 p-4 animate-in fade-in slide-in-from-top-2 duration-200"
-      style={panelStyle}
-    >
-      {/* QR Code */}
-      <div className="flex flex-col items-center mb-3">
-        <p className="text-xs text-gray-500 mb-2 font-medium">Scan to view / 掃碼查看</p>
-        <img
-          src={generateQrSvg(url, 160)}
-          alt="QR code for trip"
-          width={160}
-          height={160}
-          className="rounded-lg border border-gray-100"
-        />
-      </div>
-
-      {/* Action buttons */}
-      <div className="space-y-2">
-        <button
-          onClick={handleCopy}
-          className="w-full flex items-center justify-center gap-2 bg-gray-50 text-gray-700 py-2.5 rounded-lg text-xs font-semibold hover:bg-gray-100 transition-colors min-h-[44px]"
-        >
-          {copied ? '✅ Copied!' : '📋 Copy Link / 複製連結'}
-        </button>
-        <button
-          onClick={handleNativeShare}
-          className="w-full flex items-center justify-center gap-2 bg-blue-50 text-blue-600 py-2.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors min-h-[44px]"
-        >
-          📱 Share via App / 分享到應用
-        </button>
-      </div>
-    </div>,
-    document.body
-  ) : null
-
   return (
     <>
       <button
-        ref={buttonRef}
-        onClick={() => setShowPanel(!showPanel)}
+        onClick={openPanel}
         aria-label="Share trip"
         className="flex items-center gap-2 bg-orange px-4 min-h-[44px] rounded-lg text-white text-sm font-semibold transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
       >
         📤 Share
       </button>
-      {panel}
+
+      {/* Native <dialog> renders in the browser's top layer — above ALL CSS stacking contexts */}
+      <dialog
+        ref={dialogRef}
+        onClick={(e) => {
+          // Close when clicking the backdrop (outside the inner card)
+          if (e.target === dialogRef.current) closePanel()
+        }}
+        className="backdrop:bg-black/40 bg-transparent p-0 m-auto rounded-xl outline-none max-w-xs w-full open:flex open:flex-col open:items-center"
+      >
+        <div className="bg-white rounded-xl shadow-xl border border-gray-200 p-5 w-72">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-bold text-gray-900">Share Trip / 分享行程</h3>
+            <button
+              onClick={closePanel}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* QR Code */}
+          <div className="flex flex-col items-center mb-4">
+            <p className="text-xs text-gray-500 mb-2 font-medium">Scan to view / 掃碼查看</p>
+            <img
+              src={generateQrUrl(url, 160)}
+              alt="QR code for trip"
+              width={160}
+              height={160}
+              className="rounded-lg border border-gray-100"
+            />
+          </div>
+
+          {/* URL display */}
+          <div className="bg-gray-50 rounded-lg px-3 py-2 mb-3 text-xs text-gray-500 font-mono truncate">
+            {url}
+          </div>
+
+          {/* Action buttons */}
+          <div className="space-y-2">
+            <button
+              onClick={handleCopy}
+              className="w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2.5 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors min-h-[44px]"
+            >
+              {copied ? '✅ Copied!' : '📋 Copy Link / 複製連結'}
+            </button>
+            {typeof navigator !== 'undefined' && 'share' in navigator && (
+              <button
+                onClick={handleNativeShare}
+                className="w-full flex items-center justify-center gap-2 bg-blue-50 text-blue-600 py-2.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors min-h-[44px]"
+              >
+                📱 Share via App / 分享到應用
+              </button>
+            )}
+          </div>
+        </div>
+      </dialog>
     </>
   )
 }
