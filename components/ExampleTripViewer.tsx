@@ -42,10 +42,7 @@ export function ExampleTripViewer({ trip }: { trip: Trip }) {
 
       {/* Day content */}
       <main className="max-w-4xl mx-auto px-4 py-4">
-        <div className="max-w-xl text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-4">
-          ⚠️ Ratings are AI-estimated. Verify on Yelp & Google before visiting.
-        </div>
-        <TripItinerary initialDays={trip.days} />
+        <TripItinerary initialDays={trip.days} validated={false} />
         <div className="mt-6 mb-4">
           <a
             href="/"

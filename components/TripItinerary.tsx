@@ -5,7 +5,7 @@ import type { DayPlan } from '@/lib/types'
 import { PlaceCard } from './PlaceCard'
 import { AlternativesPanel } from './AlternativesPanel'
 
-export function TripItinerary({ initialDays }: { initialDays: DayPlan[] }) {
+export function TripItinerary({ initialDays, validated = true }: { initialDays: DayPlan[]; validated?: boolean }) {
   const [days, setDays] = useState(initialDays)
   const [swappedKey, setSwappedKey] = useState<string | null>(null)
 
@@ -72,7 +72,7 @@ export function TripItinerary({ initialDays }: { initialDays: DayPlan[] }) {
                   <div className={justSwapped ? 'ring-2 ring-orange rounded-xl transition-shadow duration-500' : ''}>
                     <PlaceCard
                       place={place}
-                      verifyStatus={place.type === 'restaurant' ? 'verified' : 'none'}
+                      verifyStatus={place.type === 'restaurant' && validated ? 'verified' : 'none'}
                     />
                   </div>
                   {hasAlternatives && (

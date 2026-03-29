@@ -45,7 +45,7 @@ export function ChatInput() {
   const [prompt, setPrompt] = useState('')
   const [activeChips, setActiveChips] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
-  const [loadingPhase, setLoadingPhase] = useState<'generating' | 'saving'>('generating')
+  const [loadingPhase, setLoadingPhase] = useState<'generating' | 'validating' | 'optimizing' | 'saving'>('generating')
   const [estimatedSeconds, setEstimatedSeconds] = useState(120)
   const [error, setError] = useState('')
   const router = useRouter()
@@ -123,6 +123,12 @@ export function ChatInput() {
           }
           if (event.type === 'error') {
             throw new Error(event.message ?? 'Generation failed. Please try again.')
+          }
+          if (event.type === 'validating') {
+            setLoadingPhase('validating')
+          }
+          if (event.type === 'optimizing') {
+            setLoadingPhase('optimizing')
           }
           if (event.type === 'saving') {
             setLoadingPhase('saving')

@@ -40,7 +40,7 @@ const STARS: [number, number, number][] = [
 
 interface Props {
   isChinese: boolean
-  phase: 'generating' | 'saving'
+  phase: 'generating' | 'validating' | 'optimizing' | 'saving'
   estimatedSeconds: number
 }
 
@@ -62,29 +62,42 @@ export function TripLoadingOverlay({ isChinese, phase, estimatedSeconds }: Props
     return () => clearInterval(t)
   }, [])
 
+  // Phase-based progress targets
+  const phaseCap = phase === 'saving' ? 96
+    : phase === 'optimizing' ? 90
+    : phase === 'validating' ? 78
+    : 60 // generating
+
   // Fake progress — scale speed to estimated time
   useEffect(() => {
-    const cap = phase === 'saving' ? 96 : 82
     const t = setInterval(() => {
       setProgress(p => {
-        if (p >= cap) return cap
-        // Scale progress speed to estimated time
-        const step = p < 40 ? 2.5 : p < 65 ? 1.2 : 0.4
-        const speedFactor = 30 / estimatedSeconds // faster for short trips
-        return Math.min(p + step * speedFactor, cap)
+        if (p >= phaseCap) return phaseCap
+        // Scale progress speed to estimated time, with a floor so it never crawls
+        const step = p < 30 ? 2.5 : p < 55 ? 1.5 : p < 75 ? 0.8 : 0.4
+        const speedFactor = Math.max(0.3, 30 / estimatedSeconds)
+        return Math.min(p + step * speedFactor, phaseCap)
       })
     }, 900)
     return () => clearInterval(t)
-  }, [phase, estimatedSeconds])
+  }, [phaseCap, estimatedSeconds])
 
-  // Jump to 88% when saving phase starts
+  // Jump progress when phase advances
   useEffect(() => {
+    if (phase === 'validating') setProgress(p => Math.max(p, 62))
+    if (phase === 'optimizing') setProgress(p => Math.max(p, 80))
     if (phase === 'saving') setProgress(p => Math.max(p, 88))
   }, [phase])
 
-  const savingMsg = isChinese ? '生成分享頁面緊... ✨' : 'Generating your shareable page... ✨'
-  const displayMsg = phase === 'saving' ? savingMsg : msgs[idx]
-  const msgKey = phase === 'saving' ? 'saving' : idx
+  const phaseMsg = phase === 'saving'
+    ? (isChinese ? '生成分享頁面緊... ✨' : 'Generating your shareable page... ✨')
+    : phase === 'optimizing'
+    ? (isChinese ? '優化你嘅路線... 📍' : 'Optimizing your route... 📍')
+    : phase === 'validating'
+    ? (isChinese ? '喺 Google 驗證餐廳緊... ✅' : 'Verifying restaurants on Google... ✅')
+    : null
+  const displayMsg = phaseMsg ?? msgs[idx]
+  const msgKey = phaseMsg ? phase : idx
 
   // Format estimated time for display
   const estLabel = estimatedSeconds >= 60
@@ -191,6 +204,10 @@ export function TripLoadingOverlay({ isChinese, phase, estimatedSeconds }: Props
             <span className="text-white/30 text-xs">
               {phase === 'saving'
                 ? (isChinese ? '保存行程中...' : 'Saving your trip...')
+                : phase === 'optimizing'
+                ? (isChinese ? '優化路線中...' : 'Optimizing routes...')
+                : phase === 'validating'
+                ? (isChinese ? '驗證餐廳中...' : 'Verifying restaurants...')
                 : (isChinese ? 'AI 生成緊...' : 'AI is working its magic...')}
             </span>
             <span className="text-white/40 text-xs tabular-nums">

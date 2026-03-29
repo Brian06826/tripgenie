@@ -41,9 +41,11 @@ export async function POST(request: Request) {
         const generation = await generateTrip(prompt)
 
         // Validate restaurants against Google Places API
+        send({ type: 'validating' })
         const validated = await validateRestaurants(generation)
 
         // Geocode all places and optimize routes per day
+        send({ type: 'optimizing' })
         const geocoded = await geocodeAllPlaces(validated)
         const optimized = optimizeRoutes(validated, geocoded)
 

@@ -169,10 +169,14 @@ export function optimizeRoutes(
 ): OptimizedTrip {
   const transport = getTransportMode(generation.destination)
 
-  // Build a lookup: `${dayIndex}-${placeIndex}` → coords
-  const coordMap = new Map<string, { lat: number; lng: number }>()
+  // Build a name-based lookup so coords survive reordering
+  // Key: `${dayIndex}:${placeName}` → coords
+  const nameCoordMap = new Map<string, { lat: number; lng: number }>()
   for (const g of geocoded) {
-    coordMap.set(`${g.dayIndex}-${g.placeIndex}`, { lat: g.lat, lng: g.lng })
+    const place = generation.days[g.dayIndex]?.places[g.placeIndex]
+    if (place) {
+      nameCoordMap.set(`${g.dayIndex}:${place.name}`, { lat: g.lat, lng: g.lng })
+    }
   }
 
   const out: OptimizedTrip = JSON.parse(JSON.stringify(generation))
@@ -181,12 +185,20 @@ export function optimizeRoutes(
     const day = out.days[di]
     const places = day.places
 
-    // Build coords array for this day
+    // Attach coords to places BEFORE reordering
+    for (let pi = 0; pi < places.length; pi++) {
+      const coords = nameCoordMap.get(`${di}:${places[pi].name}`)
+      if (coords) {
+        places[pi].lat = coords.lat
+        places[pi].lng = coords.lng
+      }
+    }
+
+    // Build coords array for nearest-neighbor sorting
     const withCoords: PlaceWithCoords[] = []
     for (let pi = 0; pi < places.length; pi++) {
-      const coords = coordMap.get(`${di}-${pi}`)
-      if (coords) {
-        withCoords.push({ originalIndex: pi, lat: coords.lat, lng: coords.lng })
+      if (places[pi].lat != null && places[pi].lng != null) {
+        withCoords.push({ originalIndex: pi, lat: places[pi].lat!, lng: places[pi].lng! })
       }
     }
 
@@ -203,7 +215,6 @@ export function optimizeRoutes(
       // Merge: insert no-coord places at roughly their original relative position
       const reordered = [...newOrder]
       for (const idx of noCoords) {
-        // Insert at the position closest to their original index ratio
         const ratio = idx / places.length
         const insertAt = Math.round(ratio * reordered.length)
         reordered.splice(insertAt, 0, idx)
@@ -216,40 +227,17 @@ export function optimizeRoutes(
       }
     }
 
-    // Attach lat/lng and compute travel times between consecutive stops
-    for (let pi = 0; pi < day.places.length; pi++) {
-      const coords = coordMap.get(`${di}-${pi}`) ??
-        // After reorder, we need to find coords by matching the original index
-        (() => {
-          // The place at position pi now might have been at a different original position
-          // We stored coords by original index, so scan geocoded for matching name
-          for (const g of geocoded) {
-            if (g.dayIndex === di) {
-              const origPlace = generation.days[di].places[g.placeIndex]
-              if (origPlace && origPlace.name === day.places[pi].name) {
-                return { lat: g.lat, lng: g.lng }
-              }
-            }
-          }
-          return null
-        })()
-
-      if (coords) {
-        day.places[pi].lat = coords.lat
-        day.places[pi].lng = coords.lng
-      }
-
-      if (pi > 0) {
-        const prev = day.places[pi - 1]
-        const curr = day.places[pi]
-        if (prev.lat && prev.lng && curr.lat && curr.lng) {
-          const dist = haversineKm(prev.lat, prev.lng, curr.lat, curr.lng)
-          const minutes = estimateTravelMinutes(dist, transport)
-          day.places[pi].travelFromPrevious = {
-            duration: formatMinutes(minutes),
-            mode: transport.mode,
-            emoji: transport.emoji,
-          }
+    // Compute travel times between consecutive stops (coords already attached)
+    for (let pi = 1; pi < day.places.length; pi++) {
+      const prev = day.places[pi - 1]
+      const curr = day.places[pi]
+      if (prev.lat != null && prev.lng != null && curr.lat != null && curr.lng != null) {
+        const dist = haversineKm(prev.lat, prev.lng, curr.lat, curr.lng)
+        const minutes = estimateTravelMinutes(dist, transport)
+        day.places[pi].travelFromPrevious = {
+          duration: formatMinutes(minutes),
+          mode: transport.mode,
+          emoji: transport.emoji,
         }
       }
     }
@@ -260,22 +248,16 @@ export function optimizeRoutes(
 
     if (firstTime) {
       let currentTime = firstTime
-      for (let pi = 0; pi < day.places.length; pi++) {
+      for (let pi = 1; pi < day.places.length; pi++) {
         const place = day.places[pi]
+        const prevPlace = day.places[pi - 1]
+        const stayMin = prevPlace.duration ? parseDurationMinutes(prevPlace.duration) : 60
+        const travelMin = place.travelFromPrevious
+          ? parseDurationMinutes(place.travelFromPrevious.duration)
+          : 15
 
-        if (pi === 0) {
-          // Keep the first arrival time as-is
-        } else {
-          // Previous place duration + travel time
-          const prevPlace = day.places[pi - 1]
-          const stayMin = prevPlace.duration ? parseDurationMinutes(prevPlace.duration) : 60
-          const travelMin = place.travelFromPrevious
-            ? parseDurationMinutes(place.travelFromPrevious.duration)
-            : 15
-
-          currentTime = addMinutes(currentTime.hours, currentTime.minutes, stayMin + travelMin)
-          place.arrivalTime = formatTime(currentTime.hours, currentTime.minutes)
-        }
+        currentTime = addMinutes(currentTime.hours, currentTime.minutes, stayMin + travelMin)
+        place.arrivalTime = formatTime(currentTime.hours, currentTime.minutes)
       }
     }
   }
