@@ -10,14 +10,19 @@ const SUGGESTIONS = [
   'SD day trip, seafood dinner, couple',
 ]
 
-const PREFERENCE_CHIPS = [
-  { emoji: '🍜', label: 'Food-focused', keyword: 'food-focused' },
-  { emoji: '👨‍👩‍👧', label: 'Family', keyword: 'family-friendly' },
-  { emoji: '💰', label: 'Budget', keyword: 'budget' },
-  { emoji: '🌿', label: 'Relaxed', keyword: 'relaxed' },
-  { emoji: '🎉', label: 'Nightlife', keyword: 'nightlife' },
-  { emoji: '💑', label: 'Couple', keyword: 'romantic couple' },
-] as const
+type ChipGroup = 'who' | 'style'
+const PREFERENCE_CHIPS: { emoji: string; label: string; keyword: string; group: ChipGroup }[] = [
+  // Who (exclusive — pick one)
+  { emoji: '👫', label: 'With Partner', keyword: 'romantic couple', group: 'who' },
+  { emoji: '👨‍👩‍👧', label: 'With Kids', keyword: 'family-friendly', group: 'who' },
+  { emoji: '👨‍👩‍👦‍👦', label: 'With Friends', keyword: 'group of friends', group: 'who' },
+  { emoji: '🧍', label: 'Solo', keyword: 'solo traveler', group: 'who' },
+  // Style (multi-select)
+  { emoji: '🍜', label: 'Foodie', keyword: 'food-focused', group: 'style' },
+  { emoji: '💰', label: 'Budget', keyword: 'budget', group: 'style' },
+  { emoji: '🌿', label: 'Relaxed', keyword: 'relaxed', group: 'style' },
+  { emoji: '🎉', label: 'Nightlife', keyword: 'nightlife', group: 'style' },
+]
 
 // Client-side trip length detection for time estimates
 function detectTripDays(prompt: string): number {
@@ -41,21 +46,44 @@ function getEstimatedSeconds(days: number): number {
   return 300
 }
 
+export type LoadingVibe = 'couple' | 'family' | 'food' | 'budget' | 'default'
+
+function detectVibe(prompt: string, chips: Set<string>): LoadingVibe {
+  if (chips.has('romantic couple') || /couple|romantic|date|情侶|約會/i.test(prompt)) return 'couple'
+  if (chips.has('family-friendly') || /family|kids|children|家庭|小孩/i.test(prompt)) return 'family'
+  if (chips.has('food-focused') || /food|foodie|美食|吃/i.test(prompt)) return 'food'
+  if (chips.has('budget') || /budget|cheap|省錢|平/i.test(prompt)) return 'budget'
+  return 'default'
+}
+
 export function ChatInput() {
   const [prompt, setPrompt] = useState('')
   const [activeChips, setActiveChips] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
   const [loadingPhase, setLoadingPhase] = useState<'generating' | 'validating' | 'optimizing' | 'saving'>('generating')
   const [estimatedSeconds, setEstimatedSeconds] = useState(120)
+  const [loadingVibe, setLoadingVibe] = useState<LoadingVibe>('default')
   const [error, setError] = useState('')
   const router = useRouter()
   const isChinese = /[\u4e00-\u9fff\u3400-\u4dbf\uff00-\uffef]/.test(prompt)
 
   function toggleChip(keyword: string) {
+    const chip = PREFERENCE_CHIPS.find(c => c.keyword === keyword)
+    if (!chip) return
+
     setActiveChips(prev => {
       const next = new Set(prev)
-      if (next.has(keyword)) next.delete(keyword)
-      else next.add(keyword)
+      if (next.has(keyword)) {
+        next.delete(keyword)
+      } else {
+        // "Who" group is exclusive — deselect other "who" chips
+        if (chip.group === 'who') {
+          for (const c of PREFERENCE_CHIPS) {
+            if (c.group === 'who') next.delete(c.keyword)
+          }
+        }
+        next.add(keyword)
+      }
       return next
     })
   }
@@ -72,6 +100,7 @@ export function ChatInput() {
     setLoading(true)
     setLoadingPhase('generating')
     setEstimatedSeconds(getEstimatedSeconds(detectTripDays(prompt)))
+    setLoadingVibe(detectVibe(prompt, activeChips))
     setError('')
 
     try {
@@ -148,7 +177,7 @@ export function ChatInput() {
 
   return (
     <div className="w-full max-w-xl mx-auto px-4">
-      {loading && <TripLoadingOverlay isChinese={isChinese} phase={loadingPhase} estimatedSeconds={estimatedSeconds} />}
+      {loading && <TripLoadingOverlay isChinese={isChinese} phase={loadingPhase} estimatedSeconds={estimatedSeconds} vibe={loadingVibe} />}
       <form onSubmit={handleSubmit} className="space-y-3">
         <textarea
           value={prompt}
@@ -162,26 +191,54 @@ export function ChatInput() {
           className="w-full border border-gray-200 rounded-xl p-4 text-base resize-none focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange disabled:opacity-50"
         />
 
-        {/* Preference chips */}
-        <div className="flex flex-wrap gap-2">
-          {PREFERENCE_CHIPS.map(chip => {
-            const active = activeChips.has(chip.keyword)
-            return (
-              <button
-                key={chip.keyword}
-                type="button"
-                onClick={() => toggleChip(chip.keyword)}
-                disabled={loading}
-                className={`text-xs rounded-full px-3 py-1.5 min-h-[36px] transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50 ${
-                  active
-                    ? 'bg-orange text-white border border-orange'
-                    : 'border border-gray-200 hover:border-orange hover:text-orange'
-                }`}
-              >
-                {chip.emoji} {chip.label}
-              </button>
-            )
-          })}
+        {/* Preference chips — Who (exclusive) */}
+        <div>
+          <p className="text-xs text-gray-400 mb-1.5">Who&apos;s going?</p>
+          <div className="flex flex-wrap gap-2">
+            {PREFERENCE_CHIPS.filter(c => c.group === 'who').map(chip => {
+              const active = activeChips.has(chip.keyword)
+              return (
+                <button
+                  key={chip.keyword}
+                  type="button"
+                  onClick={() => toggleChip(chip.keyword)}
+                  disabled={loading}
+                  className={`text-xs rounded-full px-3 py-1.5 min-h-[36px] transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50 ${
+                    active
+                      ? 'bg-orange text-white border border-orange'
+                      : 'border border-gray-200 hover:border-orange hover:text-orange'
+                  }`}
+                >
+                  {chip.emoji} {chip.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Preference chips — Style (multi-select) */}
+        <div>
+          <p className="text-xs text-gray-400 mb-1.5">Trip style</p>
+          <div className="flex flex-wrap gap-2">
+            {PREFERENCE_CHIPS.filter(c => c.group === 'style').map(chip => {
+              const active = activeChips.has(chip.keyword)
+              return (
+                <button
+                  key={chip.keyword}
+                  type="button"
+                  onClick={() => toggleChip(chip.keyword)}
+                  disabled={loading}
+                  className={`text-xs rounded-full px-3 py-1.5 min-h-[36px] transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50 ${
+                    active
+                      ? 'bg-orange text-white border border-orange'
+                      : 'border border-gray-200 hover:border-orange hover:text-orange'
+                  }`}
+                >
+                  {chip.emoji} {chip.label}
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         {/* Quick suggestions */}

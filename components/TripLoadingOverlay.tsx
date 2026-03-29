@@ -1,35 +1,111 @@
 'use client'
 import { useEffect, useState } from 'react'
+import type { LoadingVibe } from './ChatInput'
 
-const EN = [
-  'Packing your bags... 🧳',
-  'Booking the best restaurants... 🍜',
-  'Finding hidden gems... 💎',
-  'Checking the weather forecast... ☀️',
-  'Negotiating with locals... 🗣️',
-  'Planning the perfect route... 🗺️',
-  'Asking locals for secret spots... 🤫',
-  'Comparing all the reviews... ⭐',
-  'Scanning for must-try dishes... 🥢',
-  'Reserving the best views... 🏔️',
-  'Verifying restaurants on Google... ✅',
-  'Optimizing your route... 📍',
-]
-
-const ZH = [
-  '整理緊行李... 🧳',
-  '預訂最好嘅餐廳... 🍜',
-  '搵緊隱藏寶藏... 💎',
-  '查緊天氣預報... ☀️',
-  '同當地人溝通緊... 🗣️',
-  '規劃完美路線... 🗺️',
-  '問當地人秘密景點... 🤫',
-  '比較各大評分... ⭐',
-  '搵緊必試美食... 🥢',
-  '預留最靚嘅景色... 🏔️',
-  '喺 Google 驗證餐廳緊... ✅',
-  '優化你嘅路線... 📍',
-]
+const MSGS: Record<string, { en: string[]; zh: string[] }> = {
+  default: {
+    en: [
+      'Packing your bags... 🧳',
+      'Booking the best restaurants... 🍜',
+      'Finding hidden gems... 💎',
+      'Checking the weather forecast... ☀️',
+      'Negotiating with locals... 🗣️',
+      'Planning the perfect route... 🗺️',
+      'Asking locals for secret spots... 🤫',
+      'Comparing all the reviews... ⭐',
+      'Scanning for must-try dishes... 🥢',
+      'Reserving the best views... 🏔️',
+      'Verifying restaurants on Google... ✅',
+      'Optimizing your route... 📍',
+    ],
+    zh: [
+      '整理緊行李... 🧳',
+      '預訂最好嘅餐廳... 🍜',
+      '搵緊隱藏寶藏... 💎',
+      '查緊天氣預報... ☀️',
+      '同當地人溝通緊... 🗣️',
+      '規劃完美路線... 🗺️',
+      '問當地人秘密景點... 🤫',
+      '比較各大評分... ⭐',
+      '搵緊必試美食... 🥢',
+      '預留最靚嘅景色... 🏔️',
+      '喺 Google 驗證餐廳緊... ✅',
+      '優化你嘅路線... 📍',
+    ],
+  },
+  couple: {
+    en: [
+      'Finding the most romantic spots... 💑',
+      'Reserving the best sunset views... 🌅',
+      'Scouting cozy date-night restaurants... 🕯️',
+      'Planning the perfect scenic walk... 🌸',
+      'Finding hidden rooftop bars... 🍷',
+      'Checking the best photo spots... 📸',
+    ],
+    zh: [
+      '搵緊最浪漫嘅地方... 💑',
+      '預留最靚嘅日落景色... 🌅',
+      '搵緊氣氛好嘅約會餐廳... 🕯️',
+      '規劃完美散步路線... 🌸',
+      '搵緊隱世天台酒吧... 🍷',
+      '搵緊最佳打卡位... 📸',
+    ],
+  },
+  family: {
+    en: [
+      'Finding kid-friendly activities... 👨‍👩‍👧',
+      'Making sure there\'s something for everyone... 🎠',
+      'Checking playground ratings... 🛝',
+      'Finding family-friendly restaurants... 🍕',
+      'Planning rest stops between activities... 😴',
+      'Scouting the best ice cream shops... 🍦',
+    ],
+    zh: [
+      '搵緊適合小朋友嘅活動... 👨‍👩‍👧',
+      '確保大人細路都開心... 🎠',
+      '搵緊親子餐廳... 🍕',
+      '計劃活動之間嘅休息時間... 😴',
+      '搵緊最好嘅雪糕店... 🍦',
+      '搵緊公園同遊樂場... 🛝',
+    ],
+  },
+  food: {
+    en: [
+      'Hunting down the best local eats... 🍜',
+      'Reading thousands of reviews... ⭐',
+      'Finding the hidden foodie gems... 🥢',
+      'Checking which spots have lines out the door... 🚪',
+      'Scouting the best street food... 🌮',
+      'Comparing Michelin and hole-in-the-wall picks... 🏆',
+    ],
+    zh: [
+      '搵緊最正嘅地道美食... 🍜',
+      '睇緊過千條評論... ⭐',
+      '搵緊隱世美食... 🥢',
+      '搵緊排隊名店... 🚪',
+      '搵緊最好嘅街頭小食... 🌮',
+      '比較米芝蓮同街坊小店... 🏆',
+    ],
+  },
+  budget: {
+    en: [
+      'Finding the best free attractions... 💰',
+      'Maximizing fun, minimizing cost... 🎯',
+      'Scouting the cheapest eats with the best reviews... 🌟',
+      'Finding happy hour deals... 🍻',
+      'Checking for free museum days... 🎨',
+      'Planning the most efficient route to save on transport... 🚶',
+    ],
+    zh: [
+      '搵緊最抵玩嘅免費景點... 💰',
+      '用最少錢玩最多嘢... 🎯',
+      '搵緊平靚正嘅餐廳... 🌟',
+      '搵緊 happy hour 優惠... 🍻',
+      '搵緊免費博物館日... 🎨',
+      '規劃最慳錢嘅路線... 🚶',
+    ],
+  },
+}
 
 // Static positions — no Math.random() to avoid hydration mismatches
 const STARS: [number, number, number][] = [
@@ -42,10 +118,12 @@ interface Props {
   isChinese: boolean
   phase: 'generating' | 'validating' | 'optimizing' | 'saving'
   estimatedSeconds: number
+  vibe?: LoadingVibe
 }
 
-export function TripLoadingOverlay({ isChinese, phase, estimatedSeconds }: Props) {
-  const msgs = isChinese ? ZH : EN
+export function TripLoadingOverlay({ isChinese, phase, estimatedSeconds, vibe = 'default' }: Props) {
+  const vibeSet = MSGS[vibe] ?? MSGS.default
+  const msgs = isChinese ? vibeSet.zh : vibeSet.en
   const [idx, setIdx] = useState(0)
   const [elapsed, setElapsed] = useState(0)
   const [progress, setProgress] = useState(4)
