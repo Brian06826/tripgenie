@@ -185,10 +185,10 @@ DAILY SCHEDULE RULES (CRITICAL — follow exactly):
 5. User-specified times (e.g. "9am-3pm"): respect EXACTLY. Only include meals that fall within those hours. If window includes 11:30 AM-1:00 PM, include lunch. If window includes 6:00-8:00 PM, include dinner.
 6. If no pace signal, default to 5-6 stops/day.
 
-STRICT MEAL TIMING (CRITICAL):
+STRICT MEAL TIMING (CRITICAL — NEVER VIOLATE):
 - Breakfast/Brunch: 8:00-10:00 AM. Only include if user requests it OR multi-day trip where it makes sense.
 - Lunch: 11:30 AM - 1:00 PM. REQUIRED for every full day.
-- Dinner: 6:00-8:00 PM. REQUIRED for every full day.
+- Dinner: 6:00-8:00 PM. REQUIRED for every full day. NEVER schedule dinner before 6:00 PM. A dinner at 4:00 PM or 5:00 PM is WRONG — add afternoon activities to fill the gap between lunch and dinner. If you run out of activities, add a relaxation break, park visit, or shopping time.
 - Do NOT add afternoon snack/cafe/dessert stops unless the user specifically asks for them.
 - NEVER schedule two full meals (restaurant type stops) within 2 hours of each other.
 - Each full day (9 AM-9 PM range) MUST have exactly one lunch restaurant AND one dinner restaurant.

@@ -246,11 +246,17 @@ export function optimizeRoutes(
     }
 
     // Compute travel times between consecutive stops (coords already attached)
+    // Sanity check: if haversine distance > 100km between consecutive same-day
+    // stops, the geocoding is almost certainly wrong — skip travel time display
     for (let pi = 1; pi < day.places.length; pi++) {
       const prev = day.places[pi - 1]
       const curr = day.places[pi]
       if (prev.lat != null && prev.lng != null && curr.lat != null && curr.lng != null) {
         const dist = haversineKm(prev.lat, prev.lng, curr.lat, curr.lng)
+        if (dist > 100) {
+          // Bad geocoding — don't show a nonsensical travel time
+          continue
+        }
         const minutes = estimateTravelMinutes(dist, transport)
         day.places[pi].travelFromPrevious = {
           duration: formatMinutes(minutes),
@@ -289,6 +295,34 @@ export function optimizeRoutes(
 
         currentTime = addMinutes(currentTime.hours, currentTime.minutes, totalMin)
         place.arrivalTime = formatTime(currentTime.hours, currentTime.minutes)
+      }
+
+      // Enforce dinner timing: find the last restaurant — if it's before 6 PM,
+      // push it to 6:00 PM and cascade all subsequent stops forward.
+      // This prevents schedule compression from making dinner unrealistically early.
+      let lastRestIdx = -1
+      for (let pi = day.places.length - 1; pi >= 0; pi--) {
+        if (day.places[pi].type === 'restaurant') { lastRestIdx = pi; break }
+      }
+      if (lastRestIdx > 0) {
+        const dinnerTime = parseTime(day.places[lastRestIdx].arrivalTime ?? '')
+        // Only fix if dinner landed between ~3 PM and 5:59 PM (too early)
+        // Don't touch lunch restaurants (before 3 PM) or correct dinner times (6 PM+)
+        if (dinnerTime && dinnerTime.hours >= 15 && dinnerTime.hours < 18) {
+          // Push dinner to 6:00 PM
+          day.places[lastRestIdx].arrivalTime = '6:00 PM'
+          // Cascade: recalculate all stops after dinner
+          let cascadeTime = { hours: 18, minutes: 0 }
+          for (let pi = lastRestIdx + 1; pi < day.places.length; pi++) {
+            const prevPlace = day.places[pi - 1]
+            const stayMin = prevPlace.duration ? parseDurationMinutes(prevPlace.duration) : 60
+            const travelMin = day.places[pi].travelFromPrevious
+              ? parseDurationMinutes(day.places[pi].travelFromPrevious!.duration)
+              : 15
+            cascadeTime = addMinutes(cascadeTime.hours, cascadeTime.minutes, stayMin + travelMin)
+            day.places[pi].arrivalTime = formatTime(cascadeTime.hours, cascadeTime.minutes)
+          }
+        }
       }
     }
   }
