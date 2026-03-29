@@ -12,6 +12,26 @@ const EXAMPLE_TRIPS = [
     subtitle: 'SeaWorld · Seafood · Old Town',
     href: '/trip/example-sandiego',
   },
+  {
+    title: 'Tokyo Food Adventure 🍣',
+    subtitle: '3 days · Tsukiji · Ramen · Izakaya',
+    href: '/trip/example-tokyo',
+  },
+  {
+    title: 'San Francisco Weekend 🌉',
+    subtitle: '2 days · Family · Golden Gate · Wharf',
+    href: '/trip/example-sf',
+  },
+  {
+    title: 'Taipei Night Market Tour 🧋',
+    subtitle: '2 days · Couple · Shilin · Jiufen',
+    href: '/trip/example-taipei',
+  },
+  {
+    title: 'New York City Explorer 🗽',
+    subtitle: '3 days · Packed · Manhattan · Brooklyn',
+    href: '/trip/example-nyc',
+  },
 ]
 
 export default function HomePage() {
