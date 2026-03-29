@@ -46,6 +46,30 @@ function getEstimatedSeconds(days: number): number {
   return 300
 }
 
+const TRIP_VALIDATION_MSG = "Please describe a trip! Include a destination and how long.\nFor example: '3 days Tokyo food trip' or '一日遊 Long Beach 情侶'"
+
+// Travel keywords that signal a valid trip request
+const TRAVEL_KEYWORDS_EN = /\b(trip|day|days|night|nights|travel|vacation|holiday|itinerary|visit|tour|explore|weekend|getaway|sightseeing|road\s?trip|fly|flight|hotel|hostel|airbnb|resort|beach|hike|hiking)\b/i
+const TRAVEL_KEYWORDS_ZH = /(日|天|夜|晚|旅行|旅遊|遊|行程|玩|景點|酒店|民宿|海灘|自由行|跟團|出發|機票|住宿|觀光|度假|週末)/
+
+// Common destinations — not exhaustive, just enough to catch most valid requests
+const DESTINATIONS = /\b(tokyo|osaka|kyoto|seoul|taipei|hong\s?kong|bangkok|singapore|bali|paris|london|rome|barcelona|amsterdam|new\s?york|nyc|los\s?angeles|la|san\s?francisco|sf|san\s?diego|sd|seattle|portland|denver|boston|miami|orlando|chicago|houston|austin|nashville|las\s?vegas|hawaii|maui|honolulu|cancun|mexico|london|berlin|prague|vienna|lisbon|dublin|istanbul|dubai|sydney|melbourne|vancouver|toronto|montreal|florence|venice|munich|zurich|geneva|nice|marseille|lyon|madrid|seville|athens|santorini|phuket|hanoi|ho\s?chi\s?minh|kuala\s?lumpur|manila|cebu|okinawa|fukuoka|nagoya|sapporo|busan|jeju|kaohsiung|tainan|taichung|macau|shenzhen|shanghai|beijing|chengdu|guangzhou|xi'?an|hangzhou|nanjing|suzhou|guilin|kunming|lijiang|zhangjiajie|long\s?beach|pasadena|santa\s?monica|beverly\s?hills|anaheim|irvine|san\s?jose|oakland|sacramento|phoenix|scottsdale|tucson|albuquerque|salt\s?lake|raleigh|charlotte|jacksonville|memphis|minneapolis|st\s?louis|new\s?orleans|pittsburgh|philadelphia|detroit|washington\s?d\.?c\.?|atlanta)\b/i
+const DESTINATIONS_ZH = /(東京|大阪|京都|首爾|台北|香港|曼谷|新加坡|巴厘|巴黎|倫敦|羅馬|巴塞羅那|阿姆斯特丹|紐約|洛杉磯|舊金山|三藩市|聖地亞哥|西雅圖|邁阿密|芝加哥|夏威夷|沖繩|福岡|札幌|釜山|濟州|高雄|台南|台中|澳門|深圳|上海|北京|成都|廣州|西安|杭州|南京|蘇州|桂林|昆明|麗江|張家界)/
+
+function isValidTripRequest(text: string): boolean {
+  const trimmed = text.trim()
+  // Too short — CJK characters carry more meaning, so use lower threshold
+  const hasCJK = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(trimmed)
+  if (trimmed.length < (hasCJK ? 3 : 5)) return false
+  // Has a travel keyword
+  if (TRAVEL_KEYWORDS_EN.test(trimmed) || TRAVEL_KEYWORDS_ZH.test(trimmed)) return true
+  // Has a known destination
+  if (DESTINATIONS.test(trimmed) || DESTINATIONS_ZH.test(trimmed)) return true
+  // Has a number followed by something that looks like duration
+  if (/\d+\s*[-–]?\s*(day|night|日|天|夜|晚)/i.test(trimmed)) return true
+  return false
+}
+
 export type LoadingVibe = 'couple' | 'family' | 'food' | 'budget' | 'default'
 
 function detectVibe(prompt: string, chips: Set<string>): LoadingVibe {
@@ -97,6 +121,11 @@ export function ChatInput() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!prompt.trim() || loading) return
+
+    if (!isValidTripRequest(prompt)) {
+      setError(TRIP_VALIDATION_MSG)
+      return
+    }
 
     setLoading(true)
     setLoadingPhase('generating')

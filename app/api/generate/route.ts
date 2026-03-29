@@ -55,6 +55,22 @@ export async function POST(request: Request) {
     return Response.json({ error: 'prompt too long (max 500 chars)' }, { status: 400 })
   }
 
+  // Server-side trip validation — reject conversational messages before calling Claude
+  const TRAVEL_RE = /\b(trip|day|days|night|nights|travel|vacation|holiday|itinerary|visit|tour|explore|weekend|getaway|sightseeing|road\s?trip|fly|flight|hotel|hostel|airbnb|resort|beach|hike|hiking)\b/i
+  const TRAVEL_ZH = /(日|天|夜|晚|旅行|旅遊|遊|行程|玩|景點|酒店|民宿|海灘|自由行|跟團|出發|機票|住宿|觀光|度假|週末)/
+  const DEST_RE = /\b(tokyo|osaka|kyoto|seoul|taipei|hong\s?kong|bangkok|singapore|paris|london|rome|new\s?york|nyc|los\s?angeles|la|san\s?francisco|sf|san\s?diego|sd|seattle|boston|miami|chicago|hawaii|maui|las\s?vegas|cancun|dubai|sydney|vancouver|toronto|long\s?beach|denver|austin|nashville|portland|orlando|atlanta|phoenix|houston)\b/i
+  const DEST_ZH = /(東京|大阪|京都|首爾|台北|香港|曼谷|新加坡|巴黎|倫敦|紐約|洛杉磯|舊金山|三藩市|夏威夷|沖繩|上海|北京)/
+  const DUR_RE = /\d+\s*[-–]?\s*(day|night|日|天|夜|晚)/i
+  const hasCJK = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(prompt)
+  const tooShort = prompt.length < (hasCJK ? 3 : 5)
+  const hasSignal = TRAVEL_RE.test(prompt) || TRAVEL_ZH.test(prompt) || DEST_RE.test(prompt) || DEST_ZH.test(prompt) || DUR_RE.test(prompt)
+  if (tooShort || !hasSignal) {
+    return Response.json(
+      { error: "Please describe a trip! Include a destination and how long. For example: '3 days Tokyo food trip' or '一日遊 Long Beach 情侶'" },
+      { status: 400 }
+    )
+  }
+
   const encoder = new TextEncoder()
 
   const stream = new ReadableStream({
