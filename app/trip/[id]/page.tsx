@@ -98,7 +98,7 @@ export default async function TripPage({ params }: Props) {
       <main className="max-w-4xl mx-auto px-4 py-4">
         {/* Disclaimer */}
         <div className="max-w-xl text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-4">
-          ⚠️ 評分為 AI 估算 / Ratings are AI-estimated. Verify on Yelp & Google before visiting.
+          ⚠️ AI-generated recommendations. Please verify all places on Google Maps before visiting. / AI 生成推薦，出發前請喺 Google Maps 確認地點存在。
         </div>
 
         <TripItinerary initialDays={trip.days} />
