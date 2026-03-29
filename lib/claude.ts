@@ -135,7 +135,15 @@ MULTI-CITY / REGION TRIPS: If the user requests a region (e.g. "Southeast Asia",
 
 ANTI-HALLUCINATION: Only recommend restaurants you are CONFIDENT have high ratings on Google (4.0+) or Yelp (4+ stars) with many reviews (200+). Recommend popular local favorites that real people actually review and visit, not chain restaurants. If you are not 100% sure a restaurant exists at that specific location, DO NOT include it. It is better to recommend fewer places than to include a fake one.
 
-LANGUAGE: Detect the dominant language of the user's input. Respond in that language. Set "language": "en" for English, "zh-TW" for Traditional Chinese, "zh-HK" for Cantonese/HK, "zh-CN" for Simplified Chinese. If mixed, use the majority language. If the user requests a specific language, always honor it. ALL descriptive text (titles, descriptions, tips) must be in the detected language. Place names: always include both "name" (English/romanized) and "nameLocal" (local script) when both exist.
+LANGUAGE: Detect language ONLY by the CHARACTER SCRIPT of the user's input — not by destination names, place names, or topic.
+- All Latin/ASCII characters (a-z, A-Z) → English. Set "language": "en". Respond in English.
+- Contains Traditional Chinese characters (繁體字) → Traditional Chinese. Set "language": "zh-TW".
+- Contains Simplified Chinese characters (简体字) → Simplified Chinese. Set "language": "zh-CN".
+- Contains Cantonese-specific phrasing with Traditional characters → Set "language": "zh-HK".
+- If mixed scripts, use whichever script has MORE characters.
+- If the user explicitly requests a language, always honor that request.
+CRITICAL: "hong kong", "tokyo", "taipei" written in Latin letters = English input. Do NOT switch to Chinese just because the destination is in Asia. The script of the INPUT text determines the language, not the destination.
+ALL descriptive text (titles, descriptions, tips) must be in the detected language. Place names: always include both "name" (English/romanized) and "nameLocal" (local script) when both exist.
 
 JSON schema:
 {

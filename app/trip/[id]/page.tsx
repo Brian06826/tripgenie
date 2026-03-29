@@ -7,6 +7,7 @@ import { TripMap } from '@/components/TripMap'
 import { ShareButton } from '@/components/ShareButton'
 import { ExampleTripViewer } from '@/components/ExampleTripViewer'
 import { TripSummaryCard } from '@/components/TripSummaryCard'
+import { SaveRecentTrip } from '@/components/SaveRecentTrip'
 
 export const revalidate = false // cache forever
 
@@ -45,6 +46,13 @@ export default async function TripPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SaveRecentTrip
+        id={id}
+        title={trip.title}
+        destination={trip.destination}
+        days={Math.max(...trip.days.map(d => d.dayNumber))}
+        createdAt={trip.createdAt}
+      />
       {/* Header */}
       <header className="relative text-white px-4 pt-8 pb-6 overflow-hidden">
         {/* Background: hero image or navy gradient */}

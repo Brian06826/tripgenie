@@ -1,5 +1,6 @@
 import { ChatInput } from '@/components/ChatInput'
 import { ExampleTripLink } from '@/components/ExampleTripLink'
+import { RecentTrips } from '@/components/RecentTrips'
 
 const EXAMPLE_TRIPS = [
   {
@@ -74,6 +75,9 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* Recent trips from localStorage */}
+      <RecentTrips />
     </div>
   )
 }

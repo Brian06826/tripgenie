@@ -41,9 +41,10 @@ function detectTripDays(prompt: string): number {
 
 function getEstimatedSeconds(days: number): number {
   if (days <= 1) return 30
-  if (days <= 3) return 120
-  if (days <= 5) return 180
-  return 300
+  if (days <= 3) return 60
+  if (days <= 5) return 90
+  if (days <= 7) return 120
+  return 150
 }
 
 const TRIP_VALIDATION_MSG = "Please describe a trip! Include a destination and how long.\nFor example: '3 days Tokyo food trip' or '一日遊 Long Beach 情侶'"
@@ -90,7 +91,12 @@ export function ChatInput() {
   const [error, setError] = useState('')
   const abortRef = useRef<AbortController | null>(null)
   const router = useRouter()
-  const isChinese = /[\u4e00-\u9fff\u3400-\u4dbf\uff00-\uffef]/.test(prompt)
+  // Detect language: simplified Chinese, traditional Chinese, or English
+  const hasChinese = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(prompt)
+  // Simplified-only chars (a subset that only appear in simplified Chinese)
+  const hasSimplified = /[\u7b80\u4f53\u8fd9\u8bf7\u8ba9\u5417\u5462\u6ca1\u8fd8\u53ea\u5c31\u8981\u5bf9\u8fc7\u5f88\u4e0d\u4e86\u4eba\u4eec\u4e48\u8981\u5c31\u662f\u90fd\u8bf4\u8981\u4f1a\u5230\u5f97\u7684\u6211\u5230\u611f\u89c9\u8ba9\u53bb\u6765\u770b\u8fc7\u987a\u4e86\u54ea\u5e72\u4e48\u7ebf\u8def\u53d1\u73b0\u7f8e\u98df\u9910\u5385\u6e38\u620f\u65c5\u6e38\u8bb0\u5f55\u7efc\u5408\u5386\u53f2\u8d5b\u4e8b\u987b\u77e5\u8bc6\u8bcd\u7ec4\u8bed\u6cd5\u8bed\u8a00\u7f16\u7801\u5185\u5bb9\u8d44\u6e90\u6d4f\u89c8\u5668\u8f6f\u4ef6\u7a0b\u5e8f\u5f00\u53d1]/.test(prompt)
+  const lang: 'en' | 'zh-TW' | 'zh-CN' = hasChinese ? (hasSimplified ? 'zh-CN' : 'zh-TW') : 'en'
+  const isChinese = hasChinese
 
   function toggleChip(keyword: string) {
     const chip = PREFERENCE_CHIPS.find(c => c.keyword === keyword)
@@ -221,7 +227,7 @@ export function ChatInput() {
 
   return (
     <div className="w-full max-w-xl mx-auto px-4">
-      {loading && <TripLoadingOverlay isChinese={isChinese} phase={loadingPhase} estimatedSeconds={estimatedSeconds} vibe={loadingVibe} onCancel={() => abortRef.current?.abort()} />}
+      {loading && <TripLoadingOverlay lang={lang} phase={loadingPhase} estimatedSeconds={estimatedSeconds} vibe={loadingVibe} onCancel={() => abortRef.current?.abort()} />}
       <form onSubmit={handleSubmit} className="space-y-3">
         <textarea
           value={prompt}
