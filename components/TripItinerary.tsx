@@ -34,6 +34,7 @@ export function TripItinerary({ initialDays }: { initialDays: DayPlan[] }) {
               priceRange: undefined,
               address: backup.address,
               googleMapsUrl: backup.googleMapsUrl,
+              googleReviewsUrl: `https://www.google.com/search?q=${encodeURIComponent(backup.name + ' reviews')}`,
               yelpUrl: backup.yelpUrl,
             }
           }),
