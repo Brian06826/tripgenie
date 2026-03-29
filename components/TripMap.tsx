@@ -24,7 +24,11 @@ interface Props {
 export function TripMap({ days, onSelectPlace }: Props) {
   const mapRef = useRef<HTMLDivElement>(null)
   const leafletMap = useRef<any>(null)
-  const [isOpen, setIsOpen] = useState(false)
+  // Default open on desktop (>=768px), closed on mobile
+  const [isOpen, setIsOpen] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.innerWidth >= 768
+  })
   const [activeDay, setActiveDay] = useState<number | null>(null)
 
   // Collect all places with coordinates

@@ -6,6 +6,7 @@ import { TripItinerary } from '@/components/TripItinerary'
 import { TripMap } from '@/components/TripMap'
 import { ShareButton } from '@/components/ShareButton'
 import { ExampleTripViewer } from '@/components/ExampleTripViewer'
+import { TripSummaryCard } from '@/components/TripSummaryCard'
 
 export const revalidate = false // cache forever
 
@@ -97,6 +98,7 @@ export default async function TripPage({ params }: Props) {
 
       {/* Day content */}
       <main className="max-w-4xl mx-auto px-4 py-4">
+        <TripSummaryCard days={trip.days} />
         <TripMap days={trip.days} />
         <TripItinerary initialDays={trip.days} validated={trip.validated === true} destination={trip.destination} language={trip.language} />
 

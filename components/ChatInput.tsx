@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { TripLoadingOverlay } from '@/components/TripLoadingOverlay'
 
@@ -64,6 +64,7 @@ export function ChatInput() {
   const [estimatedSeconds, setEstimatedSeconds] = useState(120)
   const [loadingVibe, setLoadingVibe] = useState<LoadingVibe>('default')
   const [error, setError] = useState('')
+  const abortRef = useRef<AbortController | null>(null)
   const router = useRouter()
   const isChinese = /[\u4e00-\u9fff\u3400-\u4dbf\uff00-\uffef]/.test(prompt)
 
@@ -103,11 +104,15 @@ export function ChatInput() {
     setLoadingVibe(detectVibe(prompt, activeChips))
     setError('')
 
+    const abortController = new AbortController()
+    abortRef.current = abortController
+
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: getFullPrompt() }),
+        signal: abortController.signal,
       })
 
       // Early validation errors come back as plain JSON (400), not a stream
@@ -146,6 +151,11 @@ export function ChatInput() {
           let event: { type: string; tripId?: string; message?: string }
           try { event = JSON.parse(line.slice(6)) } catch { continue }
 
+          if (event.type === 'preview' && event.tripId) {
+            // Navigate immediately with preview data — trip page will show it
+            router.push(`/trip/${event.tripId}`)
+            return
+          }
           if (event.type === 'done' && event.tripId) {
             router.push(`/trip/${event.tripId}`)
             return
@@ -168,16 +178,21 @@ export function ChatInput() {
 
       throw new Error('Server error. Please try again.')
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        // User cancelled — silently reset
+        setLoading(false)
+        return
+      }
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
       setLoading(false)
     } finally {
-      // nothing to clean up
+      abortRef.current = null
     }
   }
 
   return (
     <div className="w-full max-w-xl mx-auto px-4">
-      {loading && <TripLoadingOverlay isChinese={isChinese} phase={loadingPhase} estimatedSeconds={estimatedSeconds} vibe={loadingVibe} />}
+      {loading && <TripLoadingOverlay isChinese={isChinese} phase={loadingPhase} estimatedSeconds={estimatedSeconds} vibe={loadingVibe} onCancel={() => abortRef.current?.abort()} />}
       <form onSubmit={handleSubmit} className="space-y-3">
         <textarea
           value={prompt}

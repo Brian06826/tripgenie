@@ -69,6 +69,36 @@ export async function POST(request: Request) {
       try {
         const generation = await generateTrip(prompt)
 
+        const tripId = nanoid(8)
+
+        // Build preview trip with URLs (no geocoding/optimization yet)
+        const previewDays = generation.days.map(day => ({
+          ...day,
+          places: day.places.map(place => ({
+            ...place,
+            googleMapsUrl: buildGoogleMapsUrl(place.name, generation.destination),
+            googleReviewsUrl: buildGoogleReviewsUrl(place.name, generation.destination),
+            yelpUrl: buildYelpUrl(place.name, generation.destination),
+            backupOptions: place.backupOptions?.map(b => ({
+              ...b,
+              googleMapsUrl: buildGoogleMapsUrl(b.name, generation.destination),
+              yelpUrl: buildYelpUrl(b.name, generation.destination),
+            })),
+          })),
+        }))
+
+        const previewTrip: Trip = {
+          ...generation,
+          id: tripId,
+          createdAt: new Date().toISOString(),
+          validated: false,
+          days: previewDays,
+        }
+
+        // Save preview and tell client to navigate immediately
+        await saveTrip(tripId, previewTrip)
+        send({ type: 'preview', tripId })
+
         // Validate restaurants against Google Places API
         send({ type: 'validating' })
         const validated = await validateRestaurants(generation)
@@ -77,8 +107,6 @@ export async function POST(request: Request) {
         send({ type: 'optimizing' })
         const geocoded = await geocodeAllPlaces(validated)
         const optimized = optimizeRoutes(validated, geocoded)
-
-        const tripId = nanoid(8)
 
         const days = optimized.days.map(day => ({
           ...day,
@@ -105,19 +133,31 @@ export async function POST(request: Request) {
 
         send({ type: 'saving' })
 
-        const [heroResult, ogImageUrl] = await Promise.all([
+        // Save trip immediately so user can view it fast
+        await saveTrip(tripId, trip)
+        send({ type: 'done', tripId })
+
+        // Generate hero + OG images in background, then update the saved trip
+        Promise.all([
           fetchHeroImage(optimized.destination),
           generateAndUploadOgImage(trip),
-        ])
-        if (heroResult) {
-          trip.heroImageUrl = heroResult.imageUrl
-          trip.heroImageCredit = heroResult.credit
-        }
-        if (ogImageUrl) trip.ogImageUrl = ogImageUrl
-
-        await saveTrip(tripId, trip)
-
-        send({ type: 'done', tripId })
+        ]).then(async ([heroResult, ogImageUrl]) => {
+          let updated = false
+          if (heroResult) {
+            trip.heroImageUrl = heroResult.imageUrl
+            trip.heroImageCredit = heroResult.credit
+            updated = true
+          }
+          if (ogImageUrl) {
+            trip.ogImageUrl = ogImageUrl
+            updated = true
+          }
+          if (updated) {
+            await saveTrip(tripId, trip)
+          }
+        }).catch(err => {
+          console.error('Background image generation failed:', err)
+        })
       } catch (err) {
         console.error('Generation error:', err)
         const raw = err instanceof Error ? err.message : ''

@@ -119,9 +119,10 @@ interface Props {
   phase: 'generating' | 'validating' | 'optimizing' | 'saving'
   estimatedSeconds: number
   vibe?: LoadingVibe
+  onCancel?: () => void
 }
 
-export function TripLoadingOverlay({ isChinese, phase, estimatedSeconds, vibe = 'default' }: Props) {
+export function TripLoadingOverlay({ isChinese, phase, estimatedSeconds, vibe = 'default', onCancel }: Props) {
   const vibeSet = MSGS[vibe] ?? MSGS.default
   const msgs = isChinese ? vibeSet.zh : vibeSet.en
   const [idx, setIdx] = useState(0)
@@ -293,6 +294,16 @@ export function TripLoadingOverlay({ isChinese, phase, estimatedSeconds, vibe = 
             </span>
           </div>
         </div>
+
+        {/* Cancel button */}
+        {onCancel && (
+          <button
+            onClick={onCancel}
+            className="mt-8 text-white/40 text-xs hover:text-white/70 transition-colors underline underline-offset-2"
+          >
+            {isChinese ? '取消' : 'Cancel'}
+          </button>
+        )}
       </div>
     </div>
   )
