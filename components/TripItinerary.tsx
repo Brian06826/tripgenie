@@ -5,19 +5,46 @@ import type { DayPlan } from '@/lib/types'
 import { PlaceCard } from './PlaceCard'
 import { AlternativesPanel } from './AlternativesPanel'
 
+// Yelp is useful for US destinations only
+const US_SIGNALS = [
+  // US states (abbreviations and full names that commonly appear in destination strings)
+  'usa', 'united states',
+  // Major US cities / regions
+  'los angeles', 'la ', 'san francisco', 'new york', 'nyc', 'manhattan', 'brooklyn',
+  'chicago', 'houston', 'phoenix', 'san diego', 'dallas', 'austin', 'san antonio',
+  'seattle', 'portland', 'denver', 'boston', 'miami', 'orlando', 'tampa',
+  'atlanta', 'nashville', 'las vegas', 'honolulu', 'hawaii', 'maui',
+  'long beach', 'pasadena', 'santa monica', 'beverly hills', 'hollywood',
+  'anaheim', 'irvine', 'san jose', 'oakland', 'sacramento',
+  'philadelphia', 'pittsburgh', 'detroit', 'minneapolis', 'st louis',
+  'new orleans', 'charlotte', 'raleigh', 'jacksonville', 'memphis',
+  'salt lake city', 'tucson', 'scottsdale', 'albuquerque',
+  'washington dc', 'washington d.c.',
+  // US states
+  'california', 'texas', 'florida', 'nevada', 'arizona', 'colorado',
+  'oregon', 'washington state', 'new jersey', 'massachusetts',
+  'illinois', 'georgia', 'tennessee', 'louisiana', 'carolina',
+  'virginia', 'maryland', 'connecticut', 'utah', 'montana', 'alaska',
+]
+
+function isUSDestination(destination?: string): boolean {
+  if (!destination) return true // default to showing Yelp
+  const dest = destination.toLowerCase()
+  return US_SIGNALS.some(signal => dest.includes(signal))
+}
+
 export function TripItinerary({
   initialDays,
   validated = true,
-  showYelp = true,
   destination,
   language,
 }: {
   initialDays: DayPlan[]
   validated?: boolean
-  showYelp?: boolean
   destination?: string
   language?: string
 }) {
+  const showYelp = isUSDestination(destination)
   const [days, setDays] = useState(initialDays)
   const [swappedKey, setSwappedKey] = useState<string | null>(null)
   const [editingKey, setEditingKey] = useState<string | null>(null)
