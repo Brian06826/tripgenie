@@ -9,6 +9,7 @@ function generateQrUrl(data: string, size: number): string {
 
 export function ShareButton({ tripId, tripTitle }: { tripId: string; tripTitle?: string }) {
   const [copied, setCopied] = useState(false)
+  const [copyFailed, setCopyFailed] = useState(false)
   const [showPanel, setShowPanel] = useState(false)
   const [url, setUrl] = useState(`/trip/${tripId}`)
   const [mounted, setMounted] = useState(false)
@@ -18,21 +19,45 @@ export function ShareButton({ tripId, tripTitle }: { tripId: string; tripTitle?:
     setUrl(`${window.location.origin}/trip/${tripId}`)
   }, [tripId])
 
+  // Close on Escape key
+  useEffect(() => {
+    if (!showPanel) return
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setShowPanel(false)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [showPanel])
+
   async function handleCopy() {
+    let success = false
     try {
       await navigator.clipboard.writeText(url)
+      success = true
     } catch {
-      const textarea = document.createElement('textarea')
-      textarea.value = url
-      textarea.style.position = 'fixed'
-      textarea.style.opacity = '0'
-      document.body.appendChild(textarea)
-      textarea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textarea)
+      // Fallback for non-HTTPS or permission denied
+      try {
+        const textarea = document.createElement('textarea')
+        textarea.value = url
+        textarea.style.position = 'fixed'
+        textarea.style.opacity = '0'
+        document.body.appendChild(textarea)
+        textarea.select()
+        success = document.execCommand('copy')
+        document.body.removeChild(textarea)
+      } catch {
+        success = false
+      }
     }
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+
+    if (success) {
+      setCopied(true)
+      setCopyFailed(false)
+      setTimeout(() => setCopied(false), 2000)
+    } else {
+      setCopyFailed(true)
+      setTimeout(() => setCopyFailed(false), 3000)
+    }
   }
 
   async function handleNativeShare() {
@@ -44,12 +69,15 @@ export function ShareButton({ tripId, tripTitle }: { tripId: string; tripTitle?:
           url,
         })
         setShowPanel(false)
-      } catch {
-        // User cancelled — stay on panel
+        return
+      } catch (err) {
+        // AbortError = user cancelled the share sheet — do nothing, stay on panel
+        if (err instanceof Error && err.name === 'AbortError') return
+        // Any other error (NotAllowedError, TypeError) — fall through to copy
       }
-    } else {
-      handleCopy()
     }
+    // Fallback: copy to clipboard
+    handleCopy()
   }
 
   return (
@@ -115,9 +143,13 @@ export function ShareButton({ tripId, tripTitle }: { tripId: string; tripTitle?:
             <div className="space-y-2">
               <button
                 onClick={handleCopy}
-                className="w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2.5 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors min-h-[44px]"
+                className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-colors min-h-[44px] ${
+                  copyFailed
+                    ? 'bg-red-50 text-red-600'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
               >
-                {copied ? '✅ Copied!' : '📋 Copy Link / 複製連結'}
+                {copied ? '✅ Copied!' : copyFailed ? '⚠️ Copy failed — try long-press the link above' : '📋 Copy Link / 複製連結'}
               </button>
               {mounted && 'share' in navigator && (
                 <button

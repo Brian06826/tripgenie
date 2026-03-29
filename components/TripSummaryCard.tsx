@@ -39,9 +39,12 @@ export function TripSummaryCard({ days }: { days: DayPlan[] }) {
     }
   }
 
-  const travelLabel = totalTravelMinutes >= 60
-    ? `${Math.floor(totalTravelMinutes / 60)}h ${totalTravelMinutes % 60}m`
-    : `${totalTravelMinutes}m`
+  // Cap displayed total at a reasonable maximum per day (3 hrs/day)
+  const maxReasonableMinutes = days.length * 180
+  const displayMinutes = Math.min(totalTravelMinutes, maxReasonableMinutes)
+  const travelLabel = displayMinutes >= 60
+    ? `${Math.floor(displayMinutes / 60)}h ${displayMinutes % 60}m`
+    : `${displayMinutes}m`
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">

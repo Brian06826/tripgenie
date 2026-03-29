@@ -52,6 +52,18 @@ function getTransportMode(destination: string): TransportMode {
 // Haversine distance (km)
 // ---------------------------------------------------------------------------
 
+/**
+ * Validate that a coordinate is a real, usable lat/lng value.
+ * Catches: null, undefined, NaN, Infinity, (0,0), and out-of-range values.
+ */
+function isValidCoord(lat: number | null | undefined, lng: number | null | undefined): boolean {
+  if (lat == null || lng == null) return false
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false
+  if (lat === 0 && lng === 0) return false // Null Island — almost always a geocoding error
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return false
+  return true
+}
+
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371
   const dLat = (lat2 - lat1) * Math.PI / 180
@@ -251,7 +263,7 @@ export function optimizeRoutes(
     const withCoords: PlaceWithCoords[] = []
     for (let pi = 0; pi < places.length; pi++) {
       if (pinned.has(pi)) continue
-      if (places[pi].lat != null && places[pi].lng != null) {
+      if (isValidCoord(places[pi].lat, places[pi].lng)) {
         withCoords.push({ originalIndex: pi, lat: places[pi].lat!, lng: places[pi].lng! })
       }
     }
@@ -286,14 +298,19 @@ export function optimizeRoutes(
     }
 
     // Compute travel times between consecutive stops (coords already attached)
-    // Sanity: skip if haversine > 50km — bad geocoding, not a real city distance
+    // Guards: validate coordinates, reject bad geocoding (>50km within a city), cap at 3 hrs
     for (let pi = 1; pi < day.places.length; pi++) {
       const prev = day.places[pi - 1]
       const curr = day.places[pi]
-      if (prev.lat != null && prev.lng != null && curr.lat != null && curr.lng != null) {
-        const dist = haversineKm(prev.lat, prev.lng, curr.lat, curr.lng)
-        if (dist > 50) continue // bad geocoding — skip
-        const minutes = estimateTravelMinutes(dist, transport)
+      if (isValidCoord(prev.lat, prev.lng) && isValidCoord(curr.lat, curr.lng)) {
+        const dist = haversineKm(prev.lat!, prev.lng!, curr.lat!, curr.lng!)
+        if (!Number.isFinite(dist) || dist > 50) continue // bad geocoding — skip
+        let minutes = estimateTravelMinutes(dist, transport)
+        // Cap per-segment travel at 180 min (3 hrs) — anything higher is almost certainly wrong
+        if (minutes > 180) {
+          console.warn(`[route-optimizer] Capping travel ${prev.name} → ${curr.name}: ${minutes} min → 180 min (dist: ${dist.toFixed(1)} km)`)
+          minutes = 180
+        }
         day.places[pi].travelFromPrevious = {
           duration: formatMinutes(minutes),
           mode: transport.mode,
