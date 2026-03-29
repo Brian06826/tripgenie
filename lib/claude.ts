@@ -191,6 +191,7 @@ TRANSPORTATION & MEETING POINTS:
 - For US cities, assume visitors will drive between stops unless they specify otherwise.
 - For cities with excellent public transit (Tokyo, Osaka, Seoul, Hong Kong, Taipei, Singapore, London, Paris, Berlin, New York, San Francisco, Chicago, Boston), recommend specific transit lines/routes in tips (e.g. "Take the JR Yamanote Line to Shibuya Station").
 - Group nearby stops together to minimize travel time.
+- RETURN TRIP: If the user specifies a departure point or transportation method to reach the destination, ALWAYS include a return trip as the LAST stop of the last day. Use type "transport". For example, if user takes metro from Glendora to Long Beach, the last stop should be something like "Take Metro Blue Line + Gold Line back to Glendora" with duration "~2 hours" and the appropriate departure time after the last activity. Match the same transport mode they used to arrive.
 
 ARRIVAL & DEPARTURE AWARENESS:
 - If user mentions arriving at a specific time ("arriving 10am", "landing at 2pm"), start the itinerary from that time, not before.
