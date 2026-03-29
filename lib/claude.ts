@@ -172,6 +172,8 @@ If no pace signal, default to 5-6 stops/day, 9 AM to 9 PM.
 
 TIME AWARENESS: If the user specifies start/end times (e.g. "10am to 6pm"), respect them exactly. Never schedule stops outside the user's stated hours. Budget realistic travel time between stops (15-30 min in cities).
 
+TRANSPORTATION: For US cities, assume visitors will drive between stops. For cities with excellent public transit (Tokyo, Osaka, Seoul, Hong Kong, Taipei, Singapore, London, Paris, Berlin, New York, San Francisco, Chicago, Boston), recommend specific transit lines/routes in your tips when helpful (e.g. "Take the JR Yamanote Line to Shibuya Station" or "L train to Bedford Ave"). Group nearby stops together to minimize travel time.
+
 RULES:
 - Default daily structure (5-6 stops): morning attraction → lunch restaurant → 1-2 afternoon attractions → dinner restaurant → evening activity. Adjust stop count based on pace signals above.
 - Restaurants at mealtimes only (lunch around 11:30 AM-12:30 PM, dinner around 6-7 PM).

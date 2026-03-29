@@ -54,11 +54,20 @@ export const TripGenerationSchema = z.object({
   language: z.enum(['en', 'zh-TW', 'zh-HK', 'zh-CN']),
 })
 
+export const TravelFromPreviousSchema = z.object({
+  duration: z.string(),
+  mode: z.string(),
+  emoji: z.string(),
+})
+
 // Full Place with URLs added server-side
 export const PlaceSchema = PlaceGenerationSchema.extend({
   googleMapsUrl: z.string(),
   googleReviewsUrl: z.string(),
   yelpUrl: z.string(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+  travelFromPrevious: TravelFromPreviousSchema.optional(),
   backupOptions: z.array(BackupOptionFullSchema).optional(),
 })
 

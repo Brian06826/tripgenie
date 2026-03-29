@@ -14,6 +14,7 @@ interface PlaceResult {
   rating?: number
   user_ratings_total?: number
   price_level?: number
+  geometry?: { location: { lat: number; lng: number } }
 }
 
 // ---------------------------------------------------------------------------
@@ -24,7 +25,7 @@ async function findPlace(query: string, apiKey: string): Promise<PlaceResult | n
   const params = new URLSearchParams({
     input: query,
     inputtype: 'textquery',
-    fields: 'place_id,name,formatted_address,business_status,rating,user_ratings_total,price_level',
+    fields: 'place_id,name,formatted_address,business_status,rating,user_ratings_total,price_level,geometry',
     key: apiKey,
   })
 
@@ -216,4 +217,58 @@ export async function validateRestaurants(generation: TripGeneration): Promise<T
   console.log(`[Google Places] Validated ${refs.length} restaurants: ${validCount} OK, ${failures.length} failed, ${replacedCount} replaced`)
 
   return out
+}
+
+// ---------------------------------------------------------------------------
+// Public: geocode all places (returns lat/lng for route optimization)
+// ---------------------------------------------------------------------------
+
+export interface GeocodedPlace {
+  dayIndex: number
+  placeIndex: number
+  lat: number
+  lng: number
+}
+
+/**
+ * Geocodes every place in the itinerary using Google Places findPlace.
+ * Restaurants that were already validated will already have geometry data
+ * cached from the validation step — this function fills in attractions,
+ * hotels, and other place types.
+ *
+ * Returns an array of geocoded coordinates keyed by day/place index.
+ */
+export async function geocodeAllPlaces(generation: TripGeneration): Promise<GeocodedPlace[]> {
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY
+  if (!apiKey) return []
+
+  const dest = generation.destination
+  const results: GeocodedPlace[] = []
+
+  const tasks: Promise<void>[] = []
+  for (let di = 0; di < generation.days.length; di++) {
+    for (let pi = 0; pi < generation.days[di].places.length; pi++) {
+      const place = generation.days[di].places[pi]
+      tasks.push(
+        (async () => {
+          try {
+            const found = await findPlace(`${place.name} ${dest}`, apiKey)
+            if (found?.geometry?.location) {
+              results.push({
+                dayIndex: di,
+                placeIndex: pi,
+                lat: found.geometry.location.lat,
+                lng: found.geometry.location.lng,
+              })
+            }
+          } catch (err) {
+            console.error(`[Geocode] Failed for "${place.name}":`, err)
+          }
+        })()
+      )
+    }
+  }
+
+  await Promise.all(tasks)
+  return results
 }
