@@ -4,9 +4,11 @@ import { saveTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
 import { generateAndUploadOgImage } from '@/lib/og'
 import { fetchHeroImage } from '@/lib/unsplash'
+import { validateRestaurants, geocodeAllPlaces } from '@/lib/google-places'
+import { optimizeRoutes } from '@/lib/route-optimizer'
 import type { Trip } from '@/lib/types'
 
-export const maxDuration = 60
+export const maxDuration = 300
 
 export async function POST(request: Request) {
   let body: { prompt?: string }
@@ -38,35 +40,42 @@ export async function POST(request: Request) {
       try {
         const generation = await generateTrip(prompt)
 
+        // Validate restaurants against Google Places API
+        const validated = await validateRestaurants(generation)
+
+        // Geocode all places and optimize routes per day
+        const geocoded = await geocodeAllPlaces(validated)
+        const optimized = optimizeRoutes(validated, geocoded)
+
         const tripId = nanoid(8)
 
-        // Build URLs — no validation/geocoding here (happens on trip page)
-        const days = generation.days.map(day => ({
+        const days = optimized.days.map(day => ({
           ...day,
           places: day.places.map(place => ({
             ...place,
-            googleMapsUrl: buildGoogleMapsUrl(place.name, generation.destination),
-            googleReviewsUrl: buildGoogleReviewsUrl(place.name, generation.destination),
-            yelpUrl: buildYelpUrl(place.name, generation.destination),
+            googleMapsUrl: buildGoogleMapsUrl(place.name, optimized.destination),
+            googleReviewsUrl: buildGoogleReviewsUrl(place.name, optimized.destination),
+            yelpUrl: buildYelpUrl(place.name, optimized.destination),
             backupOptions: place.backupOptions?.map(b => ({
               ...b,
-              googleMapsUrl: buildGoogleMapsUrl(b.name, generation.destination),
-              yelpUrl: buildYelpUrl(b.name, generation.destination),
+              googleMapsUrl: buildGoogleMapsUrl(b.name, optimized.destination),
+              yelpUrl: buildYelpUrl(b.name, optimized.destination),
             })),
           })),
         }))
 
         const trip: Trip = {
-          ...generation,
+          ...optimized,
           id: tripId,
           createdAt: new Date().toISOString(),
+          validated: true,
           days,
         }
 
         send({ type: 'saving' })
 
         const [heroResult, ogImageUrl] = await Promise.all([
-          fetchHeroImage(generation.destination),
+          fetchHeroImage(optimized.destination),
           generateAndUploadOgImage(trip),
         ])
         if (heroResult) {

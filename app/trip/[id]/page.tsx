@@ -96,7 +96,7 @@ export default async function TripPage({ params }: Props) {
 
       {/* Day content */}
       <main className="max-w-4xl mx-auto px-4 py-4">
-        <TripItinerary initialDays={trip.days} tripId={id} alreadyValidated={trip.validated} />
+        <TripItinerary initialDays={trip.days} />
 
         {/* Create new trip CTA */}
         <div className="mt-6 mb-4">
