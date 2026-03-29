@@ -30,10 +30,19 @@ async function findPlace(query: string, apiKey: string): Promise<PlaceResult | n
   })
 
   const res = await fetch(`${PLACES_API}/findplacefromtext/json?${params}`)
-  if (!res.ok) return null
+  if (!res.ok) {
+    console.error(`[Google Places] findPlace HTTP ${res.status} for "${query}"`)
+    return null
+  }
 
   const data = await res.json()
-  return data.status === 'OK' && data.candidates?.length ? data.candidates[0] : null
+  if (data.status !== 'OK') {
+    if (data.status !== 'ZERO_RESULTS') {
+      console.error(`[Google Places] findPlace status=${data.status} for "${query}": ${data.error_message ?? ''}`)
+    }
+    return null
+  }
+  return data.candidates?.length ? data.candidates[0] : null
 }
 
 async function textSearch(query: string, apiKey: string): Promise<PlaceResult[]> {
@@ -44,9 +53,15 @@ async function textSearch(query: string, apiKey: string): Promise<PlaceResult[]>
   })
 
   const res = await fetch(`${PLACES_API}/textsearch/json?${params}`)
-  if (!res.ok) return []
+  if (!res.ok) {
+    console.error(`[Google Places] textSearch HTTP ${res.status} for "${query}"`)
+    return []
+  }
 
   const data = await res.json()
+  if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+    console.error(`[Google Places] textSearch status=${data.status} for "${query}": ${data.error_message ?? ''}`)
+  }
   return data.status === 'OK' ? (data.results ?? []) : []
 }
 
@@ -131,15 +146,22 @@ export async function validateRestaurants(generation: TripGeneration): Promise<T
         const found = await findPlace(`${place.name} ${dest}`, apiKey)
 
         if (!found) {
+          console.log(`[Google Places] FAIL "${place.name}" — not found on Google`)
           return { di, pi, valid: false, reason: 'not_found' }
         }
-        if (found.business_status === 'CLOSED_PERMANENTLY') {
+
+        const status = found.business_status ?? ''
+        if (status === 'CLOSED_PERMANENTLY' || status === 'CLOSED_TEMPORARILY') {
+          console.log(`[Google Places] FAIL "${place.name}" — ${status} (Google name: "${found.name}")`)
           return { di, pi, valid: false, reason: 'closed' }
         }
+
         if (!isInCity(found.formatted_address, dest)) {
+          console.log(`[Google Places] FAIL "${place.name}" — wrong city (address: ${found.formatted_address})`)
           return { di, pi, valid: false, reason: 'wrong_city' }
         }
 
+        console.log(`[Google Places] PASS "${place.name}" — rating: ${found.rating ?? 'N/A'}, reviews: ${found.user_ratings_total ?? 'N/A'}, status: ${status || 'OPERATIONAL'}`)
         return {
           di, pi,
           valid: true,
@@ -169,41 +191,65 @@ export async function validateRestaurants(generation: TripGeneration): Promise<T
   const failures = validations.filter(v => !v.valid)
 
   if (failures.length > 0) {
-    // Fetch a pool of real, open restaurants in the destination
-    let pool: PlaceResult[] = []
-    try {
-      pool = await textSearch(`best restaurants in ${dest}`, apiKey)
-    } catch (err) {
-      console.error('[Google Places] Failed to fetch replacement pool:', err)
+    // Fetch a general pool + cuisine-specific pools for better replacements
+    const poolCache = new Map<string, PlaceResult[]>()
+
+    async function getPool(query: string): Promise<PlaceResult[]> {
+      if (poolCache.has(query)) return poolCache.get(query)!
+      try {
+        const results = await textSearch(query, apiKey!)
+        poolCache.set(query, results)
+        return results
+      } catch (err) {
+        console.error(`[Google Places] Failed to fetch pool for "${query}":`, err)
+        return []
+      }
     }
 
+    // Pre-fetch general pool
+    await getPool(`best restaurants in ${dest}`)
+
     for (const f of failures) {
-      const replacement = pool.find(r =>
-        r.business_status !== 'CLOSED_PERMANENTLY' &&
-        !usedNames.has(r.name.toLowerCase()) &&
-        isInCity(r.formatted_address ?? '', dest)
-      )
+      const place = out.days[f.di].places[f.pi]
+
+      // Try cuisine-specific search first based on the original description
+      const desc = (place.description ?? '').toLowerCase()
+      const cuisineHints = ['seafood', 'mexican', 'italian', 'japanese', 'chinese',
+        'thai', 'korean', 'vietnamese', 'indian', 'french', 'american', 'bbq',
+        'sushi', 'ramen', 'pizza', 'burger', 'taco', 'steak', 'brunch', 'breakfast',
+        'cafe', 'bakery', 'dim sum', 'noodle', 'pho', 'curry']
+      const cuisine = cuisineHints.find(c => desc.includes(c) || place.name.toLowerCase().includes(c))
+
+      // Search cuisine-specific pool first, fall back to general
+      const pools = cuisine
+        ? [await getPool(`best ${cuisine} restaurant in ${dest}`), poolCache.get(`best restaurants in ${dest}`) ?? []]
+        : [poolCache.get(`best restaurants in ${dest}`) ?? []]
+
+      let replacement: PlaceResult | undefined
+      for (const pool of pools) {
+        replacement = pool.find(r =>
+          r.business_status !== 'CLOSED_PERMANENTLY' &&
+          r.business_status !== 'CLOSED_TEMPORARILY' &&
+          !usedNames.has(r.name.toLowerCase()) &&
+          isInCity(r.formatted_address ?? '', dest)
+        )
+        if (replacement) break
+      }
 
       if (replacement) {
-        const place = out.days[f.di].places[f.pi]
-        console.log(`[Google Places] Replacing "${place.name}" → "${replacement.name}" (${f.reason}) in ${dest}`)
+        console.log(`[Google Places] Replacing "${place.name}" → "${replacement.name}" (reason: ${f.reason}${cuisine ? `, cuisine: ${cuisine}` : ''})`)
 
         usedNames.add(replacement.name.toLowerCase())
-        pool.splice(pool.indexOf(replacement), 1)
 
         place.name = replacement.name
         place.nameLocal = undefined
-        place.description = `Popular local restaurant in ${dest}.`
+        place.description = `Popular ${cuisine ?? 'local'} restaurant in ${dest}.`
         place.googleRating = replacement.rating
         place.googleReviewCount = replacement.user_ratings_total
         place.priceRange = priceLevelToRange(replacement.price_level)
-        // Keep: arrivalTime, duration, type, tips
-        // Clear backups — they were chosen for the old restaurant
         place.backupOptions = undefined
       } else {
-        const place = out.days[f.di].places[f.pi]
         console.warn(`[Google Places] No replacement found for "${place.name}" in ${dest}`)
-        // Keep the original — better than nothing
       }
     }
   }
