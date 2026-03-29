@@ -199,25 +199,31 @@ export function optimizeRoutes(
       }
     }
 
-    // Build coords array for nearest-neighbor sorting
+    // Identify pinned positions: transport stops at start/end stay put
+    const pinnedFirst = places[0]?.type === 'transport' ? 0 : -1
+    const pinnedLast = places.length > 1 && places[places.length - 1]?.type === 'transport'
+      ? places.length - 1 : -1
+
+    // Build coords array for nearest-neighbor sorting (exclude pinned transport stops)
     const withCoords: PlaceWithCoords[] = []
     for (let pi = 0; pi < places.length; pi++) {
+      if (pi === pinnedFirst || pi === pinnedLast) continue
       if (places[pi].lat != null && places[pi].lng != null) {
         withCoords.push({ originalIndex: pi, lat: places[pi].lat!, lng: places[pi].lng! })
       }
     }
 
-    // Only reorder if we have coords for most places (>= 60%)
-    if (withCoords.length >= Math.ceil(places.length * 0.6)) {
+    // Only reorder the non-pinned middle stops if we have coords for most (>= 60%)
+    const reorderableCount = places.length - (pinnedFirst >= 0 ? 1 : 0) - (pinnedLast >= 0 ? 1 : 0)
+    if (reorderableCount > 0 && withCoords.length >= Math.ceil(reorderableCount * 0.6)) {
       const newOrder = nearestNeighborOrder(withCoords)
 
-      // Add places without coords at their original positions
+      // Add non-pinned places without coords at roughly their original relative position
       const hasCoords = new Set(withCoords.map(w => w.originalIndex))
       const noCoords = places
         .map((_, i) => i)
-        .filter(i => !hasCoords.has(i))
+        .filter(i => i !== pinnedFirst && i !== pinnedLast && !hasCoords.has(i))
 
-      // Merge: insert no-coord places at roughly their original relative position
       const reordered = [...newOrder]
       for (const idx of noCoords) {
         const ratio = idx / places.length
@@ -225,10 +231,17 @@ export function optimizeRoutes(
         reordered.splice(insertAt, 0, idx)
       }
 
-      // Reorder the places array
+      // Reconstruct: pinned first + reordered middle + pinned last
       const originalPlaces = [...places]
-      for (let i = 0; i < reordered.length; i++) {
-        day.places[i] = originalPlaces[reordered[i]]
+      let writeIdx = 0
+      if (pinnedFirst >= 0) {
+        day.places[writeIdx++] = originalPlaces[pinnedFirst]
+      }
+      for (const idx of reordered) {
+        day.places[writeIdx++] = originalPlaces[idx]
+      }
+      if (pinnedLast >= 0) {
+        day.places[writeIdx++] = originalPlaces[pinnedLast]
       }
     }
 

@@ -32,7 +32,7 @@ async function redisGet(id: string): Promise<TripItinerary | null> {
 async function redisSet(id: string, trip: TripItinerary): Promise<void> {
   try {
     const redis = await getRedis();
-    await redis.set(`trip:${id}`, JSON.stringify(trip), 'EX', 2592000);
+    await redis.set(`trip:${id}`, JSON.stringify(trip), 'EX', 7776000); // 90 days
   } catch (error) {
     console.error('Redis SET error:', error);
     throw error;

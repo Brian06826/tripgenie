@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { getTrip } from '@/lib/storage'
 import { EXAMPLE_TRIPS } from '@/lib/example-trips'
 import { TripItinerary } from '@/components/TripItinerary'
+import { TripMap } from '@/components/TripMap'
 import { ShareButton } from '@/components/ShareButton'
 import { ExampleTripViewer } from '@/components/ExampleTripViewer'
 
@@ -73,7 +74,7 @@ export default async function TripPage({ params }: Props) {
             <span className="text-xs opacity-90 truncate font-mono">
               tripgenie.app{tripUrl}
             </span>
-            <ShareButton tripId={id} />
+            <ShareButton tripId={id} tripTitle={trip.title} />
           </div>
 
           {/* Photo credit (Unsplash attribution requirement) */}
@@ -96,7 +97,8 @@ export default async function TripPage({ params }: Props) {
 
       {/* Day content */}
       <main className="max-w-4xl mx-auto px-4 py-4">
-        <TripItinerary initialDays={trip.days} validated={trip.validated === true} />
+        <TripMap days={trip.days} />
+        <TripItinerary initialDays={trip.days} validated={trip.validated === true} showYelp={trip.language === 'en'} />
 
         {/* Create new trip CTA */}
         <div className="mt-6 mb-4">

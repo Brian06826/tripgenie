@@ -1,13 +1,49 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import type { DayPlan } from '@/lib/types'
 import { PlaceCard } from './PlaceCard'
 import { AlternativesPanel } from './AlternativesPanel'
 
-export function TripItinerary({ initialDays, validated = true }: { initialDays: DayPlan[]; validated?: boolean }) {
+export function TripItinerary({ initialDays, validated = true, showYelp = true }: { initialDays: DayPlan[]; validated?: boolean; showYelp?: boolean }) {
   const [days, setDays] = useState(initialDays)
   const [swappedKey, setSwappedKey] = useState<string | null>(null)
+  const [activeDay, setActiveDay] = useState(0)
+  const sectionRefs = useRef<(HTMLElement | null)[]>([])
+  const tabBarRef = useRef<HTMLDivElement>(null)
+  const isScrollingRef = useRef(false)
+
+  // Track which day section is visible
+  useEffect(() => {
+    if (days.length <= 1) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isScrollingRef.current) return
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const idx = sectionRefs.current.indexOf(entry.target as HTMLElement)
+            if (idx >= 0) setActiveDay(idx)
+          }
+        }
+      },
+      { rootMargin: '-80px 0px -60% 0px', threshold: 0 }
+    )
+    for (const ref of sectionRefs.current) {
+      if (ref) observer.observe(ref)
+    }
+    return () => observer.disconnect()
+  }, [days.length])
+
+  function scrollToDay(idx: number) {
+    const el = sectionRefs.current[idx]
+    if (!el) return
+    isScrollingRef.current = true
+    setActiveDay(idx)
+    const tabBarHeight = tabBarRef.current?.offsetHeight ?? 44
+    const top = el.getBoundingClientRect().top + window.scrollY - tabBarHeight - 8
+    window.scrollTo({ top, behavior: 'smooth' })
+    setTimeout(() => { isScrollingRef.current = false }, 600)
+  }
 
   const handleSwap = useCallback((dayIndex: number, placeIndex: number, backupIndex: number) => {
     setDays(prev => {
@@ -45,9 +81,35 @@ export function TripItinerary({ initialDays, validated = true }: { initialDays: 
 
   return (
     <>
+      {/* Sticky day tabs — only show for multi-day trips */}
+      {days.length > 1 && (
+        <div
+          ref={tabBarRef}
+          className="sticky top-0 z-20 bg-gray-50/95 backdrop-blur-sm border-b border-gray-200 -mx-4 px-4 py-2 mb-3 flex gap-1.5 overflow-x-auto scrollbar-hide"
+        >
+          {days.map((day, i) => (
+            <button
+              key={day.dayNumber}
+              onClick={() => scrollToDay(i)}
+              className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                activeDay === i
+                  ? 'bg-orange text-white'
+                  : 'bg-white text-gray-500 border border-gray-200 hover:border-orange hover:text-orange'
+              }`}
+            >
+              Day {day.dayNumber}
+            </button>
+          ))}
+        </div>
+      )}
+
       {days.map((day, dayIndex) => (
-        <section key={day.dayNumber} className="mb-6">
-          <div className="sticky top-0 bg-navy text-white px-4 py-2.5 rounded-lg mb-3 z-10">
+        <section
+          key={day.dayNumber}
+          ref={(el) => { sectionRefs.current[dayIndex] = el }}
+          className="mb-6"
+        >
+          <div className="sticky top-[52px] bg-navy text-white px-4 py-2.5 rounded-lg mb-3 z-10">
             <h2 className="font-bold text-lg">Day {day.dayNumber}</h2>
             <p className="text-sm opacity-80">{day.title}</p>
           </div>
@@ -73,6 +135,7 @@ export function TripItinerary({ initialDays, validated = true }: { initialDays: 
                     <PlaceCard
                       place={place}
                       verifyStatus={place.type === 'restaurant' && validated ? 'verified' : 'none'}
+                      showYelp={showYelp}
                     />
                   </div>
                   {hasAlternatives && (

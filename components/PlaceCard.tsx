@@ -10,7 +10,7 @@ const TYPE_ICONS: Record<Place['type'], string> = {
 
 type VerifyStatus = 'pending' | 'verified' | 'none'
 
-export function PlaceCard({ place, verifyStatus = 'none' }: { place: Place; verifyStatus?: VerifyStatus }) {
+export function PlaceCard({ place, verifyStatus = 'none', showYelp = true }: { place: Place; verifyStatus?: VerifyStatus; showYelp?: boolean }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-3 transition-all duration-300">
       {/* Time + type */}
@@ -96,15 +96,17 @@ export function PlaceCard({ place, verifyStatus = 'none' }: { place: Place; veri
         >
           Reviews
         </a>
-        <a
-          href={place.yelpUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`Search Yelp for ${place.name}`}
-          className="flex-1 flex items-center justify-center text-xs font-semibold bg-red-50 text-red-500 min-h-[44px] rounded-lg hover:bg-red-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-        >
-          Yelp
-        </a>
+        {showYelp && (
+          <a
+            href={place.yelpUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Search Yelp for ${place.name}`}
+            className="flex-1 flex items-center justify-center text-xs font-semibold bg-red-50 text-red-500 min-h-[44px] rounded-lg hover:bg-red-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+          >
+            Yelp
+          </a>
+        )}
       </div>
     </div>
   )

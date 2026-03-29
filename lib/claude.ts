@@ -8,7 +8,7 @@ function getClient(): Anthropic {
     if (!process.env.ANTHROPIC_API_KEY) {
       throw new Error('ANTHROPIC_API_KEY is not configured. Add it in Vercel Dashboard → Settings → Environment Variables.')
     }
-    _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: 55000 })
+    _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: 120000 })
   }
   return _client
 }
@@ -23,11 +23,12 @@ const DURATION_EN = /\b(\d+\s*(days?|nights?|weeks?)|day.?trip|weekend|one.?day)
 const DURATION_CJK = /[一二三四五六七八九十\d]\s*(日|天|夜|晚|週)|週末|假期/
 
 // Patterns that are clearly not trip requests
-const GREETING = /^(hi|hello|hey|sup|yo|howdy|你好|哈囉|嗨|早安|晚安)[!.,?\s]*$/i
+const GREETING = /^(hi|hello|hey|sup|yo|howdy|你好|哈囉|嗨|早安|晚安)\b/i
 const META_QUESTION = /^(what('s| is) your (name|purpose)|who are you|tell me about yourself|你係咪|你是誰|你叫什麼)/i
 const WHAT_IS = /^(what\s+(is|are|does|can)|什麼是|什麼叫|解釋|說明)\s+\w/i
 const HELP_NON_TRAVEL = /^(help me (with|to write|understand|explain|calculate|translate|code)|幫我(寫|翻|解|算|做功課))/i
 const PURE_QUESTION = /^(how (are|do|does|can|should|would)|why (is|are|do|does)|when (is|are|do)|where (is|are|do))\s/i
+const CHAT_GENERIC = /^(tell me|write me|can you|please (help|write|explain|translate)|thank|thanks|good (morning|afternoon|evening)|nice to|I('m| am) (bored|tired|hungry|sad|happy))\b/i
 
 const NOT_TRIP_MESSAGE =
   "Please describe a trip! Include a destination and duration.\nFor example: '3 days Tokyo food trip' or '一日遊 Long Beach 情侶'"
@@ -55,7 +56,8 @@ export function validateTripRequest(prompt: string): { valid: true } | { valid: 
     META_QUESTION.test(trimmed) ||
     WHAT_IS.test(trimmed) ||
     HELP_NON_TRAVEL.test(trimmed) ||
-    PURE_QUESTION.test(trimmed)
+    PURE_QUESTION.test(trimmed) ||
+    CHAT_GENERIC.test(trimmed)
   ) {
     return { valid: false, message: NOT_TRIP_MESSAGE }
   }
@@ -81,6 +83,10 @@ export function detectTripDays(prompt: string): number {
 
   // "一週" / "一星期" / "a week" → 7
   if (/(一週|一星期|a week|7.?day)/i.test(prompt)) return 7
+
+  // "N weeks" → N * 7
+  const weekMatch = prompt.match(/(\d+)\s*weeks?/i)
+  if (weekMatch) return parseInt(weekMatch[1], 10) * 7
 
   // Arabic digits: "3 days", "5-day", "10日", "4天", "3日4夜" etc.
   const arabicMatch = prompt.match(/(\d+)\s*[-–]?\s*(day|days|日|天|夜|nights?)/i)
@@ -111,8 +117,10 @@ function getTier(days: number): Tier {
   return 3
 }
 
-function getMaxTokens(_tier: Tier): number {
-  return 6000
+function getMaxTokens(tier: Tier): number {
+  if (tier === 1) return 6000   // 1-2 days
+  if (tier === 2) return 10000  // 3-4 days
+  return 14000                  // 5+ days
 }
 
 // ---------------------------------------------------------------------------
@@ -122,6 +130,8 @@ function getMaxTokens(_tier: Tier): number {
 const SYSTEM_PROMPT = `You are TripGenie, an AI trip planner. Respond ONLY with valid JSON — no markdown, no explanation, no text outside the JSON object.
 
 GEOGRAPHIC CONSTRAINT (CRITICAL): Every place you recommend MUST be physically located WITHIN the destination city or its immediate vicinity (within 5 miles). NEVER recommend a place in a different city. For "Long Beach day trip", every place must be IN Long Beach — not Hollywood, not Santa Monica, not LA. Before including any place, verify: is this place actually in the destination? If unsure, choose a different place that you know is local.
+
+MULTI-CITY / REGION TRIPS: If the user requests a region (e.g. "Southeast Asia", "Europe", "Japan"), pick the most logical cities and split the trip across them, allocating 2-3 days per city. Set "destination" to the region name. For example, "2 weeks Southeast Asia" → Bangkok (3 days) → Chiang Mai (2 days) → Hanoi (3 days) → Ho Chi Minh City (2 days) → Siem Reap (3 days). Include inter-city transport as type "transport" stops between cities. Within each city segment, the geographic constraint applies — all stops must be in THAT city.
 
 ANTI-HALLUCINATION: Only recommend restaurants you are CONFIDENT have high ratings on Google (4.0+) or Yelp (4+ stars) with many reviews (200+). Recommend popular local favorites that real people actually review and visit, not chain restaurants. If you are not 100% sure a restaurant exists at that specific location, DO NOT include it. It is better to recommend fewer places than to include a fake one.
 

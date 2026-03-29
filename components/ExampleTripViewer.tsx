@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import type { Trip } from '@/lib/types'
 import { TripItinerary } from '@/components/TripItinerary'
+import { TripMap } from '@/components/TripMap'
 import { ShareButton } from '@/components/ShareButton'
 
 export function ExampleTripViewer({ trip }: { trip: Trip }) {
@@ -35,14 +36,15 @@ export function ExampleTripViewer({ trip }: { trip: Trip }) {
             <span className="text-xs opacity-90 truncate font-mono">
               tripgenie.app{tripUrl}
             </span>
-            <ShareButton tripId={trip.id} />
+            <ShareButton tripId={trip.id} tripTitle={trip.title} />
           </div>
         </div>
       </header>
 
       {/* Day content */}
       <main className="max-w-4xl mx-auto px-4 py-4">
-        <TripItinerary initialDays={trip.days} validated={false} />
+        <TripMap days={trip.days} />
+        <TripItinerary initialDays={trip.days} validated={false} showYelp={trip.language === 'en'} />
         <div className="mt-6 mb-4">
           <a
             href="/"
