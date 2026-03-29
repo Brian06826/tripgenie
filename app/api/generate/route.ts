@@ -1,34 +1,29 @@
-import { NextResponse } from 'next/server'
 import { nanoid } from 'nanoid'
 import { generateTrip } from '@/lib/claude'
 import { saveTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
 import { generateAndUploadOgImage } from '@/lib/og'
 import { fetchHeroImage } from '@/lib/unsplash'
-import { validateRestaurants, geocodeAllPlaces } from '@/lib/google-places'
-import { optimizeRoutes } from '@/lib/route-optimizer'
 import type { Trip } from '@/lib/types'
 
 export const maxDuration = 60
 
 export async function POST(request: Request) {
-  // Validate request before starting the stream
   let body: { prompt?: string }
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
   const prompt = body.prompt?.trim()
   if (!prompt) {
-    return NextResponse.json({ error: 'prompt is required' }, { status: 400 })
+    return Response.json({ error: 'prompt is required' }, { status: 400 })
   }
   if (prompt.length > 500) {
-    return NextResponse.json({ error: 'prompt too long (max 500 chars)' }, { status: 400 })
+    return Response.json({ error: 'prompt too long (max 500 chars)' }, { status: 400 })
   }
 
-  // Stream the generation so Vercel sees data before the 60s timeout
   const encoder = new TextEncoder()
 
   const stream = new ReadableStream({
@@ -37,52 +32,41 @@ export async function POST(request: Request) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
       }
 
-      // Send IMMEDIATELY — Vercel's 60s timeout is first-byte only.
-      // This heartbeat resets the clock before we even call Claude.
       send({ type: 'heartbeat' })
-
-      // Also pulse every 5 seconds so long retries/saves don't stall.
       const pulse = setInterval(() => { try { send({ type: 'heartbeat' }) } catch {} }, 5000)
 
       try {
         const generation = await generateTrip(prompt)
 
-        // Validate restaurants against Google Places API (no-ops if key not set)
-        const validated = await validateRestaurants(generation)
-
-        // Geocode all places and optimize routes per day
-        const geocoded = await geocodeAllPlaces(validated)
-        const optimized = optimizeRoutes(validated, geocoded)
-
         const tripId = nanoid(8)
 
-        const days = optimized.days.map(day => ({
+        // Build URLs — no validation/geocoding here (happens on trip page)
+        const days = generation.days.map(day => ({
           ...day,
           places: day.places.map(place => ({
             ...place,
-            googleMapsUrl: buildGoogleMapsUrl(place.name, optimized.destination),
-            googleReviewsUrl: buildGoogleReviewsUrl(place.name, optimized.destination),
-            yelpUrl: buildYelpUrl(place.name, optimized.destination),
+            googleMapsUrl: buildGoogleMapsUrl(place.name, generation.destination),
+            googleReviewsUrl: buildGoogleReviewsUrl(place.name, generation.destination),
+            yelpUrl: buildYelpUrl(place.name, generation.destination),
             backupOptions: place.backupOptions?.map(b => ({
               ...b,
-              googleMapsUrl: buildGoogleMapsUrl(b.name, optimized.destination),
-              yelpUrl: buildYelpUrl(b.name, optimized.destination),
+              googleMapsUrl: buildGoogleMapsUrl(b.name, generation.destination),
+              yelpUrl: buildYelpUrl(b.name, generation.destination),
             })),
           })),
         }))
 
         const trip: Trip = {
-          ...optimized,
+          ...generation,
           id: tripId,
           createdAt: new Date().toISOString(),
           days,
         }
 
-        // Hero + OG images — signal client we're in the save phase
         send({ type: 'saving' })
 
         const [heroResult, ogImageUrl] = await Promise.all([
-          fetchHeroImage(optimized.destination),
+          fetchHeroImage(generation.destination),
           generateAndUploadOgImage(trip),
         ])
         if (heroResult) {

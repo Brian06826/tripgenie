@@ -8,9 +8,11 @@ const TYPE_ICONS: Record<Place['type'], string> = {
   other: '📍',
 }
 
-export function PlaceCard({ place }: { place: Place }) {
+type VerifyStatus = 'pending' | 'verified' | 'none'
+
+export function PlaceCard({ place, verifyStatus = 'none' }: { place: Place; verifyStatus?: VerifyStatus }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-3">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-3 transition-all duration-300">
       {/* Time + type */}
       {place.arrivalTime && (
         <div className="text-xs font-semibold text-orange mb-1">
@@ -20,8 +22,20 @@ export function PlaceCard({ place }: { place: Place }) {
         </div>
       )}
 
-      {/* Name */}
-      <h3 className="font-bold text-gray-900 text-base mb-0.5">{place.name}</h3>
+      {/* Name + verification badge */}
+      <div className="flex items-center gap-2 mb-0.5">
+        <h3 className="font-bold text-gray-900 text-base">{place.name}</h3>
+        {verifyStatus === 'pending' && (
+          <span className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-full animate-pulse">
+            ⏳ Verifying...
+          </span>
+        )}
+        {verifyStatus === 'verified' && (
+          <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">
+            ✓ Verified
+          </span>
+        )}
+      </div>
       {place.nameLocal && (
         <p className="text-sm text-gray-500 mb-2">{place.nameLocal}</p>
       )}

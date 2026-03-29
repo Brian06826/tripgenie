@@ -1,13 +1,49 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { DayPlan } from '@/lib/types'
 import { PlaceCard } from './PlaceCard'
 import { AlternativesPanel } from './AlternativesPanel'
 
-export function TripItinerary({ initialDays }: { initialDays: DayPlan[] }) {
+type VerifyState = 'idle' | 'verifying' | 'done'
+
+export function TripItinerary({
+  initialDays,
+  tripId,
+  alreadyValidated,
+}: {
+  initialDays: DayPlan[]
+  tripId?: string
+  alreadyValidated?: boolean
+}) {
   const [days, setDays] = useState(initialDays)
   const [swappedKey, setSwappedKey] = useState<string | null>(null)
+  const [verifyState, setVerifyState] = useState<VerifyState>(
+    alreadyValidated ? 'done' : 'idle'
+  )
+
+  // Background validation
+  useEffect(() => {
+    if (!tripId || alreadyValidated) return
+
+    setVerifyState('verifying')
+
+    fetch('/api/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tripId }),
+    })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.trip?.days) {
+          setDays(data.trip.days)
+        }
+        setVerifyState('done')
+      })
+      .catch(() => {
+        setVerifyState('done')
+      })
+  }, [tripId, alreadyValidated])
 
   const handleSwap = useCallback((dayIndex: number, placeIndex: number, backupIndex: number) => {
     setDays(prev => {
@@ -43,6 +79,13 @@ export function TripItinerary({ initialDays }: { initialDays: DayPlan[] }) {
     })
   }, [])
 
+  function getVerifyStatus(placeType: string): 'pending' | 'verified' | 'none' {
+    if (placeType !== 'restaurant') return 'none'
+    if (verifyState === 'verifying') return 'pending'
+    if (verifyState === 'done') return 'verified'
+    return 'none'
+  }
+
   return (
     <>
       {days.map((day, dayIndex) => (
@@ -56,7 +99,7 @@ export function TripItinerary({ initialDays }: { initialDays: DayPlan[] }) {
             const hasAlternatives = (place.backupOptions?.length ?? 0) > 0
             const justSwapped = swappedKey === `${dayIndex}-${placeIndex}`
             return (
-              <div key={place.name}>
+              <div key={`${place.name}-${placeIndex}`}>
                 {/* Travel time connector */}
                 {place.travelFromPrevious && placeIndex > 0 && (
                   <div className="flex items-center justify-center gap-2 py-1.5 text-xs text-gray-400">
@@ -70,7 +113,10 @@ export function TripItinerary({ initialDays }: { initialDays: DayPlan[] }) {
 
                 <div className={hasAlternatives ? 'lg:grid lg:grid-cols-[1fr_260px] lg:gap-3 lg:items-start' : ''}>
                   <div className={justSwapped ? 'ring-2 ring-orange rounded-xl transition-shadow duration-500' : ''}>
-                    <PlaceCard place={place} />
+                    <PlaceCard
+                      place={place}
+                      verifyStatus={getVerifyStatus(place.type)}
+                    />
                   </div>
                   {hasAlternatives && (
                     <AlternativesPanel
