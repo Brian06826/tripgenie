@@ -225,7 +225,8 @@ RULES:
 - No place may appear as both a main stop and a backup option anywhere in the same itinerary.
 - Descriptions: 1 sentence max. Name a signature dish, landmark feature, or unique highlight.
 - Ratings: conservative estimates only. Assign 4.5+ only for widely acclaimed spots. Never 4.8+ unless world-famous.
-- For non-US destinations: omit yelpRating and yelpReviewCount entirely.`
+- For non-US destinations: omit yelpRating and yelpReviewCount entirely.
+- Theme parks and amusement parks (Disneyland, Universal Studios, SeaWorld, Legoland, Six Flags, etc.) should be scheduled as the ONLY major activity for that day. Do not schedule other attractions before or after a theme park visit on the same day.`
 
 function buildSystemPrompt(_tier: Tier): string {
   return SYSTEM_PROMPT
