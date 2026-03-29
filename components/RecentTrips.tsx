@@ -56,7 +56,7 @@ export function RecentTrips() {
   }
 
   return (
-    <section className="max-w-xl mx-auto px-4 pb-12">
+    <section className="max-w-xl mx-auto px-4 pb-6">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
           Your Recent Trips / 你最近嘅行程

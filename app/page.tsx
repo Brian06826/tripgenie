@@ -59,6 +59,9 @@ export default function HomePage() {
         <ChatInput />
       </section>
 
+      {/* Recent trips from localStorage */}
+      <RecentTrips />
+
       {/* Example trips */}
       <section className="max-w-xl mx-auto px-4 pb-12">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
@@ -75,9 +78,6 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
-      {/* Recent trips from localStorage */}
-      <RecentTrips />
     </div>
   )
 }
