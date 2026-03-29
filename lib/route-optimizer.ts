@@ -46,8 +46,13 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
 // ---------------------------------------------------------------------------
 
 function estimateTravelMinutes(distKm: number, mode: TransportMode): number {
-  // Average speeds: driving ~30 km/h city, transit ~20 km/h (with waits)
-  const speedKmh = mode.mode === 'transit' ? 20 : 30
+  // Scale speed by distance: short trips are city driving, long trips hit highways
+  let speedKmh: number
+  if (mode.mode === 'transit') {
+    speedKmh = distKm > 30 ? 40 : 20 // express train vs local transit
+  } else {
+    speedKmh = distKm > 50 ? 80 : distKm > 15 ? 45 : 30 // highway vs suburb vs city
+  }
   const minutes = (distKm / speedKmh) * 60
   // Minimum 5 min, round to nearest 5
   return Math.max(5, Math.round(minutes / 5) * 5)
@@ -243,6 +248,7 @@ export function optimizeRoutes(
     }
 
     // Recalculate arrival times based on travel + duration
+    // Use the LARGER of geocoded travel time vs Claude's implied travel in duration
     const firstPlace = day.places[0]
     const firstTime = firstPlace?.arrivalTime ? parseTime(firstPlace.arrivalTime) : null
 
@@ -252,11 +258,23 @@ export function optimizeRoutes(
         const place = day.places[pi]
         const prevPlace = day.places[pi - 1]
         const stayMin = prevPlace.duration ? parseDurationMinutes(prevPlace.duration) : 60
-        const travelMin = place.travelFromPrevious
+        const geocodedTravelMin = place.travelFromPrevious
           ? parseDurationMinutes(place.travelFromPrevious.duration)
           : 15
 
-        currentTime = addMinutes(currentTime.hours, currentTime.minutes, stayMin + travelMin)
+        // Check if the previous place's duration text contains embedded travel time
+        // e.g. "pick up car, 2-hour drive" — the drive IS the travel to next stop
+        const durationText = (prevPlace.duration ?? '').toLowerCase()
+        const hasEmbeddedTravel = /drive|ride|transfer|commute|travel|ferry/i.test(durationText)
+
+        // If duration embeds travel (e.g. "2-hour drive"), the stay IS the travel.
+        // Use the larger of Claude's stated duration vs geocoded distance.
+        // Don't double-count by adding both.
+        const totalMin = hasEmbeddedTravel
+          ? Math.max(stayMin, geocodedTravelMin) // travel is the activity, pick the larger estimate
+          : stayMin + geocodedTravelMin // normal: stay + separate travel
+
+        currentTime = addMinutes(currentTime.hours, currentTime.minutes, totalMin)
         place.arrivalTime = formatTime(currentTime.hours, currentTime.minutes)
       }
     }

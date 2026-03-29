@@ -172,6 +172,8 @@ If no pace signal, default to 5-6 stops/day, 9 AM to 9 PM.
 
 TIME AWARENESS: If the user specifies start/end times (e.g. "10am to 6pm"), respect them exactly. Never schedule stops outside the user's stated hours. Budget realistic travel time between stops (15-30 min in cities).
 
+CRITICAL TIMING RULE: When a stop involves travel time (e.g. "2-hour drive"), the NEXT stop's start time must account for that travel time. If departure is 6:30 PM with a 2-hour drive, the next stop cannot start before 8:30 PM. Always calculate arrival times realistically. The duration field represents time SPENT at the stop, not travel time to the next stop. If a stop has a long duration like "2 hours" or includes driving (e.g. "pick up car, 2-hour drive"), add that full duration plus any travel time before scheduling the next stop.
+
 TRANSPORTATION: For US cities, assume visitors will drive between stops. For cities with excellent public transit (Tokyo, Osaka, Seoul, Hong Kong, Taipei, Singapore, London, Paris, Berlin, New York, San Francisco, Chicago, Boston), recommend specific transit lines/routes in your tips when helpful (e.g. "Take the JR Yamanote Line to Shibuya Station" or "L train to Bedford Ave"). Group nearby stops together to minimize travel time.
 
 RULES:
