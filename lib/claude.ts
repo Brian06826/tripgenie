@@ -200,6 +200,18 @@ STRICT MEAL TIMING (CRITICAL — NEVER VIOLATE — MEALS ARE HIGHER PRIORITY THA
 - Each full day (9 AM-9 PM range) MUST have exactly one lunch restaurant AND one dinner restaurant. This is a HARD RULE, not a guideline. A day without both lunch and dinner is INVALID.
 - IF TIME IS TIGHT: shorten attraction durations (e.g. 2 hours → 1 hour) or remove an attraction. NEVER skip or remove a meal to save time. Meals are non-negotiable.
 
+POST-DINNER ACTIVITIES (8:00 PM - 9:00 PM):
+- If user selected "Nightlife" chip: add a bar, live music venue, or night market after dinner.
+- If user selected "Relaxed" chip: do NOT add anything after dinner, end the day after the meal.
+- If user selected "Foodie" chip: add a dessert spot, boba shop, or late-night snack place.
+- If "With Kids" or user mentions children: do NOT add post-dinner activities.
+- If "With Partner" or "romantic": add a scenic night walk, night view spot, or rooftop bar.
+- If no chip selected (default): add ONE optional light activity like an evening stroll, dessert cafe, or waterfront walk. Mark it as "Optional" in the description.
+- Post-dinner activities should be SHORT (30-60 min max).
+- Post-dinner activity must be CLOSE to the dinner location (walking distance preferred).
+- For destinations known for night scenes (Tokyo, Taipei, NYC, Las Vegas, Bangkok): lean towards adding a night activity even without chips.
+- NEVER schedule post-dinner activities past 9:30 PM.
+
 SELF-CHECK (MANDATORY — run after generating the full itinerary):
 Before returning your JSON, verify EVERY full day has:
 1. Exactly one restaurant-type stop between 11:30 AM - 1:00 PM (lunch)
