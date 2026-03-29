@@ -158,9 +158,23 @@ JSON schema:
   }]
 }
 
+PERSONALIZATION: Read the user's input carefully for signals and adapt:
+- "with kids" / "family" → family-friendly stops, skip bars/nightlife, add parks/playgrounds
+- "romantic" / "couple" / "date" → scenic spots, upscale dining, intimate venues
+- "budget" / "cheap" / "$" → affordable eats ($-$$), free attractions, street food
+- "luxury" / "upscale" / "$$$$" → fine dining, premium experiences
+- "food-focused" / "foodie" → more restaurants, food markets, culinary experiences
+- "nightlife" → include evening bars, live music, late-night spots
+- "relaxed" / "chill" → 3-4 stops/day, longer durations, no rushing. Hours: 10 AM to 7 PM.
+- "packed" / "maximize" → 6-7 stops/day, shorter durations. Hours: 8 AM to 10 PM.
+- "nature" / "outdoors" → parks, hikes, beaches, scenic viewpoints
+If no pace signal, default to 5-6 stops/day, 9 AM to 9 PM.
+
+TIME AWARENESS: If the user specifies start/end times (e.g. "10am to 6pm"), respect them exactly. Never schedule stops outside the user's stated hours. Budget realistic travel time between stops (15-30 min in cities).
+
 RULES:
-- Daily structure (5-6 stops): morning attraction (9 AM) → lunch restaurant (12 PM) → 1-2 afternoon attractions → dinner restaurant (6 PM) → evening activity (8 PM). Budget realistic travel time between stops.
-- Restaurants at 12 PM and 6 PM ONLY. Never place a restaurant at any other time.
+- Default daily structure (5-6 stops): morning attraction → lunch restaurant → 1-2 afternoon attractions → dinner restaurant → evening activity. Adjust stop count based on pace signals above.
+- Restaurants at mealtimes only (lunch around 11:30 AM-12:30 PM, dinner around 6-7 PM).
 - Exactly 1 backupOption per restaurant and attraction. Omit backupOptions for hotel/transport/other.
 - No place may appear as both a main stop and a backup option anywhere in the same itinerary.
 - Descriptions: 1 sentence max. Name a signature dish, landmark feature, or unique highlight.

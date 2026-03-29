@@ -10,13 +10,37 @@ const SUGGESTIONS = [
   'SD day trip, seafood dinner, couple',
 ]
 
+const PREFERENCE_CHIPS = [
+  { emoji: '🍜', label: 'Food-focused', keyword: 'food-focused' },
+  { emoji: '👨‍👩‍👧', label: 'Family', keyword: 'family-friendly' },
+  { emoji: '💰', label: 'Budget', keyword: 'budget' },
+  { emoji: '🌿', label: 'Relaxed', keyword: 'relaxed' },
+  { emoji: '🎉', label: 'Nightlife', keyword: 'nightlife' },
+  { emoji: '💑', label: 'Couple', keyword: 'romantic couple' },
+] as const
+
 export function ChatInput() {
   const [prompt, setPrompt] = useState('')
+  const [activeChips, setActiveChips] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
   const [loadingPhase, setLoadingPhase] = useState<'generating' | 'saving'>('generating')
   const [error, setError] = useState('')
   const router = useRouter()
   const isChinese = /[\u4e00-\u9fff\u3400-\u4dbf\uff00-\uffef]/.test(prompt)
+
+  function toggleChip(keyword: string) {
+    setActiveChips(prev => {
+      const next = new Set(prev)
+      if (next.has(keyword)) next.delete(keyword)
+      else next.add(keyword)
+      return next
+    })
+  }
+
+  function getFullPrompt() {
+    if (activeChips.size === 0) return prompt
+    return `${prompt} [${[...activeChips].join(', ')}]`
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -30,7 +54,7 @@ export function ChatInput() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt: getFullPrompt() }),
       })
 
       // Early validation errors come back as plain JSON (400), not a stream
@@ -107,6 +131,28 @@ export function ChatInput() {
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e) } }}
           className="w-full border border-gray-200 rounded-xl p-4 text-base resize-none focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange disabled:opacity-50"
         />
+
+        {/* Preference chips */}
+        <div className="flex flex-wrap gap-2">
+          {PREFERENCE_CHIPS.map(chip => {
+            const active = activeChips.has(chip.keyword)
+            return (
+              <button
+                key={chip.keyword}
+                type="button"
+                onClick={() => toggleChip(chip.keyword)}
+                disabled={loading}
+                className={`text-xs rounded-full px-3 py-1.5 min-h-[36px] transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50 ${
+                  active
+                    ? 'bg-orange text-white border border-orange'
+                    : 'border border-gray-200 hover:border-orange hover:text-orange'
+                }`}
+              >
+                {chip.emoji} {chip.label}
+              </button>
+            )
+          })}
+        </div>
 
         {/* Quick suggestions */}
         <div className="flex flex-wrap gap-2">
