@@ -132,11 +132,15 @@ function formatTime(hours: number, minutes: number): string {
 
 function parseDurationMinutes(duration: string): number {
   // "1-2 hours" → 90, "2 hours" → 120, "30 min" → 30, "1.5 hours" → 90
-  const hourMatch = duration.match(/(\d+(?:\.\d+)?)\s*(?:-\s*(\d+(?:\.\d+)?))?\s*hours?/i)
+  // Also handles "hr" format from formatMinutes(): "2 hr 30 min" → 150
+  const hourMatch = duration.match(/(\d+(?:\.\d+)?)\s*(?:-\s*(\d+(?:\.\d+)?))?\s*(?:hours?|hr)\b/i)
   if (hourMatch) {
     const low = parseFloat(hourMatch[1])
     const high = hourMatch[2] ? parseFloat(hourMatch[2]) : low
-    return Math.round(((low + high) / 2) * 60)
+    const hourMinutes = Math.round(((low + high) / 2) * 60)
+    // Also check for additional minutes: "2 hr 30 min"
+    const extraMin = duration.match(/\d+\s*(?:hours?|hr)\s+(\d+)\s*min/i)
+    return hourMinutes + (extraMin ? parseInt(extraMin[1], 10) : 0)
   }
   const minMatch = duration.match(/(\d+)\s*min/i)
   if (minMatch) return parseInt(minMatch[1], 10)
@@ -199,30 +203,36 @@ export function optimizeRoutes(
       }
     }
 
-    // Identify pinned positions: transport stops at start/end stay put
-    const pinnedFirst = places[0]?.type === 'transport' ? 0 : -1
-    const pinnedLast = places.length > 1 && places[places.length - 1]?.type === 'transport'
-      ? places.length - 1 : -1
+    // Pin transport at start/end AND all restaurants — only reorder attractions
+    // Moving meals around breaks the natural day flow (lunch between morning
+    // attractions, dinner drifting to afternoon, etc.)
+    const pinned = new Set<number>()
+    if (places[0]?.type === 'transport') pinned.add(0)
+    if (places.length > 1 && places[places.length - 1]?.type === 'transport') {
+      pinned.add(places.length - 1)
+    }
+    for (let pi = 0; pi < places.length; pi++) {
+      if (places[pi].type === 'restaurant') pinned.add(pi)
+    }
 
-    // Build coords array for nearest-neighbor sorting (exclude pinned transport stops)
+    // Build coords for nearest-neighbor: only non-pinned places (attractions/other)
     const withCoords: PlaceWithCoords[] = []
     for (let pi = 0; pi < places.length; pi++) {
-      if (pi === pinnedFirst || pi === pinnedLast) continue
+      if (pinned.has(pi)) continue
       if (places[pi].lat != null && places[pi].lng != null) {
         withCoords.push({ originalIndex: pi, lat: places[pi].lat!, lng: places[pi].lng! })
       }
     }
 
-    // Only reorder the non-pinned middle stops if we have coords for most (>= 60%)
-    const reorderableCount = places.length - (pinnedFirst >= 0 ? 1 : 0) - (pinnedLast >= 0 ? 1 : 0)
-    if (reorderableCount > 0 && withCoords.length >= Math.ceil(reorderableCount * 0.6)) {
+    // Only reorder if there are enough non-pinned stops with coords
+    const reorderableCount = places.length - pinned.size
+    if (reorderableCount > 1 && withCoords.length >= Math.ceil(reorderableCount * 0.6)) {
       const newOrder = nearestNeighborOrder(withCoords)
 
-      // Add non-pinned places without coords at roughly their original relative position
       const hasCoords = new Set(withCoords.map(w => w.originalIndex))
       const noCoords = places
         .map((_, i) => i)
-        .filter(i => i !== pinnedFirst && i !== pinnedLast && !hasCoords.has(i))
+        .filter(i => !pinned.has(i) && !hasCoords.has(i))
 
       const reordered = [...newOrder]
       for (const idx of noCoords) {
@@ -231,32 +241,26 @@ export function optimizeRoutes(
         reordered.splice(insertAt, 0, idx)
       }
 
-      // Reconstruct: pinned first + reordered middle + pinned last
+      // Reconstruct: pinned positions stay, non-pinned get reordered
       const originalPlaces = [...places]
-      let writeIdx = 0
-      if (pinnedFirst >= 0) {
-        day.places[writeIdx++] = originalPlaces[pinnedFirst]
-      }
-      for (const idx of reordered) {
-        day.places[writeIdx++] = originalPlaces[idx]
-      }
-      if (pinnedLast >= 0) {
-        day.places[writeIdx++] = originalPlaces[pinnedLast]
+      let reorderIdx = 0
+      for (let pi = 0; pi < places.length; pi++) {
+        if (pinned.has(pi)) {
+          day.places[pi] = originalPlaces[pi]
+        } else {
+          day.places[pi] = originalPlaces[reordered[reorderIdx++]]
+        }
       }
     }
 
     // Compute travel times between consecutive stops (coords already attached)
-    // Sanity check: if haversine distance > 100km between consecutive same-day
-    // stops, the geocoding is almost certainly wrong — skip travel time display
+    // Sanity: skip if haversine > 50km — bad geocoding, not a real city distance
     for (let pi = 1; pi < day.places.length; pi++) {
       const prev = day.places[pi - 1]
       const curr = day.places[pi]
       if (prev.lat != null && prev.lng != null && curr.lat != null && curr.lng != null) {
         const dist = haversineKm(prev.lat, prev.lng, curr.lat, curr.lng)
-        if (dist > 100) {
-          // Bad geocoding — don't show a nonsensical travel time
-          continue
-        }
+        if (dist > 50) continue // bad geocoding — skip
         const minutes = estimateTravelMinutes(dist, transport)
         day.places[pi].travelFromPrevious = {
           duration: formatMinutes(minutes),
@@ -266,12 +270,16 @@ export function optimizeRoutes(
       }
     }
 
-    // Recalculate arrival times based on travel + duration
-    // Use the LARGER of geocoded travel time vs Claude's implied travel in duration
+    // Recalculate arrival times but NEVER compress below Claude's original.
+    // Use whichever is LATER: our calculation or Claude's estimate.
+    // This prevents dinner drifting to 4 PM when real distances are shorter
+    // than Claude assumed, while still expanding if travel takes longer.
     const firstPlace = day.places[0]
     const firstTime = firstPlace?.arrivalTime ? parseTime(firstPlace.arrivalTime) : null
 
     if (firstTime) {
+      const originalTimes = day.places.map(p => p.arrivalTime)
+
       let currentTime = firstTime
       for (let pi = 1; pi < day.places.length; pi++) {
         const place = day.places[pi]
@@ -281,48 +289,27 @@ export function optimizeRoutes(
           ? parseDurationMinutes(place.travelFromPrevious.duration)
           : 15
 
-        // Check if the previous place's duration text contains embedded travel time
-        // e.g. "pick up car, 2-hour drive" — the drive IS the travel to next stop
+        // Embedded travel: "2-hour drive" — the drive IS the activity
         const durationText = (prevPlace.duration ?? '').toLowerCase()
         const hasEmbeddedTravel = /drive|ride|transfer|commute|travel|ferry/i.test(durationText)
 
-        // If duration embeds travel (e.g. "2-hour drive"), the stay IS the travel.
-        // Use the larger of Claude's stated duration vs geocoded distance.
-        // Don't double-count by adding both.
         const totalMin = hasEmbeddedTravel
-          ? Math.max(stayMin, geocodedTravelMin) // travel is the activity, pick the larger estimate
-          : stayMin + geocodedTravelMin // normal: stay + separate travel
+          ? Math.max(stayMin, geocodedTravelMin)
+          : stayMin + geocodedTravelMin
 
         currentTime = addMinutes(currentTime.hours, currentTime.minutes, totalMin)
-        place.arrivalTime = formatTime(currentTime.hours, currentTime.minutes)
-      }
 
-      // Enforce dinner timing: find the last restaurant — if it's before 6 PM,
-      // push it to 6:00 PM and cascade all subsequent stops forward.
-      // This prevents schedule compression from making dinner unrealistically early.
-      let lastRestIdx = -1
-      for (let pi = day.places.length - 1; pi >= 0; pi--) {
-        if (day.places[pi].type === 'restaurant') { lastRestIdx = pi; break }
-      }
-      if (lastRestIdx > 0) {
-        const dinnerTime = parseTime(day.places[lastRestIdx].arrivalTime ?? '')
-        // Only fix if dinner landed between ~3 PM and 5:59 PM (too early)
-        // Don't touch lunch restaurants (before 3 PM) or correct dinner times (6 PM+)
-        if (dinnerTime && dinnerTime.hours >= 15 && dinnerTime.hours < 18) {
-          // Push dinner to 6:00 PM
-          day.places[lastRestIdx].arrivalTime = '6:00 PM'
-          // Cascade: recalculate all stops after dinner
-          let cascadeTime = { hours: 18, minutes: 0 }
-          for (let pi = lastRestIdx + 1; pi < day.places.length; pi++) {
-            const prevPlace = day.places[pi - 1]
-            const stayMin = prevPlace.duration ? parseDurationMinutes(prevPlace.duration) : 60
-            const travelMin = day.places[pi].travelFromPrevious
-              ? parseDurationMinutes(day.places[pi].travelFromPrevious!.duration)
-              : 15
-            cascadeTime = addMinutes(cascadeTime.hours, cascadeTime.minutes, stayMin + travelMin)
-            day.places[pi].arrivalTime = formatTime(cascadeTime.hours, cascadeTime.minutes)
+        // Use whichever is LATER: calculated or Claude's original
+        const orig = originalTimes[pi] ? parseTime(originalTimes[pi]!) : null
+        if (orig) {
+          const origMin = orig.hours * 60 + orig.minutes
+          const calcMin = currentTime.hours * 60 + currentTime.minutes
+          if (origMin > calcMin) {
+            currentTime = orig // Keep Claude's later time — don't compress
           }
         }
+
+        place.arrivalTime = formatTime(currentTime.hours, currentTime.minutes)
       }
     }
   }

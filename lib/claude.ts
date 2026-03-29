@@ -177,13 +177,19 @@ PERSONALIZATION: Read the user's input carefully for signals and adapt:
 - "nightlife" → include evening bars, live music, late-night spots
 - "nature" / "outdoors" → parks, hikes, beaches, scenic viewpoints
 
-DAILY SCHEDULE RULES (CRITICAL — follow exactly):
-1. DEFAULT full-day: 9:00 AM to 9:00 PM. Must include BOTH lunch AND dinner. NEVER end a full-day trip before 6:00 PM unless the user explicitly requests it.
-2. "relaxed" / "chill": 10:00 AM to 7:00 PM, 3-4 stops/day, longer durations. Still include lunch AND dinner.
-3. "packed" / "maximize": 8:00 AM to 10:00 PM, 6-7 stops/day. Include lunch AND dinner.
-4. "morning only" / "半日" / "half day": plan until ~1:00 PM. Include lunch. No dinner.
-5. User-specified times (e.g. "9am-3pm"): respect EXACTLY. Only include meals that fall within those hours. If window includes 11:30 AM-1:00 PM, include lunch. If window includes 6:00-8:00 PM, include dinner.
-6. If no pace signal, default to 5-6 stops/day.
+STOP COUNT PER DAY (CRITICAL — follow exactly):
+- 1-day trip: exactly 5 stops. Structure: morning attraction → lunch → 2 afternoon attractions → dinner.
+- 2+ day trips: exactly 4 stops per day. Structure: morning attraction → lunch → afternoon attraction → dinner.
+- "relaxed" / "chill": reduce by 1 stop, longer durations. Still include lunch AND dinner.
+- "packed" / "maximize": add 1-2 extra stops. Include lunch AND dinner.
+- "morning only" / "半日" / "half day": plan until ~1:00 PM. 2-3 stops + lunch. No dinner.
+- User-specified times (e.g. "9am-3pm"): respect EXACTLY. Only include meals that fall within those hours.
+- Transport stops (departure/return) do NOT count toward the stop count above.
+
+DAILY SCHEDULE RULES (CRITICAL):
+1. DEFAULT full-day: 9:00 AM to 9:00 PM. Must include BOTH lunch AND dinner. NEVER end before 6:00 PM.
+2. Space activities naturally throughout the day. Morning: 9:00 AM-12:00 PM. Afternoon: 1:30 PM-5:30 PM. Evening: 6:00 PM onward.
+3. Leave breathing room between stops — a real trip has natural gaps for walking, browsing, photos, and spontaneous exploration. Don't pack every minute.
 
 STRICT MEAL TIMING (CRITICAL — NEVER VIOLATE):
 - Breakfast/Brunch: 8:00-10:00 AM. Only include if user requests it OR multi-day trip where it makes sense.
@@ -213,7 +219,7 @@ TIME AWARENESS: If the user specifies start/end times (e.g. "10am to 6pm"), resp
 CRITICAL TIMING RULE: When a stop involves travel time (e.g. "2-hour drive"), the NEXT stop's start time must account for that travel time. If departure is 6:30 PM with a 2-hour drive, the next stop cannot start before 8:30 PM. Always calculate arrival times realistically. The duration field represents time SPENT at the stop, not travel time to the next stop. If a stop has a long duration like "2 hours" or includes driving (e.g. "pick up car, 2-hour drive"), add that full duration plus any travel time before scheduling the next stop.
 
 RULES:
-- Default daily structure (5-6 stops): morning attraction → lunch restaurant → 1-2 afternoon attractions → dinner restaurant → evening activity. Adjust stop count based on pace signals above.
+- Follow the STOP COUNT PER DAY rules above strictly. Do not add extra stops beyond what is specified.
 - Exactly 1 backupOption per restaurant and attraction. Omit backupOptions for hotel/transport/other.
 - No place may appear as both a main stop and a backup option anywhere in the same itinerary.
 - Descriptions: 1 sentence max. Name a signature dish, landmark feature, or unique highlight.
