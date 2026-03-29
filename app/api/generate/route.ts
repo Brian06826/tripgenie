@@ -5,6 +5,7 @@ import { saveTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
 import { generateAndUploadOgImage } from '@/lib/og'
 import { fetchHeroImage } from '@/lib/unsplash'
+import { validateRestaurants } from '@/lib/google-places'
 import type { Trip } from '@/lib/types'
 
 export const maxDuration = 60
@@ -45,25 +46,28 @@ export async function POST(request: Request) {
       try {
         const generation = await generateTrip(prompt)
 
+        // Validate restaurants against Google Places API (no-ops if key not set)
+        const validated = await validateRestaurants(generation)
+
         const tripId = nanoid(8)
 
-        const days = generation.days.map(day => ({
+        const days = validated.days.map(day => ({
           ...day,
           places: day.places.map(place => ({
             ...place,
-            googleMapsUrl: buildGoogleMapsUrl(place.name, generation.destination),
-            googleReviewsUrl: buildGoogleReviewsUrl(place.name, generation.destination),
-            yelpUrl: buildYelpUrl(place.name, generation.destination),
+            googleMapsUrl: buildGoogleMapsUrl(place.name, validated.destination),
+            googleReviewsUrl: buildGoogleReviewsUrl(place.name, validated.destination),
+            yelpUrl: buildYelpUrl(place.name, validated.destination),
             backupOptions: place.backupOptions?.map(b => ({
               ...b,
-              googleMapsUrl: buildGoogleMapsUrl(b.name, generation.destination),
-              yelpUrl: buildYelpUrl(b.name, generation.destination),
+              googleMapsUrl: buildGoogleMapsUrl(b.name, validated.destination),
+              yelpUrl: buildYelpUrl(b.name, validated.destination),
             })),
           })),
         }))
 
         const trip: Trip = {
-          ...generation,
+          ...validated,
           id: tripId,
           createdAt: new Date().toISOString(),
           days,
@@ -73,7 +77,7 @@ export async function POST(request: Request) {
         send({ type: 'saving' })
 
         const [heroResult, ogImageUrl] = await Promise.all([
-          fetchHeroImage(generation.destination),
+          fetchHeroImage(validated.destination),
           generateAndUploadOgImage(trip),
         ])
         if (heroResult) {
