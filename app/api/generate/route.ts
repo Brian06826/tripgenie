@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid'
 import { generateTrip, validateTripRequest } from '@/lib/claude'
-import { saveTrip } from '@/lib/storage'
+import { saveTrip, getTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
 import { generateAndUploadOgImage } from '@/lib/og'
 import { fetchHeroImage } from '@/lib/unsplash'
@@ -143,23 +143,30 @@ export async function POST(request: Request) {
         await saveTrip(tripId, trip)
         send({ type: 'done', tripId })
 
-        // Generate hero + OG images in background, then update the saved trip
+        // Generate hero + OG images in background, then MERGE onto current Redis state
+        // (must re-read from Redis to avoid overwriting edits the user made while images were loading)
         Promise.all([
           fetchHeroImage(optimized.destination),
           generateAndUploadOgImage(trip),
         ]).then(async ([heroResult, ogImageUrl]) => {
+          if (!heroResult && !ogImageUrl) return
+
+          // Re-read current trip from Redis (may have been edited by user)
+          const currentTrip = await getTrip(tripId)
+          if (!currentTrip) return
+
           let updated = false
           if (heroResult) {
-            trip.heroImageUrl = heroResult.imageUrl
-            trip.heroImageCredit = heroResult.credit
+            currentTrip.heroImageUrl = heroResult.imageUrl
+            currentTrip.heroImageCredit = heroResult.credit
             updated = true
           }
           if (ogImageUrl) {
-            trip.ogImageUrl = ogImageUrl
+            currentTrip.ogImageUrl = ogImageUrl
             updated = true
           }
           if (updated) {
-            await saveTrip(tripId, trip)
+            await saveTrip(tripId, currentTrip)
           }
         }).catch(err => {
           console.error('Background image generation failed:', err)
