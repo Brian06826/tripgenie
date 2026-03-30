@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import type { Trip } from '@/lib/types'
 import { TripItinerary } from './TripItinerary'
 import { TripMap } from './TripMap'
@@ -16,10 +16,14 @@ export function TripEditor({ trip }: Props) {
   const [undoStack, setUndoStack] = useState<Trip[]>([])
   const [isEditing, setIsEditing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
 
   const handleEdit = useCallback(async (instruction: string, language: string) => {
     setIsEditing(true)
     setError(null)
+
+    const controller = new AbortController()
+    abortRef.current = controller
 
     try {
       const res = await fetch('/api/edit-trip', {
@@ -30,6 +34,7 @@ export function TripEditor({ trip }: Props) {
           instruction,
           language,
         }),
+        signal: controller.signal,
       })
 
       const data = await res.json()
@@ -45,11 +50,22 @@ export function TripEditor({ trip }: Props) {
         setEditVersion(v => v + 1)
       }
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        // User cancelled — show brief message
+        setError(currentTrip.language === 'en' ? 'Edit cancelled' : '已取消修改')
+        setIsEditing(false)
+        return
+      }
       setError(err instanceof Error ? err.message : 'Edit failed. Please try again.')
     } finally {
+      abortRef.current = null
       setIsEditing(false)
     }
   }, [currentTrip])
+
+  const handleCancel = useCallback(() => {
+    abortRef.current?.abort()
+  }, [])
 
   const handleUndo = useCallback(async () => {
     if (undoStack.length === 0) return
@@ -97,6 +113,7 @@ export function TripEditor({ trip }: Props) {
       <TripEditBar
         onSubmit={handleEdit}
         onUndo={handleUndo}
+        onCancel={handleCancel}
         canUndo={undoStack.length > 0}
         isLoading={isEditing}
         error={error}
