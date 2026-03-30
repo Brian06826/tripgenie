@@ -6,24 +6,25 @@ import { TripItinerary } from './TripItinerary'
 import { TripMap } from './TripMap'
 import { TripEditBar } from './TripEditBar'
 
-function localStorageKey(tripId: string) {
+function lsKey(tripId: string) {
   return `tripgenie_edited_${tripId}`
 }
 
 function saveToLocal(trip: Trip) {
   try {
-    const payload = { trip, savedAt: Date.now() }
-    localStorage.setItem(localStorageKey(trip.id), JSON.stringify(payload))
+    localStorage.setItem(lsKey(trip.id), JSON.stringify(trip))
   } catch {}
 }
 
 function loadFromLocal(tripId: string): Trip | null {
   try {
-    const raw = localStorage.getItem(localStorageKey(tripId))
+    const raw = localStorage.getItem(lsKey(tripId))
     if (!raw) return null
-    const { trip } = JSON.parse(raw) as { trip: Trip; savedAt: number }
+    const parsed = JSON.parse(raw)
+    // Handle both old format {trip, savedAt} and new format (plain Trip)
+    const trip = parsed?.days ? parsed : parsed?.trip
     if (!trip?.id || !trip?.days) return null
-    return trip
+    return trip as Trip
   } catch {
     return null
   }
@@ -34,32 +35,21 @@ interface Props {
 }
 
 export function TripEditor({ trip }: Props) {
-  // On mount: prefer localStorage version over server-rendered prop (beats Vercel cache)
-  const [currentTrip, setCurrentTrip] = useState<Trip>(() => {
-    if (typeof window === 'undefined') return trip
-    const local = loadFromLocal(trip.id)
-    if (local) {
-      // Use localStorage version — it has the user's latest edits
-      // Clear it once we've used it (server will catch up on next deploy/revalidate)
-      return local
-    }
-    return trip
-  })
+  const [currentTrip, setCurrentTrip] = useState<Trip>(trip)
   const [editVersion, setEditVersion] = useState(0)
   const [undoStack, setUndoStack] = useState<Trip[]>([])
   const [isEditing, setIsEditing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
 
-  // Whenever currentTrip changes (from edit, undo, remove), persist to localStorage
-  const isFirstRender = useRef(true)
+  // On mount: check localStorage and override server data if edited version exists
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false
-      return
+    const local = loadFromLocal(trip.id)
+    if (local) {
+      setCurrentTrip(local)
+      setEditVersion(v => v + 1)
     }
-    saveToLocal(currentTrip)
-  }, [currentTrip])
+  }, [trip.id])
 
   const handleEdit = useCallback(async (instruction: string, language: string) => {
     setIsEditing(true)
@@ -87,14 +77,14 @@ export function TripEditor({ trip }: Props) {
       }
 
       if (data.trip) {
-        // Push current state to undo stack (max 5)
+        const updated = data.trip as Trip
         setUndoStack(prev => [currentTrip, ...prev].slice(0, 5))
-        setCurrentTrip(data.trip as Trip)
+        setCurrentTrip(updated)
         setEditVersion(v => v + 1)
+        saveToLocal(updated)
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
-        // User cancelled — show brief message
         setError(currentTrip.language === 'en' ? 'Edit cancelled' : '已取消修改')
         setIsEditing(false)
         return
@@ -132,6 +122,7 @@ export function TripEditor({ trip }: Props) {
       setCurrentTrip(previousTrip)
       setUndoStack(prev => prev.slice(1))
       setEditVersion(v => v + 1)
+      saveToLocal(previousTrip)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Undo failed')
     } finally {
@@ -140,7 +131,6 @@ export function TripEditor({ trip }: Props) {
   }, [currentTrip.id, undoStack])
 
   const handleRemovePlace = useCallback(async (dayIndex: number, placeIndex: number): Promise<boolean> => {
-    // Build updated trip with place removed
     const updatedDays = currentTrip.days.map((d, di) => {
       if (di !== dayIndex) return d
       return { ...d, places: d.places.filter((_, pi) => pi !== placeIndex) }
@@ -148,10 +138,8 @@ export function TripEditor({ trip }: Props) {
     const updatedTrip: Trip = { ...currentTrip, days: updatedDays }
 
     try {
-      // Push to undo stack before removing
       setUndoStack(prev => [currentTrip, ...prev].slice(0, 5))
 
-      // Persist to Redis via undo mode (direct save)
       const res = await fetch('/api/edit-trip', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -160,10 +148,10 @@ export function TripEditor({ trip }: Props) {
       if (!res.ok) throw new Error('Save failed')
 
       setCurrentTrip(updatedTrip)
+      saveToLocal(updatedTrip)
       return true
     } catch (err) {
       console.error('[remove-place] Save failed:', err)
-      // Revert undo stack on failure
       setUndoStack(prev => prev.slice(1))
       return false
     }
