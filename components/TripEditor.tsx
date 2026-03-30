@@ -1,22 +1,65 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import type { Trip } from '@/lib/types'
 import { TripItinerary } from './TripItinerary'
 import { TripMap } from './TripMap'
 import { TripEditBar } from './TripEditBar'
+
+function localStorageKey(tripId: string) {
+  return `tripgenie_edited_${tripId}`
+}
+
+function saveToLocal(trip: Trip) {
+  try {
+    const payload = { trip, savedAt: Date.now() }
+    localStorage.setItem(localStorageKey(trip.id), JSON.stringify(payload))
+  } catch {}
+}
+
+function loadFromLocal(tripId: string): Trip | null {
+  try {
+    const raw = localStorage.getItem(localStorageKey(tripId))
+    if (!raw) return null
+    const { trip } = JSON.parse(raw) as { trip: Trip; savedAt: number }
+    if (!trip?.id || !trip?.days) return null
+    return trip
+  } catch {
+    return null
+  }
+}
 
 interface Props {
   trip: Trip
 }
 
 export function TripEditor({ trip }: Props) {
-  const [currentTrip, setCurrentTrip] = useState<Trip>(trip)
+  // On mount: prefer localStorage version over server-rendered prop (beats Vercel cache)
+  const [currentTrip, setCurrentTrip] = useState<Trip>(() => {
+    if (typeof window === 'undefined') return trip
+    const local = loadFromLocal(trip.id)
+    if (local) {
+      // Use localStorage version — it has the user's latest edits
+      // Clear it once we've used it (server will catch up on next deploy/revalidate)
+      return local
+    }
+    return trip
+  })
   const [editVersion, setEditVersion] = useState(0)
   const [undoStack, setUndoStack] = useState<Trip[]>([])
   const [isEditing, setIsEditing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+
+  // Whenever currentTrip changes (from edit, undo, remove), persist to localStorage
+  const isFirstRender = useRef(true)
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    saveToLocal(currentTrip)
+  }, [currentTrip])
 
   const handleEdit = useCallback(async (instruction: string, language: string) => {
     setIsEditing(true)

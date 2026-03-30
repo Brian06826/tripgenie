@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import { getTrip } from '@/lib/storage'
 import { EXAMPLE_TRIPS } from '@/lib/example-trips'
@@ -7,7 +8,8 @@ import { ExampleTripViewer } from '@/components/ExampleTripViewer'
 import { TripEditor } from '@/components/TripEditor'
 import { SaveRecentTrip } from '@/components/SaveRecentTrip'
 
-export const dynamic = 'force-dynamic' // always fetch fresh from Redis (edits must persist on refresh)
+export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -30,6 +32,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function TripPage({ params }: Props) {
+  // Force dynamic rendering — read headers to defeat any caching layer
+  const headersList = await headers()
+  void headersList
+
   const { id } = await params
 
   // Example trips: served from hardcoded data with a client-side skeleton
