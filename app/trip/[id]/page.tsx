@@ -2,11 +2,9 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getTrip } from '@/lib/storage'
 import { EXAMPLE_TRIPS } from '@/lib/example-trips'
-import { TripItinerary } from '@/components/TripItinerary'
-import { TripMap } from '@/components/TripMap'
 import { ShareButton } from '@/components/ShareButton'
 import { ExampleTripViewer } from '@/components/ExampleTripViewer'
-import { TripSummaryCard } from '@/components/TripSummaryCard'
+import { TripEditor } from '@/components/TripEditor'
 import { SaveRecentTrip } from '@/components/SaveRecentTrip'
 
 export const revalidate = false // cache forever
@@ -104,11 +102,9 @@ export default async function TripPage({ params }: Props) {
         </div>
       </header>
 
-      {/* Day content */}
+      {/* Day content + edit bar */}
       <main className="max-w-4xl mx-auto px-4 py-4">
-        <TripSummaryCard days={trip.days} />
-        <TripMap days={trip.days} />
-        <TripItinerary initialDays={trip.days} validated={trip.validated === true} destination={trip.destination} language={trip.language} />
+        <TripEditor trip={trip} />
 
         {/* Create new trip CTA */}
         <div className="mt-6 mb-4">
@@ -121,7 +117,7 @@ export default async function TripPage({ params }: Props) {
         </div>
 
         {/* Footer */}
-        <footer className="text-center text-xs text-gray-400 py-8">
+        <footer className="text-center text-xs text-gray-400 py-8 pb-24">
           Made with <a href="/" className="text-orange underline">TripGenie</a>
         </footer>
       </main>
