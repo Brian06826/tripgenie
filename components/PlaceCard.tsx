@@ -18,13 +18,17 @@ export function PlaceCard({
   verifyStatus = 'none',
   showYelp = true,
   onEdit,
+  onRemove,
   editLoading = false,
+  removeLoading = false,
 }: {
   place: Place
   verifyStatus?: VerifyStatus
   showYelp?: boolean
   onEdit?: (instruction: string) => void
+  onRemove?: () => void
   editLoading?: boolean
+  removeLoading?: boolean
 }) {
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState('')
@@ -62,21 +66,34 @@ export function PlaceCard({
             ✓ Verified
           </span>
         )}
-        {onEdit && !editLoading && (
-          <button
-            onClick={() => {
-              setEditing(!editing)
-              setTimeout(() => inputRef.current?.focus(), 50)
-            }}
-            className="ml-auto shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
-            aria-label={`Edit ${place.name}`}
-          >
-            ✏️
-          </button>
+        {(onEdit || onRemove) && !editLoading && !removeLoading && (
+          <div className="ml-auto flex items-center gap-1">
+            {onEdit && (
+              <button
+                onClick={() => {
+                  setEditing(!editing)
+                  setTimeout(() => inputRef.current?.focus(), 50)
+                }}
+                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
+                aria-label={`Edit ${place.name}`}
+              >
+                ✏️
+              </button>
+            )}
+            {onRemove && (
+              <button
+                onClick={onRemove}
+                className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-red-500 hover:text-white transition-colors text-xs font-bold"
+                aria-label={`Remove ${place.name}`}
+              >
+                ✕
+              </button>
+            )}
+          </div>
         )}
-        {editLoading && (
+        {(editLoading || removeLoading) && (
           <span className="ml-auto text-[10px] text-orange bg-orange/10 px-2 py-1 rounded-full animate-pulse">
-            Updating...
+            {removeLoading ? 'Removing...' : 'Updating...'}
           </span>
         )}
       </div>

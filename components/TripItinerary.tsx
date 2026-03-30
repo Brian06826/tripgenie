@@ -38,16 +38,20 @@ export function TripItinerary({
   validated = true,
   destination,
   language,
+  onRemovePlace,
 }: {
   initialDays: DayPlan[]
   validated?: boolean
   destination?: string
   language?: string
+  onRemovePlace?: (dayIndex: number, placeIndex: number) => Promise<boolean>
 }) {
   const showYelp = isUSDestination(destination)
   const [days, setDays] = useState(initialDays)
   const [swappedKey, setSwappedKey] = useState<string | null>(null)
   const [editingKey, setEditingKey] = useState<string | null>(null)
+  const [removingKey, setRemovingKey] = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
   const [activeDay, setActiveDay] = useState(0)
   const sectionRefs = useRef<(HTMLElement | null)[]>([])
   const tabBarRef = useRef<HTMLDivElement>(null)
@@ -188,6 +192,35 @@ export function TripItinerary({
     }
   }, [days, destination, language])
 
+  const isChinese = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
+
+  const handleRemove = useCallback(async (dayIndex: number, placeIndex: number) => {
+    if (!onRemovePlace) return
+    const key = `${dayIndex}-${placeIndex}`
+    const placeName = days[dayIndex].places[placeIndex].name
+    setRemovingKey(key)
+
+    try {
+      const success = await onRemovePlace(dayIndex, placeIndex)
+      if (success) {
+        // Remove place from local state
+        setDays(prev => prev.map((d, di) => {
+          if (di !== dayIndex) return d
+          return { ...d, places: d.places.filter((_, pi) => pi !== placeIndex) }
+        }))
+        const msg = isChinese ? `已移除 ${placeName}` : `Removed ${placeName}`
+        setToast(msg)
+        setTimeout(() => setToast(null), 3000)
+      }
+    } catch (err) {
+      console.error('[remove] Failed:', err)
+      setToast(isChinese ? '移除失敗' : 'Remove failed')
+      setTimeout(() => setToast(null), 3000)
+    } finally {
+      setRemovingKey(null)
+    }
+  }, [days, onRemovePlace, isChinese])
+
   return (
     <>
       {/* Sticky day tabs — only show for multi-day trips */}
@@ -248,7 +281,9 @@ export function TripItinerary({
                       verifyStatus={place.type === 'restaurant' && validated ? 'verified' : 'none'}
                       showYelp={showYelp}
                       onEdit={destination ? (instruction) => handleEdit(dayIndex, placeIndex, instruction) : undefined}
+                      onRemove={onRemovePlace ? () => handleRemove(dayIndex, placeIndex) : undefined}
                       editLoading={isEditing}
+                      removeLoading={removingKey === key}
                     />
                   </div>
                   {hasAlternatives && (
@@ -263,6 +298,13 @@ export function TripItinerary({
           })}
         </section>
       ))}
+
+      {/* Removal confirmation toast */}
+      {toast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-gray-800 text-white text-sm px-4 py-2.5 rounded-xl shadow-lg animate-fade-in">
+          {toast}
+        </div>
+      )}
     </>
   )
 }

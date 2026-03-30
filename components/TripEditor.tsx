@@ -96,6 +96,36 @@ export function TripEditor({ trip }: Props) {
     }
   }, [currentTrip.id, undoStack])
 
+  const handleRemovePlace = useCallback(async (dayIndex: number, placeIndex: number): Promise<boolean> => {
+    // Build updated trip with place removed
+    const updatedDays = currentTrip.days.map((d, di) => {
+      if (di !== dayIndex) return d
+      return { ...d, places: d.places.filter((_, pi) => pi !== placeIndex) }
+    })
+    const updatedTrip: Trip = { ...currentTrip, days: updatedDays }
+
+    try {
+      // Push to undo stack before removing
+      setUndoStack(prev => [currentTrip, ...prev].slice(0, 5))
+
+      // Persist to Redis via undo mode (direct save)
+      const res = await fetch('/api/edit-trip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tripId: currentTrip.id, tripData: updatedTrip }),
+      })
+      if (!res.ok) throw new Error('Save failed')
+
+      setCurrentTrip(updatedTrip)
+      return true
+    } catch (err) {
+      console.error('[remove-place] Save failed:', err)
+      // Revert undo stack on failure
+      setUndoStack(prev => prev.slice(1))
+      return false
+    }
+  }, [currentTrip])
+
   return (
     <>
       <TripMap key={`map-${editVersion}`} days={currentTrip.days} />
@@ -105,6 +135,7 @@ export function TripEditor({ trip }: Props) {
         validated={currentTrip.validated === true}
         destination={currentTrip.destination}
         language={currentTrip.language}
+        onRemovePlace={handleRemovePlace}
       />
 
       {/* Spacer so fixed edit bar doesn't cover content */}
