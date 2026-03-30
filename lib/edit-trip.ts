@@ -110,7 +110,7 @@ function parseTime(t: string): number | null {
 }
 
 /** Clamp any arrivalTime after 9:30 PM to a sane value. Mutates in place. */
-function clampLateTimes(trip: TripGeneration): void {
+export function clampLateTimes(trip: TripGeneration): void {
   const LIMIT = 21 * 60 + 30 // 9:30 PM
   for (const day of trip.days) {
     for (const place of day.places) {

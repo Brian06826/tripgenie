@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
-import { editTrip } from '@/lib/edit-trip'
-import { getTrip, saveTrip } from '@/lib/storage'
+import { editTrip, clampLateTimes } from '@/lib/edit-trip'
+import { saveTrip, getTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
 import { geocodeAllPlaces } from '@/lib/google-places'
 import { optimizeRoutes } from '@/lib/route-optimizer'
@@ -68,16 +68,6 @@ function stripToGeneration(trip: Trip): TripGeneration {
   } as TripGeneration
 }
 
-/** Build a set of all place names in a trip for diffing. */
-function placeNameSet(trip: TripGeneration): Set<string> {
-  const names = new Set<string>()
-  for (const day of trip.days) {
-    for (const place of day.places) {
-      names.add(place.name)
-    }
-  }
-  return names
-}
 
 export async function POST(request: Request) {
   try {
@@ -91,10 +81,6 @@ export async function POST(request: Request) {
     // ── Undo mode: save provided trip data back to storage ──
     if (tripData) {
       await saveTrip(tripId, tripData as Trip)
-      // Read-back verification
-      const readBack = await getTrip(tripId)
-      console.log(`[edit-trip] Undo save verification: saved=${!!tripData} readBack=${!!readBack} placesMatch=${readBack?.days?.reduce((n: number, d: any) => n + d.places.length, 0) === (tripData as Trip).days?.reduce((n: number, d: any) => n + d.places.length, 0)}`)
-      // Bust Next.js cache for the trip page
       revalidatePath(`/trip/${tripId}`)
       return NextResponse.json({ success: true, trip: tripData })
     }
@@ -123,11 +109,7 @@ export async function POST(request: Request) {
     // 2. Call Claude to edit
     const edited = await editTrip(generationData, instruction.trim(), language)
 
-    // 3. Identify NEW places (names not in the old trip)
-    const oldNames = placeNameSet(generationData)
-    // We'll pass the full edited generation to geocode — it handles everything
-
-    // 4. Geocode all places & optimize routes
+    // 3. Geocode all places & optimize routes
     const geocoded = await geocodeAllPlaces(edited)
     const optimized = optimizeRoutes(edited, geocoded)
 
@@ -183,20 +165,10 @@ export async function POST(request: Request) {
       days,
     }
 
-    // 6. Save and return
-    console.log(`[edit-trip] Saving edited trip ${tripId}, ${updatedTrip.days.length} days, ${updatedTrip.days.reduce((n, d) => n + d.places.length, 0)} places`)
+    // 6. Clamp late times as a safety net, then save
+    clampLateTimes(updatedTrip)
     await saveTrip(tripId, updatedTrip)
-    // Read-back verification
-    const readBack = await getTrip(tripId)
-    const savedPlaces = updatedTrip.days.reduce((n, d) => n + d.places.length, 0)
-    const readPlaces = readBack?.days?.reduce((n, d) => n + d.places.length, 0) ?? 0
-    console.log(`[edit-trip] Save verification: saved=${savedPlaces} places, readBack=${readPlaces} places, match=${savedPlaces === readPlaces}`)
-    if (!readBack || savedPlaces !== readPlaces) {
-      console.error(`[edit-trip] CRITICAL: Read-back mismatch after save! saved=${savedPlaces} readBack=${readPlaces}`)
-    }
-    // Bust Next.js cache for the trip page
     revalidatePath(`/trip/${tripId}`)
-    console.log(`[edit-trip] Save complete for ${tripId}, revalidated /trip/${tripId}`)
 
     return NextResponse.json({ success: true, trip: updatedTrip })
   } catch (err) {

@@ -65,25 +65,17 @@ async function fileSet(id: string, trip: TripItinerary): Promise<void> {
 }
 
 export async function saveTrip(id: string, trip: TripItinerary): Promise<void> {
-  const prod = isProduction()
-  console.log(`[storage] saveTrip(${id}) isProduction=${prod} REDIS_URL=${process.env.REDIS_URL ? 'SET' : 'UNSET'}`)
-  if (prod) {
+  if (isProduction()) {
     await redisSet(id, trip);
   } else {
     await fileSet(id, trip);
   }
-  console.log(`[storage] saveTrip(${id}) complete`)
 }
 
 export async function getTrip(id: string): Promise<TripItinerary | null> {
-  const prod = isProduction()
-  console.log(`[storage] getTrip(${id}) isProduction=${prod} REDIS_URL=${process.env.REDIS_URL ? 'SET' : 'UNSET'}`)
-  let result: TripItinerary | null;
-  if (prod) {
-    result = await redisGet(id);
+  if (isProduction()) {
+    return redisGet(id);
   } else {
-    result = await fileGet(id);
+    return fileGet(id);
   }
-  console.log(`[storage] getTrip(${id}) result=${result ? 'found' : 'null'} places=${result?.days?.reduce((n, d) => n + d.places.length, 0) ?? 0}`)
-  return result;
 }
