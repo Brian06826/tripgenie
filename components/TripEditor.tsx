@@ -22,28 +22,45 @@ export function TripEditor({ tripId, trip }: Props) {
   const [isEditing, setIsEditing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const [debugInfo, setDebugInfo] = useState('loading...')
 
   // On mount: check localStorage and override server data if edited version exists
   useEffect(() => {
+    const key = lsKey(tripId)
     try {
-      const raw = localStorage.getItem(lsKey(tripId))
-      if (!raw) return
+      const raw = localStorage.getItem(key)
+      console.error('[TripEditor] LOAD: tripId=' + tripId + ' key=' + key + ' found=' + (raw ? 'YES (' + raw.length + ' bytes)' : 'NO'))
+      if (!raw) {
+        setDebugInfo(`tripId: ${tripId} | key: ${key} | hasLocalData: NO | using: server data`)
+        return
+      }
       const parsed = JSON.parse(raw) as Trip
       if (parsed?.days?.length > 0) {
         setCurrentTrip(parsed)
         setEditVersion(v => v + 1)
+        setDebugInfo(`tripId: ${tripId} | key: ${key} | hasLocalData: YES | using: localStorage data | title: ${parsed.title}`)
+        console.error('[TripEditor] LOAD SUCCESS: overriding server data with localStorage, title=' + parsed.title)
+      } else {
+        setDebugInfo(`tripId: ${tripId} | key: ${key} | hasLocalData: YES but invalid (no days) | using: server data`)
+        console.error('[TripEditor] LOAD FAILED: parsed data has no days')
       }
     } catch (e) {
-      console.error('[TripEditor] Failed to load from localStorage:', e)
+      console.error('[TripEditor] LOAD ERROR:', e)
+      setDebugInfo(`tripId: ${tripId} | key: ${key} | ERROR: ${e}`)
     }
   }, [tripId])
 
-  // Save to localStorage helper — uses the explicit tripId prop, never trip.id
+  // Save to localStorage helper — uses the explicit tripId prop
   function persistLocal(t: Trip) {
+    const key = lsKey(tripId)
     try {
-      localStorage.setItem(lsKey(tripId), JSON.stringify(t))
+      const json = JSON.stringify(t)
+      localStorage.setItem(key, json)
+      console.error('[TripEditor] PERSIST: key=' + key + ' size=' + json.length + ' title=' + t.title + ' days=' + t.days.length)
+      setDebugInfo(`tripId: ${tripId} | key: ${key} | JUST SAVED (${json.length} bytes) | title: ${t.title}`)
     } catch (e) {
-      console.error('[TripEditor] Failed to save to localStorage:', e)
+      console.error('[TripEditor] PERSIST ERROR:', e)
+      setDebugInfo(`tripId: ${tripId} | key: ${key} | SAVE FAILED: ${e}`)
     }
   }
 
@@ -155,6 +172,12 @@ export function TripEditor({ tripId, trip }: Props) {
 
   return (
     <>
+      {/* TEMPORARY DEBUG BANNER — remove after confirming localStorage works */}
+      <div style={{background:'red',color:'white',padding:'10px',position:'fixed',top:0,left:0,right:0,zIndex:9999,fontSize:'11px',fontFamily:'monospace'}}>
+        {debugInfo} | currentTrip.title: {currentTrip.title}
+      </div>
+      <div style={{height:'40px'}} />
+
       <TripMap key={`map-${editVersion}`} days={currentTrip.days} />
       <TripItinerary
         key={`itin-${editVersion}`}

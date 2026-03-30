@@ -46,7 +46,8 @@ EDITING RULES:
 - Match the language of the existing trip for all new text (titles, descriptions, tips).
 - Keep the same "title" and "destination" unless the edit specifically changes them.
 - When removing a place, adjust subsequent arrivalTimes to be natural (no 3-hour gaps between stops).
-- FINAL CHECK: Before returning, scan EVERY arrivalTime. If ANY time is after 9:30 PM, change it to be earlier. Dinner must be between 6:00 PM and 8:00 PM.
+- CRITICAL: Copy the EXACT arrivalTime from the original place to the replacement. Do not change it.
+- FINAL CHECK: If ANY arrivalTime is after 9:30 PM, it is WRONG. Fix it to be earlier. Dinner MUST be between 6:00 PM and 8:00 PM. A dinner at 9:45 PM or 10:40 PM is NEVER acceptable.
 
 JSON schema (return exactly this structure):
 {
@@ -96,6 +97,39 @@ function parseJsonResponse(text: string): unknown {
   }
 }
 
+/** Parse "9:30 PM" to minutes since midnight (e.g. 21*60+30=1290). Returns null if unparseable. */
+function parseTime(t: string): number | null {
+  const m = t.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+  if (!m) return null
+  let h = parseInt(m[1], 10)
+  const min = parseInt(m[2], 10)
+  const ampm = m[3].toUpperCase()
+  if (ampm === 'PM' && h !== 12) h += 12
+  if (ampm === 'AM' && h === 12) h = 0
+  return h * 60 + min
+}
+
+/** Clamp any arrivalTime after 9:30 PM to a sane value. Mutates in place. */
+function clampLateTimes(trip: TripGeneration): void {
+  const LIMIT = 21 * 60 + 30 // 9:30 PM
+  for (const day of trip.days) {
+    for (const place of day.places) {
+      if (!place.arrivalTime) continue
+      const mins = parseTime(place.arrivalTime)
+      if (mins === null) continue
+      if (mins > LIMIT) {
+        // Restaurants (dinner) → 7:00 PM, everything else → 5:00 PM
+        if (place.type === 'restaurant') {
+          place.arrivalTime = '7:00 PM'
+        } else {
+          place.arrivalTime = '5:00 PM'
+        }
+        console.log(`[edit-trip] Clamped late time for "${place.name}": was ${mins} mins → ${place.arrivalTime}`)
+      }
+    }
+  }
+}
+
 export async function editTrip(
   currentTrip: TripGeneration,
   instruction: string,
@@ -121,7 +155,10 @@ Return the complete updated trip JSON with modifications applied.`
 
   const parsed = parseJsonResponse(content.text)
   const result = TripGenerationSchema.safeParse(parsed)
-  if (result.success) return result.data
+  if (result.success) {
+    clampLateTimes(result.data)
+    return result.data
+  }
 
   // One retry with validation errors
   const retryMessage = `Previous response had validation errors: ${JSON.stringify(
@@ -147,7 +184,10 @@ EDIT INSTRUCTION: ${instruction}`
 
   const retryParsed = parseJsonResponse(retryContent.text)
   const retryResult = TripGenerationSchema.safeParse(retryParsed)
-  if (retryResult.success) return retryResult.data
+  if (retryResult.success) {
+    clampLateTimes(retryResult.data)
+    return retryResult.data
+  }
 
   throw new Error('Edit failed: invalid response from AI after retry')
 }
