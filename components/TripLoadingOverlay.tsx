@@ -21,18 +21,18 @@ const MSGS: Record<string, { en: string[]; 'zh-TW': string[]; 'zh-CN': string[] 
       'Optimizing your route... 📍',
     ],
     'zh-TW': [
-      '整理緊行李... 🧳',
-      '預訂最好嘅餐廳... 🍜',
-      '搵緊隱藏寶藏... 💎',
-      '查緊天氣預報... ☀️',
-      '同當地人溝通緊... 🗣️',
+      '整理行李中... 🧳',
+      '預訂最好的餐廳... 🍜',
+      '發掘隱藏寶藏... 💎',
+      '查看天氣預報... ☀️',
+      '和當地人溝通中... 🗣️',
       '規劃完美路線... 🗺️',
-      '問當地人秘密景點... 🤫',
+      '詢問當地人秘密景點... 🤫',
       '比較各大評分... ⭐',
-      '搵緊必試美食... 🥢',
-      '預留最靚嘅景色... 🏔️',
-      '喺 Google 驗證餐廳緊... ✅',
-      '優化你嘅路線... 📍',
+      '搜尋必試美食... 🥢',
+      '預留最美的景色... 🏔️',
+      '在 Google 驗證餐廳中... ✅',
+      '優化你的路線... 📍',
     ],
     'zh-CN': [
       '收拾行李中... 🧳',
@@ -59,12 +59,12 @@ const MSGS: Record<string, { en: string[]; 'zh-TW': string[]; 'zh-CN': string[] 
       'Checking the best photo spots... 📸',
     ],
     'zh-TW': [
-      '搵緊最浪漫嘅地方... 💑',
-      '預留最靚嘅日落景色... 🌅',
-      '搵緊氣氛好嘅約會餐廳... 🕯️',
+      '尋找最浪漫的地方... 💑',
+      '預留最美的日落景色... 🌅',
+      '尋找氣氛好的約會餐廳... 🕯️',
       '規劃完美散步路線... 🌸',
-      '搵緊隱世天台酒吧... 🍷',
-      '搵緊最佳打卡位... 📸',
+      '尋找隱藏的天台酒吧... 🍷',
+      '尋找最佳打卡點... 📸',
     ],
     'zh-CN': [
       '找最浪漫的地方... 💑',
@@ -85,12 +85,12 @@ const MSGS: Record<string, { en: string[]; 'zh-TW': string[]; 'zh-CN': string[] 
       'Scouting the best ice cream shops... 🍦',
     ],
     'zh-TW': [
-      '搵緊適合小朋友嘅活動... 👨‍👩‍👧',
-      '確保大人細路都開心... 🎠',
-      '搵緊親子餐廳... 🍕',
-      '計劃活動之間嘅休息時間... 😴',
-      '搵緊最好嘅雪糕店... 🍦',
-      '搵緊公園同遊樂場... 🛝',
+      '尋找適合小朋友的活動... 👨‍👩‍👧',
+      '確保大人小孩都開心... 🎠',
+      '尋找親子餐廳... 🍕',
+      '計劃活動之間的休息時間... 😴',
+      '尋找最好的冰淇淋店... 🍦',
+      '尋找公園和遊樂場... 🛝',
     ],
     'zh-CN': [
       '找适合小朋友的活动... 👨‍👩‍👧',
@@ -111,12 +111,12 @@ const MSGS: Record<string, { en: string[]; 'zh-TW': string[]; 'zh-CN': string[] 
       'Comparing Michelin and hole-in-the-wall picks... 🏆',
     ],
     'zh-TW': [
-      '搵緊最正嘅地道美食... 🍜',
-      '睇緊過千條評論... ⭐',
-      '搵緊隱世美食... 🥢',
-      '搵緊排隊名店... 🚪',
-      '搵緊最好嘅街頭小食... 🌮',
-      '比較米芝蓮同街坊小店... 🏆',
+      '尋找最道地的美食... 🍜',
+      '看了上千則評論... ⭐',
+      '發掘隱藏美食... 🥢',
+      '尋找排隊名店... 🚪',
+      '尋找最好的街頭小吃... 🌮',
+      '比較米其林和巷弄小店... 🏆',
     ],
     'zh-CN': [
       '找最正宗的地道美食... 🍜',
@@ -137,12 +137,12 @@ const MSGS: Record<string, { en: string[]; 'zh-TW': string[]; 'zh-CN': string[] 
       'Planning the most efficient route to save on transport... 🚶',
     ],
     'zh-TW': [
-      '搵緊最抵玩嘅免費景點... 💰',
-      '用最少錢玩最多嘢... 🎯',
-      '搵緊平靚正嘅餐廳... 🌟',
-      '搵緊 happy hour 優惠... 🍻',
-      '搵緊免費博物館日... 🎨',
-      '規劃最慳錢嘅路線... 🚶',
+      '尋找最划算的免費景點... 💰',
+      '花最少的錢玩最多... 🎯',
+      '尋找便宜又好評的餐廳... 🌟',
+      '尋找 happy hour 優惠... 🍻',
+      '尋找免費博物館日... 🎨',
+      '規劃最省錢的路線... 🚶',
     ],
     'zh-CN': [
       '找最划算的免费景点... 💰',
@@ -157,13 +157,13 @@ const MSGS: Record<string, { en: string[]; 'zh-TW': string[]; 'zh-CN': string[] 
 
 // Time-based phase messages — trilingual
 const PHASE_MSGS: { en: string; 'zh-TW': string; 'zh-CN': string; maxSec: number }[] = [
-  { en: 'Planning your adventure...', 'zh-TW': '正在規劃你嘅旅程...', 'zh-CN': '正在规划你的旅程...', maxSec: 5 },
+  { en: 'Planning your adventure...', 'zh-TW': '正在規劃你的旅程...', 'zh-CN': '正在规划你的旅程...', maxSec: 5 },
   { en: 'Discovering hidden gems...', 'zh-TW': '發掘隱藏景點...', 'zh-CN': '发掘隐藏景点...', maxSec: 15 },
-  { en: 'Finding the best restaurants...', 'zh-TW': '搵緊最好嘅餐廳...', 'zh-CN': '找最好的餐厅...', maxSec: 25 },
+  { en: 'Finding the best restaurants...', 'zh-TW': '尋找最好的餐廳...', 'zh-CN': '找最好的餐厅...', maxSec: 25 },
   { en: 'Optimizing your route...', 'zh-TW': '優化路線中...', 'zh-CN': '优化路线中...', maxSec: 40 },
-  { en: 'Validating with Google Places...', 'zh-TW': '用 Google Places 驗證緊...', 'zh-CN': '用 Google Places 验证中...', maxSec: 60 },
+  { en: 'Validating with Google Places...', 'zh-TW': '用 Google Places 驗證中...', 'zh-CN': '用 Google Places 验证中...', maxSec: 60 },
   { en: 'Fine-tuning the schedule...', 'zh-TW': '微調行程細節...', 'zh-CN': '微调行程细节...', maxSec: 90 },
-  { en: 'Almost there, putting finishing touches...', 'zh-TW': '就快好喇，最後修飾中...', 'zh-CN': '快好了，最后修饰中...', maxSec: Infinity },
+  { en: 'Almost there, putting finishing touches...', 'zh-TW': '快好了，最後修飾中...', 'zh-CN': '快好了，最后修饰中...', maxSec: Infinity },
 ]
 
 // Static positions — no Math.random() to avoid hydration mismatches
@@ -238,11 +238,11 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
 
   // Server phase messages (when backend sends validating/optimizing/saving)
   const serverPhaseMsg = phase === 'saving'
-    ? (lang === 'zh-CN' ? '生成分享页面中... ✨' : lang === 'zh-TW' ? '生成分享頁面緊... ✨' : 'Generating your shareable page... ✨')
+    ? (lang === 'zh-CN' ? '生成分享页面中... ✨' : lang === 'zh-TW' ? '生成分享頁面中... ✨' : 'Generating your shareable page... ✨')
     : phase === 'optimizing'
-    ? (lang === 'zh-CN' ? '优化你的路线... 📍' : lang === 'zh-TW' ? '優化你嘅路線... 📍' : 'Optimizing your route... 📍')
+    ? (lang === 'zh-CN' ? '优化你的路线... 📍' : lang === 'zh-TW' ? '優化你的路線... 📍' : 'Optimizing your route... 📍')
     : phase === 'validating'
-    ? (lang === 'zh-CN' ? '在 Google 验证餐厅中... ✅' : lang === 'zh-TW' ? '喺 Google 驗證餐廳緊... ✅' : 'Verifying restaurants on Google... ✅')
+    ? (lang === 'zh-CN' ? '在 Google 验证餐厅中... ✅' : lang === 'zh-TW' ? '在 Google 驗證餐廳中... ✅' : 'Verifying restaurants on Google... ✅')
     : null
 
   // During 'generating' phase, show time-based phase messages
@@ -360,7 +360,7 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
                 ? (lang === 'zh-CN' ? '优化路线中...' : lang === 'zh-TW' ? '優化路線中...' : 'Optimizing routes...')
                 : phase === 'validating'
                 ? (lang === 'zh-CN' ? '验证餐厅中...' : lang === 'zh-TW' ? '驗證餐廳中...' : 'Verifying restaurants...')
-                : (lang === 'zh-CN' ? 'AI 生成中...' : lang === 'zh-TW' ? 'AI 生成緊...' : 'AI is working its magic...')}
+                : (lang === 'zh-CN' ? 'AI 生成中...' : lang === 'zh-TW' ? 'AI 生成中...' : 'AI is working its magic...')}
             </span>
             <span className="text-white/40 text-xs tabular-nums">
               ⏱️ {elapsedLabel} / {estLabel}
