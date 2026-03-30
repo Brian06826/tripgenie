@@ -6,35 +6,16 @@ import { TripItinerary } from './TripItinerary'
 import { TripMap } from './TripMap'
 import { TripEditBar } from './TripEditBar'
 
-function lsKey(tripId: string) {
-  return `tripgenie_edited_${tripId}`
-}
-
-function saveToLocal(trip: Trip) {
-  try {
-    localStorage.setItem(lsKey(trip.id), JSON.stringify(trip))
-  } catch {}
-}
-
-function loadFromLocal(tripId: string): Trip | null {
-  try {
-    const raw = localStorage.getItem(lsKey(tripId))
-    if (!raw) return null
-    const parsed = JSON.parse(raw)
-    // Handle both old format {trip, savedAt} and new format (plain Trip)
-    const trip = parsed?.days ? parsed : parsed?.trip
-    if (!trip?.id || !trip?.days) return null
-    return trip as Trip
-  } catch {
-    return null
-  }
+function lsKey(id: string) {
+  return `tripgenie_edited_${id}`
 }
 
 interface Props {
+  tripId: string
   trip: Trip
 }
 
-export function TripEditor({ trip }: Props) {
+export function TripEditor({ tripId, trip }: Props) {
   const [currentTrip, setCurrentTrip] = useState<Trip>(trip)
   const [editVersion, setEditVersion] = useState(0)
   const [undoStack, setUndoStack] = useState<Trip[]>([])
@@ -44,12 +25,27 @@ export function TripEditor({ trip }: Props) {
 
   // On mount: check localStorage and override server data if edited version exists
   useEffect(() => {
-    const local = loadFromLocal(trip.id)
-    if (local) {
-      setCurrentTrip(local)
-      setEditVersion(v => v + 1)
+    try {
+      const raw = localStorage.getItem(lsKey(tripId))
+      if (!raw) return
+      const parsed = JSON.parse(raw) as Trip
+      if (parsed?.days?.length > 0) {
+        setCurrentTrip(parsed)
+        setEditVersion(v => v + 1)
+      }
+    } catch (e) {
+      console.error('[TripEditor] Failed to load from localStorage:', e)
     }
-  }, [trip.id])
+  }, [tripId])
+
+  // Save to localStorage helper — uses the explicit tripId prop, never trip.id
+  function persistLocal(t: Trip) {
+    try {
+      localStorage.setItem(lsKey(tripId), JSON.stringify(t))
+    } catch (e) {
+      console.error('[TripEditor] Failed to save to localStorage:', e)
+    }
+  }
 
   const handleEdit = useCallback(async (instruction: string, language: string) => {
     setIsEditing(true)
@@ -63,7 +59,7 @@ export function TripEditor({ trip }: Props) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tripId: currentTrip.id,
+          tripId,
           instruction,
           language,
         }),
@@ -81,7 +77,7 @@ export function TripEditor({ trip }: Props) {
         setUndoStack(prev => [currentTrip, ...prev].slice(0, 5))
         setCurrentTrip(updated)
         setEditVersion(v => v + 1)
-        saveToLocal(updated)
+        persistLocal(updated)
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
@@ -94,7 +90,7 @@ export function TripEditor({ trip }: Props) {
       abortRef.current = null
       setIsEditing(false)
     }
-  }, [currentTrip])
+  }, [currentTrip, tripId])
 
   const handleCancel = useCallback(() => {
     abortRef.current?.abort()
@@ -112,7 +108,7 @@ export function TripEditor({ trip }: Props) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tripId: currentTrip.id,
+          tripId,
           tripData: previousTrip,
         }),
       })
@@ -122,13 +118,13 @@ export function TripEditor({ trip }: Props) {
       setCurrentTrip(previousTrip)
       setUndoStack(prev => prev.slice(1))
       setEditVersion(v => v + 1)
-      saveToLocal(previousTrip)
+      persistLocal(previousTrip)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Undo failed')
     } finally {
       setIsEditing(false)
     }
-  }, [currentTrip.id, undoStack])
+  }, [tripId, undoStack])
 
   const handleRemovePlace = useCallback(async (dayIndex: number, placeIndex: number): Promise<boolean> => {
     const updatedDays = currentTrip.days.map((d, di) => {
@@ -143,19 +139,19 @@ export function TripEditor({ trip }: Props) {
       const res = await fetch('/api/edit-trip', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tripId: currentTrip.id, tripData: updatedTrip }),
+        body: JSON.stringify({ tripId, tripData: updatedTrip }),
       })
       if (!res.ok) throw new Error('Save failed')
 
       setCurrentTrip(updatedTrip)
-      saveToLocal(updatedTrip)
+      persistLocal(updatedTrip)
       return true
     } catch (err) {
       console.error('[remove-place] Save failed:', err)
       setUndoStack(prev => prev.slice(1))
       return false
     }
-  }, [currentTrip])
+  }, [currentTrip, tripId])
 
   return (
     <>

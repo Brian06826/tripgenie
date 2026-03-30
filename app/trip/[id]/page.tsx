@@ -110,7 +110,7 @@ export default async function TripPage({ params }: Props) {
 
       {/* Day content + edit bar */}
       <main className="max-w-4xl mx-auto px-4 py-4">
-        <TripEditor trip={trip} />
+        <TripEditor tripId={id} trip={trip} />
 
         {/* Create new trip CTA */}
         <div className="mt-6 mb-4">
