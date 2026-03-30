@@ -75,7 +75,7 @@ export function TripEditBar({ onSubmit, onUndo, onCancel, canUndo, isLoading, er
             <button
               type="button"
               onClick={onCancel}
-              className="shrink-0 px-4 py-2.5 text-xs font-medium text-red-500 bg-red-50 rounded-xl hover:bg-red-100 transition-colors min-h-[44px]"
+              className="shrink-0 px-4 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors min-h-[44px]"
             >
               {isChinese ? '取消' : 'Cancel'}
             </button>

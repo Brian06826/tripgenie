@@ -178,7 +178,9 @@ export async function POST(request: Request) {
     }
 
     // 6. Save and return
+    console.log(`[edit-trip] Saving edited trip ${tripId}, ${updatedTrip.days.length} days, ${updatedTrip.days.reduce((n, d) => n + d.places.length, 0)} places`)
     await saveTrip(tripId, updatedTrip)
+    console.log(`[edit-trip] Save complete for ${tripId}`)
 
     return NextResponse.json({ success: true, trip: updatedTrip })
   } catch (err) {
