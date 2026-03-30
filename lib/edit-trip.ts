@@ -27,7 +27,9 @@ RULES:
 - If the user says "make it more relaxed", remove 1 stop per day and extend durations.
 - If the user says "add nightlife", add an evening bar/club/live music venue after dinner.
 - When adding new places, they MUST be real, well-known establishments you are confident exist. Follow anti-hallucination rules.
-- Maintain meal timing rules: lunch 11:30 AM-1:00 PM, dinner 6:00-8:00 PM. NEVER schedule dinner before 5:30 PM.
+- MAINTAIN meal timing rules: lunch 11:30 AM-1:00 PM, dinner 6:00-8:00 PM. NEVER schedule dinner before 5:30 PM or after 8:30 PM. NEVER schedule lunch after 2:00 PM.
+- When replacing a meal (e.g. "change dinner to sushi"), keep the SAME arrivalTime as the original meal. Only change the place details (name, description, ratings), not the time.
+- Do NOT shift other activities when replacing a single place — only change that one place and keep all other arrivalTimes exactly the same.
 - Maintain geographic constraints: all places must be in the trip's destination city or immediate vicinity.
 - No duplicate places across the entire trip.
 - Match the language of the existing trip for all new text (titles, descriptions, tips).

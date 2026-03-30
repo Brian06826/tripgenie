@@ -93,8 +93,9 @@ export function ChatInput() {
   const router = useRouter()
   // Detect language: simplified Chinese, traditional Chinese, or English
   const hasChinese = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(prompt)
-  // Simplified-only chars (a subset that only appear in simplified Chinese)
-  const hasSimplified = /[\u7b80\u4f53\u8fd9\u8bf7\u8ba9\u5417\u5462\u6ca1\u8fd8\u53ea\u5c31\u8981\u5bf9\u8fc7\u5f88\u4e0d\u4e86\u4eba\u4eec\u4e48\u8981\u5c31\u662f\u90fd\u8bf4\u8981\u4f1a\u5230\u5f97\u7684\u6211\u5230\u611f\u89c9\u8ba9\u53bb\u6765\u770b\u8fc7\u987a\u4e86\u54ea\u5e72\u4e48\u7ebf\u8def\u53d1\u73b0\u7f8e\u98df\u9910\u5385\u6e38\u620f\u65c5\u6e38\u8bb0\u5f55\u7efc\u5408\u5386\u53f2\u8d5b\u4e8b\u987b\u77e5\u8bc6\u8bcd\u7ec4\u8bed\u6cd5\u8bed\u8a00\u7f16\u7801\u5185\u5bb9\u8d44\u6e90\u6d4f\u89c8\u5668\u8f6f\u4ef6\u7a0b\u5e8f\u5f00\u53d1]/.test(prompt)
+  // Simplified-only chars — each has a distinct Traditional counterpart (e.g. 简→簡, 体→體)
+  // MUST NOT include chars common to both systems (了,的,是,不,人,我,去,看,etc.)
+  const hasSimplified = /[简体这请让吗还对过们么说会觉来发现开关时间门东长几块钱飞机买点车线记顺须识语编码资浏览软厅录综历赛组词]/.test(prompt)
   const lang: 'en' | 'zh-TW' | 'zh-CN' = hasChinese ? (hasSimplified ? 'zh-CN' : 'zh-TW') : 'en'
   const isChinese = hasChinese
 
