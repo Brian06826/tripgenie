@@ -7,7 +7,7 @@ import { ExampleTripViewer } from '@/components/ExampleTripViewer'
 import { TripEditor } from '@/components/TripEditor'
 import { SaveRecentTrip } from '@/components/SaveRecentTrip'
 
-export const revalidate = false // cache forever
+export const dynamic = 'force-dynamic' // always fetch fresh from Redis (edits must persist on refresh)
 
 type Props = { params: Promise<{ id: string }> }
 
