@@ -1,4 +1,5 @@
 import { nanoid } from 'nanoid'
+import { revalidatePath } from 'next/cache'
 import { generateTrip, validateTripRequest } from '@/lib/claude'
 import { saveTrip, getTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
@@ -141,6 +142,7 @@ export async function POST(request: Request) {
 
         // Save trip immediately so user can view it fast
         await saveTrip(tripId, trip)
+        revalidatePath(`/trip/${tripId}`)
         send({ type: 'done', tripId })
 
         // Generate hero + OG images in background, then MERGE onto current Redis state
@@ -167,6 +169,7 @@ export async function POST(request: Request) {
           }
           if (updated) {
             await saveTrip(tripId, currentTrip)
+            revalidatePath(`/trip/${tripId}`)
           }
         }).catch(err => {
           console.error('Background image generation failed:', err)

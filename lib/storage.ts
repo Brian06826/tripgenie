@@ -1,6 +1,9 @@
 import { Trip as TripItinerary } from './types';
 
-const isProduction = !!process.env.REDIS_URL;
+// Evaluate fresh each call — module-level const can freeze if env loads late
+function isProduction(): boolean {
+  return !!process.env.REDIS_URL;
+}
 
 let redisClient: any = null;
 
@@ -62,17 +65,25 @@ async function fileSet(id: string, trip: TripItinerary): Promise<void> {
 }
 
 export async function saveTrip(id: string, trip: TripItinerary): Promise<void> {
-  if (isProduction) {
+  const prod = isProduction()
+  console.log(`[storage] saveTrip(${id}) isProduction=${prod} REDIS_URL=${process.env.REDIS_URL ? 'SET' : 'UNSET'}`)
+  if (prod) {
     await redisSet(id, trip);
   } else {
     await fileSet(id, trip);
   }
+  console.log(`[storage] saveTrip(${id}) complete`)
 }
 
 export async function getTrip(id: string): Promise<TripItinerary | null> {
-  if (isProduction) {
-    return redisGet(id);
+  const prod = isProduction()
+  console.log(`[storage] getTrip(${id}) isProduction=${prod} REDIS_URL=${process.env.REDIS_URL ? 'SET' : 'UNSET'}`)
+  let result: TripItinerary | null;
+  if (prod) {
+    result = await redisGet(id);
   } else {
-    return fileGet(id);
+    result = await fileGet(id);
   }
+  console.log(`[storage] getTrip(${id}) result=${result ? 'found' : 'null'} places=${result?.days?.reduce((n, d) => n + d.places.length, 0) ?? 0}`)
+  return result;
 }

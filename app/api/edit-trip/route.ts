@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { editTrip } from '@/lib/edit-trip'
 import { getTrip, saveTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
@@ -90,6 +91,11 @@ export async function POST(request: Request) {
     // ── Undo mode: save provided trip data back to storage ──
     if (tripData) {
       await saveTrip(tripId, tripData as Trip)
+      // Read-back verification
+      const readBack = await getTrip(tripId)
+      console.log(`[edit-trip] Undo save verification: saved=${!!tripData} readBack=${!!readBack} placesMatch=${readBack?.days?.reduce((n: number, d: any) => n + d.places.length, 0) === (tripData as Trip).days?.reduce((n: number, d: any) => n + d.places.length, 0)}`)
+      // Bust Next.js cache for the trip page
+      revalidatePath(`/trip/${tripId}`)
       return NextResponse.json({ success: true, trip: tripData })
     }
 
@@ -180,7 +186,17 @@ export async function POST(request: Request) {
     // 6. Save and return
     console.log(`[edit-trip] Saving edited trip ${tripId}, ${updatedTrip.days.length} days, ${updatedTrip.days.reduce((n, d) => n + d.places.length, 0)} places`)
     await saveTrip(tripId, updatedTrip)
-    console.log(`[edit-trip] Save complete for ${tripId}`)
+    // Read-back verification
+    const readBack = await getTrip(tripId)
+    const savedPlaces = updatedTrip.days.reduce((n, d) => n + d.places.length, 0)
+    const readPlaces = readBack?.days?.reduce((n, d) => n + d.places.length, 0) ?? 0
+    console.log(`[edit-trip] Save verification: saved=${savedPlaces} places, readBack=${readPlaces} places, match=${savedPlaces === readPlaces}`)
+    if (!readBack || savedPlaces !== readPlaces) {
+      console.error(`[edit-trip] CRITICAL: Read-back mismatch after save! saved=${savedPlaces} readBack=${readPlaces}`)
+    }
+    // Bust Next.js cache for the trip page
+    revalidatePath(`/trip/${tripId}`)
+    console.log(`[edit-trip] Save complete for ${tripId}, revalidated /trip/${tripId}`)
 
     return NextResponse.json({ success: true, trip: updatedTrip })
   } catch (err) {
