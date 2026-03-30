@@ -39,12 +39,14 @@ export function TripItinerary({
   destination,
   language,
   onRemovePlace,
+  onSaveDays,
 }: {
   initialDays: DayPlan[]
   validated?: boolean
   destination?: string
   language?: string
   onRemovePlace?: (dayIndex: number, placeIndex: number) => Promise<boolean>
+  onSaveDays?: (updatedDays: DayPlan[]) => Promise<void>
 }) {
   const showYelp = isUSDestination(destination)
   const [days, setDays] = useState(initialDays)
@@ -145,15 +147,15 @@ export function TripItinerary({
 
       const result = await res.json()
 
+      let updatedDays: DayPlan[] | null = null
+
       if (result.removed) {
-        // Remove the place from the day
-        setDays(prev => prev.map((d, di) => {
+        updatedDays = days.map((d, di) => {
           if (di !== dayIndex) return d
           return { ...d, places: d.places.filter((_, pi) => pi !== placeIndex) }
-        }))
+        })
       } else if (result.place) {
-        // Replace the place
-        setDays(prev => prev.map((d, di) => {
+        updatedDays = days.map((d, di) => {
           if (di !== dayIndex) return d
           return {
             ...d,
@@ -181,16 +183,21 @@ export function TripItinerary({
               }
             }),
           }
-        }))
-        setSwappedKey(key)
-        setTimeout(() => setSwappedKey(null), 2000)
+        })
+      }
+
+      // Save to Redis and reload via parent callback
+      if (updatedDays && onSaveDays) {
+        await onSaveDays(updatedDays)
+      } else if (updatedDays) {
+        setDays(updatedDays)
       }
     } catch (err) {
       console.error('[edit] Failed:', err)
     } finally {
       setEditingKey(null)
     }
-  }, [days, destination, language])
+  }, [days, destination, language, onSaveDays])
 
   const isChinese = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
 

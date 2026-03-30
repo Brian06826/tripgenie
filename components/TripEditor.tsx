@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef } from 'react'
-import type { Trip } from '@/lib/types'
+import type { Trip, DayPlan } from '@/lib/types'
 import { TripItinerary } from './TripItinerary'
 import { TripMap } from './TripMap'
 import { TripEditBar } from './TripEditBar'
@@ -85,6 +85,19 @@ export function TripEditor({ tripId, trip }: Props) {
     }
   }, [tripId, undoStack])
 
+  const handleSaveDays = useCallback(async (updatedDays: DayPlan[]) => {
+    const updatedTrip: Trip = { ...currentTrip, days: updatedDays }
+
+    const res = await fetch('/api/edit-trip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tripId, tripData: updatedTrip }),
+    })
+    if (!res.ok) throw new Error('Save failed')
+
+    window.location.reload()
+  }, [currentTrip, tripId])
+
   const handleRemovePlace = useCallback(async (dayIndex: number, placeIndex: number): Promise<boolean> => {
     const updatedDays = currentTrip.days.map((d, di) => {
       if (di !== dayIndex) return d
@@ -119,6 +132,7 @@ export function TripEditor({ tripId, trip }: Props) {
         destination={currentTrip.destination}
         language={currentTrip.language}
         onRemovePlace={handleRemovePlace}
+        onSaveDays={handleSaveDays}
       />
 
       {/* Spacer so fixed edit bar doesn't cover content */}
