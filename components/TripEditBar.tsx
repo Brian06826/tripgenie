@@ -42,7 +42,7 @@ export function TripEditBar({ onSubmit, onUndo, onCancel, canUndo, isLoading, er
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-orange-400 border-t-4 border-black shadow-[0_-2px_10px_rgba(0,0,0,0.3)]">
       <div className="max-w-4xl mx-auto px-4 py-3">
         {showError && error && (
           <div className="mb-2 text-xs text-red-600 bg-red-50 px-3 py-1.5 rounded-lg">

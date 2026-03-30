@@ -98,6 +98,14 @@ export function TripEditor({ trip }: Props) {
 
   return (
     <>
+      {/* DEBUG BANNER — remove after confirming */}
+      <div className="bg-yellow-300 text-black p-3 rounded-lg mb-4 text-sm font-mono">
+        <p className="font-bold">TripEditor loaded ✅</p>
+        <p>Trip ID: {currentTrip.id}</p>
+        <p>Language: {currentTrip.language}</p>
+        <p>Undo stack: {undoStack.length} | isEditing: {String(isEditing)}</p>
+        {error && <p className="text-red-700 font-bold">Error: {error}</p>}
+      </div>
       <TripMap key={`map-${editVersion}`} days={currentTrip.days} />
       <TripItinerary
         key={`itin-${editVersion}`}
