@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { TripLoadingOverlay } from '@/components/TripLoadingOverlay'
 
@@ -40,11 +40,11 @@ function detectTripDays(prompt: string): number {
 }
 
 function getEstimatedSeconds(days: number): number {
-  if (days <= 1) return 30
-  if (days <= 3) return 60
-  if (days <= 5) return 90
-  if (days <= 7) return 120
-  return 150
+  if (days <= 1) return 20
+  if (days <= 2) return 30
+  if (days <= 3) return 45
+  if (days <= 5) return 60
+  return 90
 }
 
 const TRIP_VALIDATION_MSG = "Please describe a trip! Include a destination and how long.\nFor example: '3 days Tokyo food trip' or '一日遊 Long Beach 情侶'"
@@ -90,7 +90,61 @@ export function ChatInput() {
   const [loadingVibe, setLoadingVibe] = useState<LoadingVibe>('default')
   const [error, setError] = useState('')
   const abortRef = useRef<AbortController | null>(null)
+  const pendingTripIdRef = useRef<string | null>(null)
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const router = useRouter()
+
+  // Poll for trip completion — used as fallback when SSE disconnects
+  const startPolling = useCallback((tripId: string) => {
+    if (pollRef.current) clearInterval(pollRef.current)
+    pollRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(`/trip/${tripId}`, { method: 'HEAD' })
+        if (res.ok) {
+          if (pollRef.current) clearInterval(pollRef.current)
+          pollRef.current = null
+          pendingTripIdRef.current = null
+          sessionStorage.removeItem('tg_pending_trip')
+          router.push(`/trip/${tripId}`)
+        }
+      } catch {}
+    }, 3000)
+  }, [router])
+
+  // Recovery when user switches back to the app
+  useEffect(() => {
+    function handleVisibility() {
+      if (document.visibilityState !== 'visible') return
+      const tripId = pendingTripIdRef.current || sessionStorage.getItem('tg_pending_trip')
+      if (!tripId) return
+      // Trip was being generated — try to navigate directly (server saved it to Redis)
+      pendingTripIdRef.current = tripId
+      startPolling(tripId)
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
+  }, [startPolling])
+
+  // On mount, check for an interrupted generation from a previous page load
+  useEffect(() => {
+    const tripId = sessionStorage.getItem('tg_pending_trip')
+    if (!tripId) return
+    // Check if this trip already exists — if so, redirect
+    fetch(`/trip/${tripId}`, { method: 'HEAD' }).then(res => {
+      if (res.ok) {
+        sessionStorage.removeItem('tg_pending_trip')
+        router.push(`/trip/${tripId}`)
+      } else {
+        // Trip doesn't exist yet, clear stale marker
+        sessionStorage.removeItem('tg_pending_trip')
+      }
+    }).catch(() => {
+      sessionStorage.removeItem('tg_pending_trip')
+    })
+  }, [router])
   // Detect language: simplified Chinese, traditional Chinese, or English
   const hasChinese = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(prompt)
   // Simplified-only chars — each has a distinct Traditional counterpart (e.g. 简→簡, 体→體)
@@ -188,11 +242,17 @@ export function ChatInput() {
           try { event = JSON.parse(line.slice(6)) } catch { continue }
 
           if (event.type === 'preview' && event.tripId) {
-            // Navigate immediately with preview data — trip page will show it
+            // Trip saved to Redis — remember ID for app-switch recovery
+            pendingTripIdRef.current = event.tripId
+            sessionStorage.setItem('tg_pending_trip', event.tripId)
+            if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null }
             router.push(`/trip/${event.tripId}`)
             return
           }
           if (event.type === 'done' && event.tripId) {
+            pendingTripIdRef.current = null
+            sessionStorage.removeItem('tg_pending_trip')
+            if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null }
             router.push(`/trip/${event.tripId}`)
             return
           }
@@ -218,6 +278,14 @@ export function ChatInput() {
         // User cancelled — silently reset
         setLoading(false)
         return
+      }
+      // If we have a pending tripId, the trip may have been saved to Redis
+      // even though the SSE stream disconnected (e.g. app switch on mobile)
+      const pendingId = pendingTripIdRef.current || sessionStorage.getItem('tg_pending_trip')
+      if (pendingId) {
+        // Start polling — the trip might finish in the background
+        startPolling(pendingId)
+        return // keep loading overlay visible while polling
       }
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
       setLoading(false)

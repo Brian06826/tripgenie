@@ -175,11 +175,11 @@ const STARS: [number, number, number][] = [
 
 // Human-friendly estimated time labels
 function getEstLabel(seconds: number): string {
+  if (seconds <= 20) return '~20s'
   if (seconds <= 30) return '~30s'
+  if (seconds <= 45) return '~45s'
   if (seconds <= 60) return '~1 min'
-  if (seconds <= 90) return '~1-2 min'
-  if (seconds <= 120) return '~2 min'
-  return '~2-3 min'
+  return '~1-2 min'
 }
 
 interface Props {
@@ -216,18 +216,18 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
     : phase === 'validating' ? 78
     : 60 // generating
 
-  // Smooth progress — reaches ~80% by estimated time, then slows down
+  // Eased progress — fast start, slows dramatically toward the end
   useEffect(() => {
     const t = setInterval(() => {
       setProgress(p => {
         if (p >= phaseCap) return phaseCap
-        const step = p < 30 ? 2.5 : p < 55 ? 1.5 : p < 75 ? 0.8 : 0.4
-        const speedFactor = Math.max(0.3, 30 / estimatedSeconds)
-        return Math.min(p + step * speedFactor, phaseCap)
+        // 0-30%: fast (about 5s), 30-60%: medium (about 10s), 60-80%: slow (about 15s), 80-95%: crawl
+        const step = p < 30 ? 4.5 : p < 60 ? 1.8 : p < 80 ? 0.6 : 0.2
+        return Math.min(p + step, phaseCap)
       })
-    }, 900)
+    }, 800)
     return () => clearInterval(t)
-  }, [phaseCap, estimatedSeconds])
+  }, [phaseCap])
 
   // Jump progress when phase advances
   useEffect(() => {

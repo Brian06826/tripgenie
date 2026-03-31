@@ -8,7 +8,7 @@ function getClient(): Anthropic {
     if (!process.env.ANTHROPIC_API_KEY) {
       throw new Error('ANTHROPIC_API_KEY is not configured. Add it in Vercel Dashboard → Settings → Environment Variables.')
     }
-    _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: 120000 })
+    _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: 180000 })
   }
   return _client
 }

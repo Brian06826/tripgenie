@@ -21,6 +21,8 @@ export function SaveRecentTrip({ id, title, destination, days, createdAt }: Prop
       createdAt,
       url: `/trip/${id}`,
     })
+    // Clear pending trip marker — generation completed successfully
+    try { sessionStorage.removeItem('tg_pending_trip') } catch {}
   }, [id, title, destination, days, createdAt])
 
   return null
