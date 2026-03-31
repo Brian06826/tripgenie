@@ -74,7 +74,7 @@ export default function HomePage() {
       </header>
 
       {/* Trust indicators */}
-      <div className="max-w-xl lg:max-w-3xl mx-auto px-4 -mt-5">
+      <div className="max-w-xl lg:max-w-3xl mx-auto px-4 -mt-5 relative z-10">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-3 flex items-center justify-around gap-2 text-center">
           <div>
             <p className="text-xs font-semibold text-gray-700">AI-Powered</p>
