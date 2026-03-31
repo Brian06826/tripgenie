@@ -49,25 +49,24 @@ function getEstimatedSeconds(days: number): number {
 
 const TRIP_VALIDATION_MSG = "Please describe a trip! Include a destination and how long.\nFor example: '3 days Tokyo food trip' or '一日遊 Long Beach 情侶'"
 
-// Travel keywords that signal a valid trip request
-const TRAVEL_KEYWORDS_EN = /\b(trip|day|days|night|nights|travel|vacation|holiday|itinerary|visit|tour|explore|weekend|getaway|sightseeing|road\s?trip|fly|flight|hotel|hostel|airbnb|resort|beach|hike|hiking)\b/i
-const TRAVEL_KEYWORDS_ZH = /(日|天|夜|晚|旅行|旅遊|遊|行程|玩|景點|酒店|民宿|海灘|自由行|跟團|出發|機票|住宿|觀光|度假|週末)/
-
-// Common destinations — not exhaustive, just enough to catch most valid requests
-const DESTINATIONS = /\b(tokyo|osaka|kyoto|seoul|taipei|hong\s?kong|bangkok|singapore|bali|paris|london|rome|barcelona|amsterdam|new\s?york|nyc|los\s?angeles|la|san\s?francisco|sf|san\s?diego|sd|seattle|portland|denver|boston|miami|orlando|chicago|houston|austin|nashville|las\s?vegas|hawaii|maui|honolulu|cancun|mexico|london|berlin|prague|vienna|lisbon|dublin|istanbul|dubai|sydney|melbourne|vancouver|toronto|montreal|florence|venice|munich|zurich|geneva|nice|marseille|lyon|madrid|seville|athens|santorini|phuket|hanoi|ho\s?chi\s?minh|kuala\s?lumpur|manila|cebu|okinawa|fukuoka|nagoya|sapporo|busan|jeju|kaohsiung|tainan|taichung|macau|shenzhen|shanghai|beijing|chengdu|guangzhou|xi'?an|hangzhou|nanjing|suzhou|guilin|kunming|lijiang|zhangjiajie|long\s?beach|pasadena|santa\s?monica|beverly\s?hills|anaheim|irvine|san\s?jose|oakland|sacramento|phoenix|scottsdale|tucson|albuquerque|salt\s?lake|raleigh|charlotte|jacksonville|memphis|minneapolis|st\s?louis|new\s?orleans|pittsburgh|philadelphia|detroit|washington\s?d\.?c\.?|atlanta)\b/i
-const DESTINATIONS_ZH = /(東京|大阪|京都|首爾|台北|香港|曼谷|新加坡|巴厘|巴黎|倫敦|羅馬|巴塞羅那|阿姆斯特丹|紐約|洛杉磯|舊金山|三藩市|聖地亞哥|西雅圖|邁阿密|芝加哥|夏威夷|沖繩|福岡|札幌|釜山|濟州|高雄|台南|台中|澳門|深圳|上海|北京|成都|廣州|西安|杭州|南京|蘇州|桂林|昆明|麗江|張家界)/
+// Lenient validation — only reject obviously non-trip inputs.
+// Let Claude handle ambiguous requests rather than blocking at the frontend.
+const NON_TRIP_PATTERNS = /^(hi|hey|hello|yo|sup|thanks|thank you|ok|okay|yes|no|bye|goodbye|how are you|what is|what's|who is|who are|tell me a joke|help me with|write me|explain|define|translate this|calculate|what time|good morning|good night|test|testing|asdf|aaa)[\s!?.]*$/i
 
 function isValidTripRequest(text: string): boolean {
   const trimmed = text.trim()
-  // Too short — CJK characters carry more meaning, so use lower threshold
-  const hasCJK = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(trimmed)
-  if (trimmed.length < (hasCJK ? 3 : 5)) return false
-  // Has a travel keyword
-  if (TRAVEL_KEYWORDS_EN.test(trimmed) || TRAVEL_KEYWORDS_ZH.test(trimmed)) return true
-  // Has a known destination
-  if (DESTINATIONS.test(trimmed) || DESTINATIONS_ZH.test(trimmed)) return true
-  // Has a number followed by something that looks like duration
-  if (/\d+\s*[-–]?\s*(day|night|日|天|夜|晚)/i.test(trimmed)) return true
+  if (trimmed.length < 2) return false
+  // Reject obvious non-trip inputs (greetings, generic questions)
+  if (NON_TRIP_PATTERNS.test(trimmed)) return false
+  // Accept anything 20+ characters — long enough to be a real request
+  if (trimmed.length >= 20) return true
+  // Accept if it contains any number (dates, durations, budgets)
+  if (/\d/.test(trimmed)) return true
+  // Accept if it contains travel/place-related words (broad match)
+  if (/\b(go|going|want|wanna|plan|visit|trip|travel|fly|stay|from|to)\b/i.test(trimmed)) return true
+  // Accept if it contains CJK characters (likely a valid request in Chinese/Japanese/Korean)
+  if (/[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/.test(trimmed)) return true
+  // Short English without any signals — reject
   return false
 }
 
