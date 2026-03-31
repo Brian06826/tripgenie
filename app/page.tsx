@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { ChatInput } from '@/components/ChatInput'
 import { ExampleTripLink } from '@/components/ExampleTripLink'
 import { RecentTrips } from '@/components/RecentTrips'
@@ -129,10 +130,15 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="text-center py-6 border-t border-gray-200 bg-white">
+      <footer className="text-center py-6 border-t border-gray-200 bg-white space-y-2">
         <p className="text-sm text-gray-500">
           Made with ❤️ using AI · © 2026 TripGenie
         </p>
+        <div className="flex items-center justify-center gap-3 text-xs text-gray-400">
+          <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacy Policy 隱私政策</Link>
+          <span>·</span>
+          <Link href="/terms" className="hover:text-gray-600 transition-colors">Terms 服務條款</Link>
+        </div>
       </footer>
     </div>
   )
