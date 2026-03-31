@@ -74,7 +74,7 @@ export default function HomePage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-3 flex items-center justify-around gap-2 text-center">
           <div>
             <p className="text-xs font-semibold text-gray-700">AI-Powered</p>
-            <p className="text-[10px] text-gray-400">Claude AI</p>
+            <p className="text-[10px] text-gray-400">AI</p>
           </div>
           <div className="w-px h-6 bg-gray-200" />
           <div>
@@ -127,7 +127,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="text-center py-6 border-t border-gray-200 bg-white">
         <p className="text-sm text-gray-500">
-          Made with ❤️ using Claude AI · © 2026 TripGenie
+          Made with ❤️ using AI · © 2026 TripGenie
         </p>
       </footer>
     </div>
