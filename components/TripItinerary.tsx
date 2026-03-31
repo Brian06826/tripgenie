@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import type { DayPlan } from '@/lib/types'
 import { PlaceCard } from './PlaceCard'
 import { AlternativesPanel } from './AlternativesPanel'
-import { HotelSuggestion } from './HotelSuggestion'
+import { HotelSuggestion, getDayCity } from './HotelSuggestion'
 
 // Yelp is useful for US destinations only
 const US_SIGNALS = [
@@ -316,6 +316,7 @@ export function TripItinerary({
             <div className="mt-3">
               <HotelSuggestion
                 destination={destination}
+                dayCity={getDayCity(day.places, destination)}
                 days={days.length}
                 language={language}
                 tripId={tripId}

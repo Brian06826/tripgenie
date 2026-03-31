@@ -61,15 +61,48 @@ function buildAgodaUrl(destination: string, checkin?: string, checkout?: string)
   return url
 }
 
+/** Extract city name from a place's address (e.g. "123 Main St, Beijing, China" → "Beijing") */
+function extractCityFromAddress(address: string): string | null {
+  const parts = address.split(',').map(s => s.trim())
+  if (parts.length >= 3) {
+    // "123 Street, City, State ZIP" or "123 Street, City, Country"
+    // City is typically second-to-last segment (strip zip/postal codes)
+    const candidate = parts[parts.length - 2].replace(/\d{4,}/g, '').trim()
+    if (candidate.length >= 2) return candidate
+  }
+  if (parts.length === 2) {
+    // "City, Country" format
+    return parts[0]
+  }
+  return null
+}
+
+interface PlaceWithAddress {
+  address?: string
+}
+
+/** Get the best city name for a day's activities, falling back to trip destination */
+export function getDayCity(places: PlaceWithAddress[], tripDestination: string): string {
+  // Try the first place with an address
+  for (const place of places) {
+    if (place.address) {
+      const city = extractCityFromAddress(place.address)
+      if (city) return city
+    }
+  }
+  return tripDestination
+}
+
 interface Props {
   destination: string
+  dayCity: string
   days: number
   language?: string
   tripId: string
   dayNumber: number
 }
 
-export function HotelSuggestion({ destination, days, language, tripId, dayNumber }: Props) {
+export function HotelSuggestion({ destination, dayCity, days, language, tripId, dayNumber }: Props) {
   const [aiLoading, setAiLoading] = useState(false)
   const [addLoading, setAddLoading] = useState(false)
   const [hotelName, setHotelName] = useState('')
@@ -78,47 +111,51 @@ export function HotelSuggestion({ destination, days, language, tripId, dayNumber
   if (days < 2) return null
 
   const isChinese = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
-  const showAgoda = isAsianDestination(destination)
+  const showAgoda = isAsianDestination(dayCity) || isAsianDestination(destination)
 
-  const googleUrl = buildGoogleHotelsUrl(destination)
-  const bookingUrl = buildBookingUrl(destination)
-  const agodaUrl = buildAgodaUrl(destination)
-
-  async function callEditApi(instruction: string) {
-    const res = await fetch('/api/edit-trip', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tripId, instruction, language: language ?? 'en' }),
-    })
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      throw new Error(data.error || 'Failed')
-    }
-    window.location.reload()
-  }
+  // Use per-day city for booking links so multi-city trips search the right city
+  const googleUrl = buildGoogleHotelsUrl(dayCity)
+  const bookingUrl = buildBookingUrl(dayCity)
+  const agodaUrl = buildAgodaUrl(dayCity)
 
   async function handleAiRecommend() {
     setAiLoading(true)
     setError(null)
     try {
-      const instruction = `Add a highly-rated hotel recommendation near the main itinerary area in ${destination}. Add it as the LAST place of Day ${dayNumber} with type "hotel", arrivalTime "3:00 PM", duration "Check-in". Include Google rating, price range, and a brief description. The hotel should be well-located for the planned activities.`
-      await callEditApi(instruction)
+      const instruction = `Add a highly-rated hotel recommendation near the main itinerary area in ${dayCity}. Add it as the LAST place of Day ${dayNumber} with type "hotel", arrivalTime "3:00 PM", duration "Check-in". Include Google rating, price range, and a brief description. The hotel should be well-located for the planned activities.`
+      const res = await fetch('/api/edit-trip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tripId, instruction, language: language ?? 'en' }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed')
+      }
+      window.location.reload()
     } catch {
       setError(isChinese ? '推薦失敗，請重試' : 'Failed, please try again')
       setAiLoading(false)
     }
   }
 
+  // Direct insert via /api/add-hotel — no AI call, instant
   async function handleAddHotel() {
     const name = hotelName.trim()
     if (!name) return
     setAddLoading(true)
     setError(null)
     try {
-      const instruction = isChinese
-        ? `在 Day ${dayNumber} 的最後加入「${name}」作為酒店入住，類型為 "hotel"，到達時間為 "3:00 PM"，時長為 "Check-in"。請加入該酒店的 Google 評分、價格範圍和簡短描述。`
-        : `Add "${name}" as the LAST place of Day ${dayNumber} with type "hotel", arrivalTime "3:00 PM", duration "Check-in". Include the hotel's Google rating, price range, and a brief description.`
-      await callEditApi(instruction)
+      const res = await fetch('/api/add-hotel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tripId, hotelName: name, dayNumber, language: language ?? 'en' }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed')
+      }
+      window.location.reload()
     } catch {
       setError(isChinese ? '加入失敗，請重試' : 'Failed to add, please try again')
       setAddLoading(false)
@@ -177,7 +214,7 @@ export function HotelSuggestion({ destination, days, language, tripId, dayNumber
         </button>
       </div>
 
-      {/* Manual hotel name input */}
+      {/* Manual hotel name input — direct insert, no AI */}
       <div className="flex gap-2">
         <input
           type="text"
