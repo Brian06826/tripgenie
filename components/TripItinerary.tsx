@@ -176,7 +176,11 @@ export function TripItinerary({
                 tips: result.place.tips,
                 priceRange: result.place.priceRange,
                 parking: undefined,
-                backupOptions: undefined,
+                backupOptions: result.place.backupOptions?.map((b: any) => ({
+                  ...b,
+                  googleMapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.name)}+${encodeURIComponent(destination || '')}`,
+                  yelpUrl: `https://www.yelp.com/search?find_desc=${encodeURIComponent(b.name)}&find_loc=${encodeURIComponent(destination || '')}`,
+                })),
                 googleMapsUrl: result.place.googleMapsUrl,
                 googleReviewsUrl: result.place.googleReviewsUrl,
                 yelpUrl: result.place.yelpUrl,

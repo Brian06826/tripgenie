@@ -25,6 +25,7 @@ export interface EditResult {
     yelpRating?: number
     tips?: string
     priceRange?: string
+    backupOptions?: { name: string; nameLocal?: string; description: string; googleRating?: number }[]
   }
 }
 
@@ -47,9 +48,12 @@ Otherwise, respond with a replacement place:
     "googleRating": number (optional, conservative estimate 1.0-5.0),
     "yelpRating": number (optional, US destinations only),
     "tips": "string (optional, 1 sentence)",
-    "priceRange": "$|$$|$$$|$$$$ (restaurants only, optional)"
+    "priceRange": "$|$$|$$$|$$$$ (restaurants only, optional)",
+    "backupOptions": [{ "name": "string", "nameLocal": "string (optional)", "description": "string", "googleRating": number (optional) }]
   }
 }
+
+CRITICAL: Every replacement place MUST include a "backupOptions" array with 1-2 alternatives of the same type (same cuisine for restaurants, same category for attractions). NEVER return a place without backupOptions.
 
 RULES:
 - Keep the same time slot (arrivalTime) as the original place unless the edit implies a time change.
