@@ -1,46 +1,47 @@
 import { ChatInput } from '@/components/ChatInput'
 import { ExampleTripLink } from '@/components/ExampleTripLink'
 import { RecentTrips } from '@/components/RecentTrips'
+import { TripCounter } from '@/components/TripCounter'
 
 const EXAMPLE_TRIPS = [
   {
     title: 'Long Beach Day Trip',
-    subtitle: 'Couple · Highly-rated restaurants · Scenic waterfront',
+    subtitle: 'Couple · Seafood · Waterfront',
     href: '/trip/example-longbeach',
     flag: '🇺🇸',
     gradient: 'from-sky-500 to-blue-600',
   },
   {
     title: 'San Diego 5-Day Getaway',
-    subtitle: 'SeaWorld · Seafood · Old Town',
+    subtitle: '5 Days · SeaWorld · Old Town',
     href: '/trip/example-sandiego',
     flag: '🇺🇸',
     gradient: 'from-amber-400 to-orange-500',
   },
   {
     title: 'Tokyo Food Adventure',
-    subtitle: '3 days · Tsukiji · Ramen · Izakaya',
+    subtitle: '3 Days · Ramen · Temples',
     href: '/trip/example-tokyo',
     flag: '🇯🇵',
     gradient: 'from-rose-400 to-pink-600',
   },
   {
     title: 'San Francisco Weekend',
-    subtitle: '2 days · Family · Golden Gate · Wharf',
+    subtitle: 'Family · Golden Gate · Wharf',
     href: '/trip/example-sf',
     flag: '🇺🇸',
     gradient: 'from-orange-400 to-red-500',
   },
   {
     title: 'Taipei Night Market Tour',
-    subtitle: '2 days · Couple · Shilin · Jiufen',
+    subtitle: 'Night Markets · Shilin · Jiufen',
     href: '/trip/example-taipei',
     flag: '🇹🇼',
     gradient: 'from-emerald-400 to-teal-600',
   },
   {
     title: 'New York City Explorer',
-    subtitle: '3 days · Packed · Manhattan · Brooklyn',
+    subtitle: 'Manhattan · Brooklyn · Food',
     href: '/trip/example-nyc',
     flag: '🇺🇸',
     gradient: 'from-violet-400 to-indigo-600',
@@ -60,10 +61,10 @@ export default function HomePage() {
             Trip<span className="text-orange">Genie</span> <span className="text-3xl sm:text-4xl">✨</span>
           </h1>
           <p className="text-base sm:text-lg font-medium opacity-90 mb-2">
-            Your AI-Powered Trip Planner
+            Describe your trip in any language → Beautiful shareable itinerary
           </p>
           <p className="text-sm opacity-60">
-            自然語言輸入，自動生成靚嘅行程
+            用任何語言描述 → 精美可分享行程
           </p>
         </div>
       </header>
@@ -91,14 +92,12 @@ export default function HomePage() {
             <p className="text-[10px] text-gray-400">Results in seconds</p>
           </div>
         </div>
+        <TripCounter />
       </div>
 
       {/* Chat input in card */}
       <section className="max-w-xl lg:max-w-3xl mx-auto px-4 pt-6 pb-4">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-8">
-          <p className="text-sm lg:text-base font-medium text-gray-600 mb-3 lg:mb-4">
-            Describe your dream trip...
-          </p>
           <ChatInput />
         </div>
       </section>
@@ -128,10 +127,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="text-center py-8 border-t border-gray-200 bg-white">
         <p className="text-sm text-gray-500">
-          Made with ❤️ by <span className="font-semibold text-navy">TripGenie</span>
-        </p>
-        <p className="text-xs text-gray-400 mt-1">
-          Powered by Claude AI
+          Made with ❤️ using Claude AI · © 2026 TripGenie
         </p>
       </footer>
     </div>
