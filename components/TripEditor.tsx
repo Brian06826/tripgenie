@@ -136,6 +136,15 @@ export function TripEditor({ tripId, trip }: Props) {
         onSaveDays={handleSaveDays}
       />
 
+      {/* Hotel reminder tip for multi-day trips */}
+      {currentTrip.days.length >= 2 && (
+        <p className="text-center text-xs text-gray-400 mt-2 mb-1">
+          {currentTrip.language === 'zh-TW' || currentTrip.language === 'zh-HK' || currentTrip.language === 'zh-CN'
+            ? '💡 提示：你可以喺每日行程最尾加入酒店'
+            : '💡 Tip: You can add a hotel at the end of each day\'s itinerary'}
+        </p>
+      )}
+
       {/* Spacer so fixed edit bar doesn't cover content */}
       <div className="h-20" />
 

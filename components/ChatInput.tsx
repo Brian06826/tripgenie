@@ -304,7 +304,7 @@ export function ChatInput() {
 
   return (
     <div className="w-full max-w-xl lg:max-w-3xl mx-auto px-4">
-      {loading && <TripLoadingOverlay lang={lang} phase={loadingPhase} estimatedSeconds={estimatedSeconds} vibe={loadingVibe} onCancel={() => abortRef.current?.abort()} />}
+      {loading && <TripLoadingOverlay lang={lang} phase={loadingPhase} estimatedSeconds={estimatedSeconds} vibe={loadingVibe} prompt={prompt} onCancel={() => abortRef.current?.abort()} />}
       <form onSubmit={handleSubmit} className="space-y-3">
         <textarea
           value={prompt}

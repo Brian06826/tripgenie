@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import type { LoadingVibe } from './ChatInput'
 
 type Lang = 'en' | 'zh-TW' | 'zh-CN'
@@ -155,16 +155,438 @@ const MSGS: Record<string, { en: string[]; 'zh-TW': string[]; 'zh-CN': string[] 
   },
 }
 
-// Time-based phase messages — trilingual
-const PHASE_MSGS: { en: string; 'zh-TW': string; 'zh-CN': string; maxSec: number }[] = [
-  { en: 'Planning your adventure...', 'zh-TW': '正在規劃你的旅程...', 'zh-CN': '正在规划你的旅程...', maxSec: 5 },
-  { en: 'Discovering hidden gems...', 'zh-TW': '發掘隱藏景點...', 'zh-CN': '发掘隐藏景点...', maxSec: 15 },
-  { en: 'Finding the best restaurants...', 'zh-TW': '尋找最好的餐廳...', 'zh-CN': '找最好的餐厅...', maxSec: 25 },
-  { en: 'Optimizing your route...', 'zh-TW': '優化路線中...', 'zh-CN': '优化路线中...', maxSec: 40 },
-  { en: 'Validating with Google Places...', 'zh-TW': '用 Google Places 驗證中...', 'zh-CN': '用 Google Places 验证中...', maxSec: 60 },
-  { en: 'Fine-tuning the schedule...', 'zh-TW': '微調行程細節...', 'zh-CN': '微调行程细节...', maxSec: 90 },
-  { en: 'Almost there, putting finishing touches...', 'zh-TW': '快好了，最後修飾中...', 'zh-CN': '快好了，最后修饰中...', maxSec: Infinity },
-]
+// Destination-aware progress steps — ${D} is replaced with destination name
+function getPhaseSteps(dest: string, lang: Lang): { msg: string; maxSec: number }[] {
+  const d = dest
+  if (lang === 'zh-TW') return [
+    { msg: `🔍 研究${d}的必去景點...`, maxSec: 5 },
+    { msg: `🍜 尋找${d}最好的餐廳...`, maxSec: 12 },
+    { msg: `📍 規劃完美路線...`, maxSec: 20 },
+    { msg: `⭐ 查看 Google 評分和評論...`, maxSec: 30 },
+    { msg: `💡 加入當地人才知道的小貼士...`, maxSec: 42 },
+    { msg: `💰 優化你的預算...`, maxSec: 55 },
+    { msg: `🎁 最後整理行程中...`, maxSec: Infinity },
+  ]
+  if (lang === 'zh-CN') return [
+    { msg: `🔍 研究${d}的必去景点...`, maxSec: 5 },
+    { msg: `🍜 找${d}最好的餐厅...`, maxSec: 12 },
+    { msg: `📍 规划完美路线...`, maxSec: 20 },
+    { msg: `⭐ 查看 Google 评分和评论...`, maxSec: 30 },
+    { msg: `💡 加入当地人才知道的小贴士...`, maxSec: 42 },
+    { msg: `💰 优化你的预算...`, maxSec: 55 },
+    { msg: `🎁 最后整理行程中...`, maxSec: Infinity },
+  ]
+  return [
+    { msg: `🔍 Researching ${d}'s best spots...`, maxSec: 5 },
+    { msg: `🍜 Finding top-rated restaurants in ${d}...`, maxSec: 12 },
+    { msg: `📍 Mapping out the perfect route...`, maxSec: 20 },
+    { msg: `⭐ Checking Google ratings & reviews...`, maxSec: 30 },
+    { msg: `💡 Adding local insider tips...`, maxSec: 42 },
+    { msg: `💰 Optimizing for your budget...`, maxSec: 55 },
+    { msg: `🎁 Finalizing your itinerary...`, maxSec: Infinity },
+  ]
+}
+
+// ---- Destination fun facts ----
+
+type FactSet = { en: string[]; 'zh-TW': string[]; 'zh-CN': string[] }
+
+const DESTINATION_FACTS: Record<string, FactSet> = {
+  tokyo: {
+    en: [
+      'Tokyo has more Michelin-starred restaurants than any other city in the world.',
+      'Tokyo\'s Shinjuku Station is the busiest train station on Earth, serving 3.5 million passengers daily.',
+      'There are over 160,000 restaurants in Tokyo — more than New York, Paris, and London combined.',
+      'Tokyo\'s vending machines outnumber its residents\' thirst — there\'s 1 for every 23 people.',
+      'The Tokyo Skytree is the tallest tower in the world at 634 meters.',
+      'Tokyo was originally called Edo, and was renamed in 1868.',
+    ],
+    'zh-TW': [
+      '東京的米其林星級餐廳數量是全世界最多的城市。',
+      '新宿站是全球最繁忙的車站，每天服務 350 萬名乘客。',
+      '東京有超過 16 萬間餐廳，比紐約、巴黎和倫敦加起來還多。',
+      '東京的自動販賣機密度驚人，每 23 人就有一台。',
+      '東京晴空塔是世界最高的電波塔，高 634 米。',
+      '東京原名「江戶」，1868 年才改名為東京。',
+    ],
+    'zh-CN': [
+      '东京的米其林星级餐厅数量是全世界最多的城市。',
+      '新宿站是全球最繁忙的车站，每天服务 350 万名乘客。',
+      '东京有超过 16 万间餐厅，比纽约、巴黎和伦敦加起来还多。',
+      '东京的自动贩卖机密度惊人，每 23 人就有一台。',
+      '东京晴空塔是世界最高的电波塔，高 634 米。',
+      '东京原名「江户」，1868 年才改名为东京。',
+    ],
+  },
+  osaka: {
+    en: [
+      'Osaka is known as Japan\'s "Kitchen" — the food capital of the country.',
+      'Osaka Castle was originally built in 1583 and has been rebuilt twice.',
+      'Dotonbori\'s famous Glico Running Man sign has been a landmark since 1935.',
+      'Osaka invented instant ramen — Cup Noodles were born here in 1971.',
+      'Osaka people stand on the right side of escalators, opposite to Tokyo.',
+    ],
+    'zh-TW': [
+      '大阪被稱為日本的「天下廚房」，是日本的美食之都。',
+      '大阪城最初建於 1583 年，已經重建了兩次。',
+      '道頓堀的固力果跑步人招牌自 1935 年起就是地標。',
+      '大阪發明了即食拉麵 — 杯麵於 1971 年在這裡誕生。',
+      '大阪人搭電扶梯站右邊，跟東京相反。',
+    ],
+    'zh-CN': [
+      '大阪被称为日本的「天下厨房」，是日本的美食之都。',
+      '大阪城最初建于 1583 年，已经重建了两次。',
+      '道顿堀的固力果跑步人招牌自 1935 年起就是地标。',
+      '大阪发明了即食拉面 — 杯面于 1971 年在这里诞生。',
+      '大阪人搭电扶梯站右边，跟东京相反。',
+    ],
+  },
+  kyoto: {
+    en: [
+      'Kyoto has over 2,000 temples and shrines — more than any other city in Japan.',
+      'Kyoto was Japan\'s capital for over 1,000 years, from 794 to 1868.',
+      'The famous Fushimi Inari shrine has over 10,000 torii gates.',
+      'Kyoto\'s geisha district, Gion, has been active since the 1600s.',
+      'Nintendo was founded in Kyoto in 1889 — originally as a playing card company.',
+    ],
+    'zh-TW': [
+      '京都有超過 2,000 座寺廟和神社，是日本最多的城市。',
+      '京都曾是日本首都超過 1,000 年，從 794 年到 1868 年。',
+      '伏見稻荷大社有超過一萬座鳥居。',
+      '京都的祇園花街自 1600 年代起就有藝妓活動。',
+      '任天堂於 1889 年在京都創立，最初是一家撲克牌公司。',
+    ],
+    'zh-CN': [
+      '京都有超过 2,000 座寺庙和神社，是日本最多的城市。',
+      '京都曾是日本首都超过 1,000 年，从 794 年到 1868 年。',
+      '伏见稻荷大社有超过一万座�的鸟居。',
+      '京都的祇园花街自 1600 年代起就有艺妓活动。',
+      '任天堂于 1889 年在京都创立，最初是一家扑克牌公司。',
+    ],
+  },
+  paris: {
+    en: [
+      'The Eiffel Tower was supposed to be temporary — built for the 1889 World Fair.',
+      'Paris has 470+ parks and gardens, making it one of Europe\'s greenest capitals.',
+      'The Louvre is the world\'s most visited museum with 10 million visitors per year.',
+      'Paris has only one stop sign in the entire city — it\'s in the 16th arrondissement.',
+      'There are 1,500+ bakeries in Paris. Baguettes are regulated by law.',
+    ],
+    'zh-TW': [
+      '艾菲爾鐵塔原本是臨時建築，為 1889 年世界博覽會而建。',
+      '巴黎有超過 470 個公園和花園，是歐洲最綠的首都之一。',
+      '羅浮宮是全球最多人造訪的博物館，每年有 1,000 萬訪客。',
+      '巴黎全市只有一個停車標誌，位於第 16 區。',
+      '巴黎有超過 1,500 家麵包店，法棍麵包的製作有法律規定。',
+    ],
+    'zh-CN': [
+      '埃菲尔铁塔原本是临时建筑，为 1889 年世界博览会而建。',
+      '巴黎有超过 470 个公园和花园，是欧洲最绿的首都之一。',
+      '卢浮宫是全球最多人造访的博物馆，每年有 1,000 万访客。',
+      '巴黎全市只有一个停车标志，位于第 16 区。',
+      '巴黎有超过 1,500 家面包店，法棍面包的制作有法律规定。',
+    ],
+  },
+  seoul: {
+    en: [
+      'Seoul\'s subway system is one of the longest in the world with 340+ stations.',
+      'South Korea has the fastest average internet speed in the world.',
+      'Seoul\'s Gangnam district inspired the viral hit "Gangnam Style" in 2012.',
+      'There are over 100,000 restaurants in Seoul — a food lover\'s paradise.',
+      'Korean BBQ originated in the Joseon dynasty over 600 years ago.',
+    ],
+    'zh-TW': [
+      '首爾地鐵系統擁有超過 340 個車站，是世界上最長的地鐵之一。',
+      '韓國的平均網速是全世界最快的。',
+      '首爾的江南區啟發了 2012 年的洗腦神曲「江南 Style」。',
+      '首爾有超過 10 萬間餐廳，是美食愛好者的天堂。',
+      '韓式烤肉起源於超過 600 年前的朝鮮王朝。',
+    ],
+    'zh-CN': [
+      '首尔地铁系统拥有超过 340 个车站，是世界上最长的地铁之一。',
+      '韩国的平均网速是全世界最快的。',
+      '首尔的江南区启发了 2012 年的洗脑神曲「江南 Style」。',
+      '首尔有超过 10 万间餐厅，是美食爱好者的天堂。',
+      '韩式烤肉起源于超过 600 年前的朝鲜王朝。',
+    ],
+  },
+  taipei: {
+    en: [
+      'Taipei\'s night markets serve over 1 million visitors every night.',
+      'Taipei 101 was the world\'s tallest building from 2004 to 2010.',
+      'Taiwan is home to the world\'s best bubble tea — invented in Taichung in the 1980s.',
+      'Taipei has one of the highest densities of convenience stores in the world.',
+      'The Taipei MRT is consistently ranked one of the cleanest subway systems globally.',
+    ],
+    'zh-TW': [
+      '台北的夜市每晚吸引超過 100 萬名遊客。',
+      '台北 101 從 2004 年到 2010 年是世界最高建築。',
+      '珍珠奶茶於 1980 年代在台中發明，是台灣的驕傲。',
+      '台北的便利店密度是全世界最高之一。',
+      '台北捷運一直被評為全球最乾淨的地鐵系統之一。',
+    ],
+    'zh-CN': [
+      '台北的夜市每晚吸引超过 100 万名游客。',
+      '台北 101 从 2004 年到 2010 年是世界最高建筑。',
+      '珍珠奶茶于 1980 年代在台中发明，是台湾的骄傲。',
+      '台北的便利店密度是全世界最高之一。',
+      '台北捷运一直被评为全球最干净的地铁系统之一。',
+    ],
+  },
+  london: {
+    en: [
+      'London\'s Underground is the world\'s oldest metro system, opened in 1863.',
+      'Big Ben actually refers to the bell inside, not the tower itself.',
+      'London has over 170 museums — many of them are free.',
+      'Over 300 languages are spoken in London, making it the most linguistically diverse city.',
+      'The black cabs\' drivers must pass "The Knowledge" — memorizing 25,000 streets.',
+    ],
+    'zh-TW': [
+      '倫敦地鐵是全世界最古老的地鐵系統，於 1863 年啟用。',
+      '大笨鐘其實是指裡面的鐘，不是鐘塔本身。',
+      '倫敦有超過 170 間博物館，許多都是免費的。',
+      '倫敦使用超過 300 種語言，是世界上語言最多元的城市。',
+      '黑色計程車司機必須通過「The Knowledge」考試，背下 25,000 條街道。',
+    ],
+    'zh-CN': [
+      '伦敦地铁是全世界最古老的地铁系统，于 1863 年启用。',
+      '大笨钟其实是指里面的钟，不是钟塔本身。',
+      '伦敦有超过 170 间博物馆，许多都是免费的。',
+      '伦敦使用超过 300 种语言，是世界上语言最多元的城市。',
+      '黑色出租车司机必须通过「The Knowledge」考试，背下 25,000 条街道。',
+    ],
+  },
+  bangkok: {
+    en: [
+      'Bangkok\'s full ceremonial name is 168 letters long — the longest city name in the world.',
+      'Bangkok has over 400 temples (wats), including the famous Wat Arun and Wat Pho.',
+      'Thai street food is so good that a street vendor won a Michelin star.',
+      'Bangkok\'s Chatuchak Weekend Market has over 15,000 stalls.',
+      'Thailand has never been colonized by a European power — the only Southeast Asian country.',
+    ],
+    'zh-TW': [
+      '曼谷的正式名稱有 168 個字母，是全世界最長的城市名。',
+      '曼谷有超過 400 座寺廟，包括著名的黎明寺和臥佛寺。',
+      '泰國街頭小吃厲害到一位攤販獲得了米其林一星。',
+      '曼谷的恰圖恰週末市場有超過 15,000 個攤位。',
+      '泰國是東南亞唯一從未被歐洲殖民的國家。',
+    ],
+    'zh-CN': [
+      '曼谷的正式名称有 168 个字母，是全世界最长的城市名。',
+      '曼谷有超过 400 座寺庙，包括著名的黎明寺和卧佛寺。',
+      '泰国街头小吃厉害到一位摊贩获得了米其林一星。',
+      '曼谷的恰图恰周末市场有超过 15,000 个摊位。',
+      '泰国是东南亚唯一从未被欧洲殖民的国家。',
+    ],
+  },
+  singapore: {
+    en: [
+      'Singapore is one of only three surviving city-states in the world.',
+      'Chewing gum has been banned in Singapore since 1992.',
+      'Singapore\'s Changi Airport has been voted the world\'s best airport for 12 years.',
+      'Singapore has over 6,000 hawker stalls — street food is a UNESCO cultural heritage.',
+      'The Singapore Botanic Gardens is a UNESCO World Heritage Site.',
+    ],
+    'zh-TW': [
+      '新加坡是世界上僅存的三個城市國家之一。',
+      '新加坡自 1992 年起禁止口香糖。',
+      '新加坡樟宜機場連續 12 年被評為全球最佳機場。',
+      '新加坡有超過 6,000 個小販攤位，街頭美食已被列為聯合國非物質文化遺產。',
+      '新加坡植物園是聯合國教科文組織世界遺產。',
+    ],
+    'zh-CN': [
+      '新加坡是世界上仅存的三个城市国家之一。',
+      '新加坡自 1992 年起禁止口香糖。',
+      '新加坡樟宜机场连续 12 年被评为全球最佳机场。',
+      '新加坡有超过 6,000 个小贩摊位，街头美食已被列为联合国非物质文化遗产。',
+      '新加坡植物园是联合国教科文组织世界遗产。',
+    ],
+  },
+  'hong kong': {
+    en: [
+      'Hong Kong has more skyscrapers than any other city in the world.',
+      'The Star Ferry has been running across Victoria Harbour since 1888.',
+      'Hong Kong has the most Rolls-Royces per capita in the world.',
+      'Dim sum originated in Guangdong and was perfected in Hong Kong\'s tea houses.',
+      'Hong Kong\'s MTR system runs at 99.9% on-time rate.',
+    ],
+    'zh-TW': [
+      '香港的摩天大樓數量是全世界最多的城市。',
+      '天星小輪自 1888 年起就在維多利亞港往返。',
+      '香港的勞斯萊斯人均擁有量是全球最高。',
+      '點心起源於廣東，在香港的茶樓被發揚光大。',
+      '香港 MTR 的準時率高達 99.9%。',
+    ],
+    'zh-CN': [
+      '香港的摩天大楼数量是全世界最多的城市。',
+      '天星小轮自 1888 年起就在维多利亚港往返。',
+      '香港的劳斯莱斯人均拥有量是全球最高。',
+      '点心起源于广东，在香港的茶楼被发扬光大。',
+      '香港 MTR 的准时率高达 99.9%。',
+    ],
+  },
+  'san francisco': {
+    en: [
+      'The Golden Gate Bridge\'s iconic orange color is called "International Orange".',
+      'San Francisco\'s cable cars are the only mobile National Historic Landmark.',
+      'Alcatraz Island was a federal prison for only 29 years (1934-1963).',
+      'San Francisco\'s Chinatown is the oldest in North America, established in 1848.',
+      'The city has more restaurants per capita than any other US city.',
+    ],
+    'zh-TW': ['金門大橋的標誌性橙色叫做「國際橙」。', '舊金山的纜車是美國唯一的移動國家歷史地標。', '惡魔島作為聯邦監獄只用了 29 年（1934-1963）。', '舊金山的中國城是北美最古老的，建於 1848 年。', '舊金山的人均餐廳數量是全美最多的。'],
+    'zh-CN': ['金门大桥的标志性橙色叫做「国际橙」。', '旧金山的缆车是美国唯一的移动国家历史地标。', '恶魔岛作为联邦监狱只用了 29 年（1934-1963）。', '旧金山的中国城是北美最古老的，建于 1848 年。', '旧金山的人均餐厅数量是全美最多的。'],
+  },
+  'los angeles': {
+    en: [
+      'The Hollywood Sign was originally "Hollywoodland" — an ad for a housing development in 1923.',
+      'LA has more museums per capita than any other US city.',
+      'Los Angeles averages 284 sunny days per year.',
+      'The La Brea Tar Pits are the only active urban Ice Age excavation site in the world.',
+      'Over 100 languages are spoken in Los Angeles.',
+    ],
+    'zh-TW': ['好萊塢標誌最初寫的是「Hollywoodland」，是 1923 年的房地產廣告。', '洛杉磯的人均博物館數量是全美最多的。', '洛杉磯平均每年有 284 天是晴天。', '拉布雷亞瀝青坑是全世界唯一活躍的城市冰河時期挖掘地。', '洛杉磯使用超過 100 種語言。'],
+    'zh-CN': ['好莱坞标志最初写的是「Hollywoodland」，是 1923 年的房地产广告。', '洛杉矶的人均博物馆数量是全美最多的。', '洛杉矶平均每年有 284 天是晴天。', '拉布雷亚沥青坑是全世界唯一活跃的城市冰河时期挖掘地。', '洛杉矶使用超过 100 种语言。'],
+  },
+  hawaii: {
+    en: [
+      'Hawaii is the only US state that grows coffee commercially.',
+      'Hawaii\'s Mauna Kea is the tallest mountain in the world measured from its base on the ocean floor.',
+      'Hawaii has its own time zone and never observes daylight saving time.',
+      'The Hawaiian alphabet has only 13 letters.',
+      'Hawaii is the most isolated population center on Earth.',
+    ],
+    'zh-TW': ['夏威夷是美國唯一商業種植咖啡的州。', '夏威夷的冒納凱亞山從海底算起是世界最高的山。', '夏威夷有自己的時區，而且從不實行夏令時間。', '夏威夷語字母表只有 13 個字母。', '夏威夷是地球上最孤立的人口中心。'],
+    'zh-CN': ['夏威夷是美国唯一商业种植咖啡的州。', '夏威夷的冒纳凯亚山从海底算起是世界最高的山。', '夏威夷有自己的时区，而且从不实行夏令时间。', '夏威夷语字母表只有 13 个字母。', '夏威夷是地球上最孤立的人口中心。'],
+  },
+  bali: {
+    en: [
+      'Bali has over 20,000 temples — there\'s at least one in every village.',
+      'Bali\'s Nyepi (Day of Silence) shuts down the entire island, including the airport.',
+      'Bali produces some of the world\'s most expensive coffee — Kopi Luwak.',
+      'The Balinese calendar has 210 days instead of 365.',
+      'Bali\'s rice terraces have been farmed using the same irrigation system for 1,000 years.',
+    ],
+    'zh-TW': ['峇里島有超過 20,000 座寺廟，每個村莊至少有一座。', '峇里島的寧靜日（Nyepi）會關閉整個島嶼，包括機場。', '峇里島出產世界上最貴的咖啡之一 — 麝香貓咖啡。', '峇里曆有 210 天，而不是 365 天。', '峇里島的梯田已經使用同一灌溉系統耕作了 1,000 年。'],
+    'zh-CN': ['巴厘岛有超过 20,000 座寺庙，每个村庄至少有一座。', '巴厘岛的宁静日（Nyepi）会关闭整个岛屿，包括机场。', '巴厘岛出产世界上最贵的咖啡之一 — 麝香猫咖啡。', '巴厘历有 210 天，而不是 365 天。', '巴厘岛的梯田已经使用同一灌溉系统耕作了 1,000 年。'],
+  },
+  sydney: {
+    en: [
+      'Sydney Opera House has over 1 million roof tiles.',
+      'Sydney Harbour Bridge is the world\'s largest steel arch bridge.',
+      'Bondi Beach\'s name comes from an Aboriginal word meaning "waves breaking over rocks".',
+      'Sydney has over 100 beaches within the city limits.',
+      'The Sydney to Hobart yacht race is one of the most grueling in the world.',
+    ],
+    'zh-TW': ['悉尼歌劇院的屋頂有超過 100 萬塊瓷磚。', '悉尼港灣大橋是世界最大的鋼拱橋。', 'Bondi Beach 的名字來自原住民語言，意思是「浪打岩石」。', '悉尼市區內有超過 100 個海灘。', '悉尼到霍巴特帆船賽是世界上最艱難的比賽之一。'],
+    'zh-CN': ['悉尼歌剧院的屋顶有超过 100 万块瓷砖。', '悉尼港湾大桥是世界最大的钢拱桥。', 'Bondi Beach 的名字来自原住民语言，意思是「浪打岩石」。', '悉尼市区内有超过 100 个海滩。', '悉尼到霍巴特帆船赛是世界上最艰难的比赛之一。'],
+  },
+  'new york': {
+    en: [
+      'New York City\'s subway runs 24/7 — one of the few systems in the world that never closes.',
+      'Central Park is bigger than the entire country of Monaco.',
+      'Over 800 languages are spoken in NYC, making it the most linguistically diverse city on Earth.',
+      'The Statue of Liberty was a gift from France, assembled in 1886.',
+      'NYC has over 27,000 restaurants across the five boroughs.',
+    ],
+    'zh-TW': ['紐約地鐵 24 小時運行，是世界上少數從不關閉的地鐵系統。', '中央公園比整個摩納哥國家還大。', '紐約市使用超過 800 種語言，是地球上語言最多元的城市。', '自由女神像是法國送的禮物，於 1886 年組裝完成。', '紐約五個行政區共有超過 27,000 家餐廳。'],
+    'zh-CN': ['纽约地铁 24 小时运行，是世界上少数从不关闭的地铁系统。', '中央公园比整个摩纳哥国家还大。', '纽约市使用超过 800 种语言，是地球上语言最多元的城市。', '自由女神像是法国送的礼物，于 1886 年组装完成。', '纽约五个行政区共有超过 27,000 家餐厅。'],
+  },
+}
+
+const GENERIC_FACTS: FactSet = {
+  en: [
+    'The world\'s longest flight is 18 hours and 50 minutes (Singapore to New York).',
+    'France is the most visited country in the world with 90 million tourists per year.',
+    'There are 195 countries in the world, but only 193 are UN members.',
+    'The Great Wall of China is over 13,000 miles long.',
+    'Iceland has no mosquitoes — one of the few places on Earth without them.',
+    'Japan\'s trains are so punctual that a delay of 5 minutes gets a formal apology.',
+  ],
+  'zh-TW': [
+    '全世界最長的航班是 18 小時 50 分鐘（新加坡到紐約）。',
+    '法國是全世界最多遊客造訪的國家，每年有 9,000 萬名遊客。',
+    '全世界有 195 個國家，但只有 193 個是聯合國成員。',
+    '萬里長城全長超過 21,000 公里。',
+    '冰島沒有蚊子，是地球上少數沒有蚊子的地方之一。',
+    '日本的火車準時到如果延誤 5 分鐘，會發出正式道歉。',
+  ],
+  'zh-CN': [
+    '全世界最长的航班是 18 小时 50 分钟（新加坡到纽约）。',
+    '法国是全世界最多游客造访的国家，每年有 9,000 万名游客。',
+    '全世界有 195 个国家，但只有 193 个是联合国成员。',
+    '万里长城全长超过 21,000 公里。',
+    '冰岛没有蚊子，是地球上少数没有蚊子的地方之一。',
+    '日本的火车准时到如果延误 5 分钟，会发出正式道歉。',
+  ],
+}
+
+// Parse destination from user prompt
+function parseDestination(prompt: string): string | null {
+  // Common English patterns
+  const patterns = [
+    /(?:trip to|go to|going to|visit|visiting|fly to|travel to|heading to|explore)\s+([A-Z][A-Za-z\s]+?)(?:\s+(?:for|from|with|,|\.|!|\?|$))/i,
+    /([A-Z][A-Za-z\s]+?)\s+(?:trip|vacation|holiday|itinerary|tour|getaway)/i,
+    /(\d+)\s*(?:days?|nights?|weeks?)\s+(?:in\s+)?([A-Z][A-Za-z\s]+?)(?:\s+(?:for|from|with|,|\.|!|\?|$))/i,
+  ]
+
+  for (const pat of patterns) {
+    const m = prompt.match(pat)
+    if (m) {
+      // Third pattern captures destination in group 2
+      const dest = (m[2] ?? m[1]).trim()
+      if (dest.length >= 2 && dest.length <= 40) return dest
+    }
+  }
+
+  // Chinese destination patterns
+  const zhPatterns = [
+    /(?:去|到|遊|游|玩)\s*([^\s,，。！!?？]{2,15})/,
+    /([^\s,，。！!?？]{2,10})(?:之旅|旅行|旅遊|旅游|自由行|遊|游)/,
+  ]
+  for (const pat of zhPatterns) {
+    const m = prompt.match(pat)
+    if (m) return m[1].trim()
+  }
+
+  return null
+}
+
+// Match destination to fun facts key
+function matchDestinationKey(dest: string): string | null {
+  const d = dest.toLowerCase()
+  const keys = Object.keys(DESTINATION_FACTS)
+  // Direct match
+  for (const key of keys) {
+    if (d.includes(key) || key.includes(d)) return key
+  }
+  // Alias matching
+  const aliases: Record<string, string> = {
+    nyc: 'new york', manhattan: 'new york', brooklyn: 'new york',
+    sf: 'san francisco', 'san fran': 'san francisco',
+    la: 'los angeles',
+    hk: 'hong kong', '香港': 'hong kong',
+    '東京': 'tokyo', '东京': 'tokyo',
+    '大阪': 'osaka',
+    '京都': 'kyoto',
+    '巴黎': 'paris',
+    '首爾': 'seoul', '首尔': 'seoul',
+    '台北': 'taipei',
+    '倫敦': 'london', '伦敦': 'london',
+    '曼谷': 'bangkok',
+    '新加坡': 'singapore',
+    '峇里': 'bali', '巴厘': 'bali',
+    '悉尼': 'sydney',
+    '紐約': 'new york', '纽约': 'new york',
+    '洛杉磯': 'los angeles', '洛杉矶': 'los angeles',
+    '舊金山': 'san francisco', '旧金山': 'san francisco',
+    '夏威夷': 'hawaii',
+    maui: 'hawaii', honolulu: 'hawaii', waikiki: 'hawaii',
+  }
+  for (const [alias, key] of Object.entries(aliases)) {
+    if (d.includes(alias)) return key
+  }
+  return null
+}
 
 // Static positions — no Math.random() to avoid hydration mismatches
 const STARS: [number, number, number][] = [
@@ -187,22 +609,43 @@ interface Props {
   phase: 'generating' | 'validating' | 'optimizing' | 'saving'
   estimatedSeconds: number
   vibe?: LoadingVibe
+  prompt?: string
   onCancel?: () => void
 }
 
-export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'default', onCancel }: Props) {
+export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'default', prompt, onCancel }: Props) {
   const isChinese = lang !== 'en'
   const vibeSet = MSGS[vibe] ?? MSGS.default
   const msgs = vibeSet[lang]
   const [idx, setIdx] = useState(0)
+  const [factIdx, setFactIdx] = useState(0)
   const [elapsed, setElapsed] = useState(0)
   const [progress, setProgress] = useState(4)
+
+  // Parse destination and get fun facts
+  const { destination, facts, phaseSteps } = useMemo(() => {
+    const parsed = prompt ? parseDestination(prompt) : null
+    const destKey = parsed ? matchDestinationKey(parsed) : null
+    const factSet = destKey ? DESTINATION_FACTS[destKey] : GENERIC_FACTS
+    const displayDest = parsed || (isChinese ? '你的目的地' : 'your destination')
+    return {
+      destination: displayDest,
+      facts: factSet[lang],
+      phaseSteps: getPhaseSteps(displayDest, lang),
+    }
+  }, [prompt, lang, isChinese])
 
   // Rotate fun messages every 3 seconds
   useEffect(() => {
     const t = setInterval(() => setIdx(i => (i + 1) % msgs.length), 3000)
     return () => clearInterval(t)
   }, [msgs.length])
+
+  // Rotate fun facts every 7 seconds
+  useEffect(() => {
+    const t = setInterval(() => setFactIdx(i => (i + 1) % facts.length), 7000)
+    return () => clearInterval(t)
+  }, [facts.length])
 
   // Elapsed time counter
   useEffect(() => {
@@ -221,7 +664,6 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
     const t = setInterval(() => {
       setProgress(p => {
         if (p >= phaseCap) return phaseCap
-        // 0-30%: fast (about 5s), 30-60%: medium (about 10s), 60-80%: slow (about 15s), 80-95%: crawl
         const step = p < 30 ? 4.5 : p < 60 ? 1.8 : p < 80 ? 0.6 : 0.2
         return Math.min(p + step, phaseCap)
       })
@@ -245,12 +687,12 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
     ? (lang === 'zh-CN' ? '在 Google 验证餐厅中... ✅' : lang === 'zh-TW' ? '在 Google 驗證餐廳中... ✅' : 'Verifying restaurants on Google... ✅')
     : null
 
-  // During 'generating' phase, show time-based phase messages
-  const timePhase = PHASE_MSGS.find(p => elapsed < p.maxSec)
-  const timePhaseMsg = timePhase ? timePhase[lang] : null
+  // During 'generating' phase, show destination-aware phase steps
+  const timePhase = phaseSteps.find(p => elapsed < p.maxSec)
+  const timePhaseMsg = timePhase ? timePhase.msg : null
 
   const displayMsg = serverPhaseMsg ?? timePhaseMsg ?? msgs[idx]
-  const msgKey = serverPhaseMsg ? phase : timePhaseMsg ? `time-${elapsed < 5 ? 0 : elapsed < 15 ? 1 : elapsed < 25 ? 2 : elapsed < 40 ? 3 : elapsed < 60 ? 4 : elapsed < 90 ? 5 : 6}` : idx
+  const msgKey = serverPhaseMsg ? phase : timePhaseMsg ? `time-${elapsed < 5 ? 0 : elapsed < 12 ? 1 : elapsed < 20 ? 2 : elapsed < 30 ? 3 : elapsed < 42 ? 4 : elapsed < 55 ? 5 : 6}` : idx
 
   const estLabel = getEstLabel(estimatedSeconds)
 
@@ -326,7 +768,7 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
         <h2 className="text-white text-2xl font-bold mb-2">
           {lang === 'zh-CN' ? '为你规划行程中' : lang === 'zh-TW' ? '為你規劃行程中' : 'Crafting your itinerary'}
         </h2>
-        <p className="text-white/40 text-sm mb-10">
+        <p className="text-white/40 text-sm mb-8">
           {lang === 'zh-CN'
             ? '请稍等，精彩行程快完成了'
             : lang === 'zh-TW'
@@ -335,9 +777,16 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
         </p>
 
         {/* Rotating message — key change triggers CSS fade-in */}
-        <div className="flex items-center justify-center mb-10" style={{ minHeight: '2rem' }}>
+        <div className="flex items-center justify-center mb-5" style={{ minHeight: '2rem' }}>
           <span key={msgKey} className="tg-msg-fadein text-white/85 text-base font-medium">
             {displayMsg}
+          </span>
+        </div>
+
+        {/* Fun fact */}
+        <div className="flex items-center justify-center mb-8 px-4" style={{ minHeight: '2.5rem' }}>
+          <span key={`fact-${factIdx}`} className="tg-msg-fadein text-white/35 text-xs max-w-sm leading-relaxed">
+            💡 {isChinese ? '你知道嗎？' : 'Did you know?'} {facts[factIdx]}
           </span>
         </div>
 
