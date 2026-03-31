@@ -40,9 +40,9 @@ function detectTripDays(prompt: string): number {
 }
 
 function getEstimatedSeconds(days: number): number {
-  if (days <= 1) return 20
-  if (days <= 2) return 30
-  if (days <= 3) return 45
+  if (days <= 1) return 29
+  if (days <= 2) return 40
+  if (days <= 3) return 55
   if (days <= 5) return 60
   return 90
 }

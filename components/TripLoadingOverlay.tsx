@@ -175,11 +175,11 @@ const STARS: [number, number, number][] = [
 
 // Human-friendly estimated time labels
 function getEstLabel(seconds: number): string {
-  if (seconds <= 20) return '~20s'
-  if (seconds <= 30) return '~30s'
-  if (seconds <= 45) return '~45s'
+  if (seconds <= 29) return '~29s'
+  if (seconds <= 40) return '~40s'
+  if (seconds <= 55) return '~55s'
   if (seconds <= 60) return '~1 min'
-  return '~1-2 min'
+  return '~1.5 min'
 }
 
 interface Props {
