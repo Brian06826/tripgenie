@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, useMemo } from 'react'
 import type { LoadingVibe } from './ChatInput'
+import { EmojiQuiz } from './EmojiQuiz'
 
 type Lang = 'en' | 'zh-TW' | 'zh-CN'
 
@@ -765,29 +766,10 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
         <p className="text-white/40 text-xs tracking-[0.18em] uppercase font-semibold mb-4">
           TripGenie ✨
         </p>
-        <h2 className="text-white text-2xl font-bold mb-2">
-          {lang === 'zh-CN' ? '为你规划行程中' : lang === 'zh-TW' ? '為你規劃行程中' : 'Crafting your itinerary'}
-        </h2>
-        <p className="text-white/40 text-sm mb-8">
-          {lang === 'zh-CN'
-            ? '请稍等，精彩行程快完成了'
-            : lang === 'zh-TW'
-            ? '請稍等，精彩行程快完成了'
-            : 'Hang tight, your perfect trip is almost ready'}
-        </p>
 
-        {/* Rotating message — key change triggers CSS fade-in */}
-        <div className="flex items-center justify-center mb-5" style={{ minHeight: '2rem' }}>
-          <span key={msgKey} className="tg-msg-fadein text-white/85 text-base font-medium">
-            {displayMsg}
-          </span>
-        </div>
-
-        {/* Fun fact */}
-        <div className="flex items-center justify-center mb-8 px-4" style={{ minHeight: '2.5rem' }}>
-          <span key={`fact-${factIdx}`} className="tg-msg-fadein text-white/35 text-xs max-w-sm leading-relaxed">
-            💡 {isChinese ? '你知道嗎？' : 'Did you know?'} {facts[factIdx]}
-          </span>
+        {/* Emoji Quiz */}
+        <div className="mb-6">
+          <EmojiQuiz lang={lang} prompt={prompt} />
         </div>
 
         {/* Progress bar + timer */}
