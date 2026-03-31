@@ -27,11 +27,13 @@ export function ExampleTripLink({ href, title, subtitle, flag, gradient }: Props
       <a
         href={href}
         onClick={handleClick}
-        className={`block rounded-2xl px-4 py-4 text-white transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] bg-gradient-to-br ${gradient || 'from-gray-500 to-gray-600'}`}
+        className={`flex items-center gap-3 rounded-2xl px-4 py-3.5 h-[72px] text-white transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] bg-gradient-to-br ${gradient || 'from-gray-500 to-gray-600'}`}
       >
-        {flag && <span className="text-lg">{flag}</span>}
-        <div className="font-bold text-sm mt-1 leading-tight">{title}</div>
-        <div className="text-[11px] text-white/70 mt-1 leading-snug">{subtitle}</div>
+        {flag && <span className="text-2xl shrink-0">{flag}</span>}
+        <div className="min-w-0">
+          <div className="font-bold text-sm leading-tight truncate">{title}</div>
+          <div className="text-[11px] text-white/70 mt-0.5 leading-snug truncate">{subtitle}</div>
+        </div>
       </a>
     </>
   )

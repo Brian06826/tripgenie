@@ -88,8 +88,8 @@ export default function HomePage() {
           </div>
           <div className="w-px h-6 bg-gray-200" />
           <div>
-            <p className="text-xs font-semibold text-gray-700">⚡ Instant</p>
-            <p className="text-[10px] text-gray-400">Results in seconds</p>
+            <p className="text-xs font-semibold text-gray-700">✏️ Editable</p>
+            <p className="text-[10px] text-gray-400">Modify anytime</p>
           </div>
         </div>
         <TripCounter />
@@ -110,7 +110,7 @@ export default function HomePage() {
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
           範例行程 / Example Trips
         </h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {EXAMPLE_TRIPS.map(trip => (
             <ExampleTripLink
               key={trip.href}
