@@ -49,6 +49,11 @@ export function TripEditBar({ onSubmit, onUndo, onCancel, canUndo, isLoading, er
             {error}
           </div>
         )}
+        <p className="text-[11px] text-gray-400 mb-1.5 px-1">
+          {isChinese
+            ? '💡 你可以加景點、換餐廳、加酒店、調整時間... 用自然語言描述就得！'
+            : '💡 Add places, swap restaurants, add hotels, adjust times... just describe what you want!'}
+        </p>
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
           {canUndo && !isLoading && (
             <button
