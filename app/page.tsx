@@ -87,8 +87,8 @@ export default function HomePage() {
           </div>
           <div className="w-px h-6 bg-gray-200" />
           <div>
-            <p className="text-xs font-semibold text-gray-700">Free</p>
-            <p className="text-[10px] text-gray-400">No sign-up</p>
+            <p className="text-xs font-semibold text-gray-700">⚡ Instant</p>
+            <p className="text-[10px] text-gray-400">Results in seconds</p>
           </div>
         </div>
       </div>
