@@ -53,19 +53,28 @@ const TRIP_VALIDATION_MSG = "Please describe a trip! Include a destination and h
 // Let Claude handle ambiguous requests rather than blocking at the frontend.
 const NON_TRIP_PATTERNS = /^(hi|hey|hello|yo|sup|thanks|thank you|ok|okay|yes|no|bye|goodbye|how are you|what is|what's|who is|who are|tell me a joke|help me with|write me|explain|define|translate this|calculate|what time|good morning|good night|test|testing|asdf|aaa)[\s!?.]*$/i
 
+// Patterns that signal a non-trip request even in longer inputs
+const NON_TRIP_LONG = /\b(essay|homework|write me|code|recipe|review this|explain the|history of|best countries|translate|summarize|who is the)\b/i
+
+// Positive trip signals — at least one must be present for longer inputs
+const TRIP_SIGNALS = /\b(go|going|want|wanna|plan|visit|trip|travel|fly|stay|from|to|day|days|night|nights|week|weeks|vacation|holiday|itinerary|tour|explore|weekend|getaway|beach|hotel|hostel|resort|budget|solo|couple|family|food|restaurant|sightseeing|backpack|honeymoon|anniversary|road\s?trip|airport|flight)\b/i
+const TRIP_SIGNALS_ZH = /[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/
+
 function isValidTripRequest(text: string): boolean {
   const trimmed = text.trim()
   if (trimmed.length < 2) return false
-  // Reject obvious non-trip inputs (greetings, generic questions)
+  // Reject obvious short non-trip inputs (greetings, generic questions)
   if (NON_TRIP_PATTERNS.test(trimmed)) return false
-  // Accept anything 20+ characters — long enough to be a real request
-  if (trimmed.length >= 20) return true
-  // Accept if it contains any number (dates, durations, budgets)
-  if (/\d/.test(trimmed)) return true
-  // Accept if it contains travel/place-related words (broad match)
-  if (/\b(go|going|want|wanna|plan|visit|trip|travel|fly|stay|from|to)\b/i.test(trimmed)) return true
+  // Reject longer inputs that are clearly not trip requests
+  if (NON_TRIP_LONG.test(trimmed)) return false
   // Accept if it contains CJK characters (likely a valid request in Chinese/Japanese/Korean)
-  if (/[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/.test(trimmed)) return true
+  if (TRIP_SIGNALS_ZH.test(trimmed)) return true
+  // Accept if it contains any trip-related signal word
+  if (TRIP_SIGNALS.test(trimmed)) return true
+  // Accept if it contains dates or numbers with context (not bare math)
+  if (/\d+\s*[-–\/]\s*\d+/.test(trimmed) || /\d+\s*(day|night|week|hour)/i.test(trimmed)) return true
+  // Long input with no trip signals — let it through if 30+ chars (benefit of the doubt)
+  if (trimmed.length >= 30) return true
   // Short English without any signals — reject
   return false
 }
