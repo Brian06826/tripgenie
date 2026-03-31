@@ -316,7 +316,7 @@ export function TripItinerary({
             <div className="mt-3">
               <HotelSuggestion
                 destination={destination}
-                dayCity={getDayCity(day.places, destination)}
+                dayCity={getDayCity(day.places, destination, day.title)}
                 days={days.length}
                 language={language}
                 tripId={tripId}

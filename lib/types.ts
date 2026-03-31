@@ -69,6 +69,7 @@ export const PlaceSchema = PlaceGenerationSchema.extend({
   lng: z.number().optional(),
   travelFromPrevious: TravelFromPreviousSchema.optional(),
   backupOptions: z.array(BackupOptionFullSchema).optional(),
+  bookingUrl: z.string().optional(),
 })
 
 // Full stored Trip

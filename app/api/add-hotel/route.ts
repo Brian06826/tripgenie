@@ -42,10 +42,57 @@ async function geocodeHotel(
   }
 }
 
+/** Calculate hotel check-in time: 30 min after the last activity ends */
+function calculateCheckinTime(places: Place[]): string {
+  if (places.length === 0) return '9:00 PM'
+
+  const last = places[places.length - 1]
+  if (!last.arrivalTime) return '9:00 PM'
+
+  // Parse arrival time like "7:00 PM", "9:30 PM"
+  const match = last.arrivalTime.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+  if (!match) return '9:00 PM'
+
+  let hours = parseInt(match[1], 10)
+  const mins = parseInt(match[2], 10)
+  const period = match[3].toUpperCase()
+
+  // Convert to 24h
+  if (period === 'PM' && hours !== 12) hours += 12
+  if (period === 'AM' && hours === 12) hours = 0
+
+  // Estimate end time: parse duration like "1-2 hours", "45 min", "Check-in"
+  let addMinutes = 60 // default 1 hour
+  if (last.duration) {
+    const hourMatch = last.duration.match(/(\d+)(?:\s*-\s*\d+)?\s*hour/i)
+    const minMatch = last.duration.match(/(\d+)\s*min/i)
+    if (hourMatch) addMinutes = parseInt(hourMatch[1], 10) * 60
+    else if (minMatch) addMinutes = parseInt(minMatch[1], 10)
+  }
+
+  // Add duration + 30 min travel to hotel
+  const totalMins = hours * 60 + mins + addMinutes + 30
+  let checkinHours = Math.floor(totalMins / 60) % 24
+  const checkinMins = totalMins % 60
+
+  // Cap at 11:30 PM
+  if (checkinHours >= 23 && checkinMins > 30) {
+    return '11:30 PM'
+  }
+  if (checkinHours >= 24) {
+    return '11:30 PM'
+  }
+
+  // Convert back to 12h format
+  const p = checkinHours >= 12 ? 'PM' : 'AM'
+  const h = checkinHours > 12 ? checkinHours - 12 : checkinHours === 0 ? 12 : checkinHours
+  return `${h}:${checkinMins.toString().padStart(2, '0')} ${p}`
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { tripId, hotelName, dayNumber, language } = body
+    const { tripId, hotelName, dayNumber, language, bookingUrl } = body
 
     if (!tripId || typeof tripId !== 'string') {
       return NextResponse.json({ error: 'Missing tripId' }, { status: 400 })
@@ -70,6 +117,10 @@ export async function POST(request: Request) {
     const name = hotelName.trim()
     const isChinese = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
     const city = trip.destination
+    const dayPlaces = trip.days[dayIndex].places
+
+    // Calculate check-in time based on last activity
+    const checkinTime = calculateCheckinTime(dayPlaces)
 
     // Geocode the hotel to get real coordinates, address, and rating
     const geo = await geocodeHotel(name, city)
@@ -77,8 +128,8 @@ export async function POST(request: Request) {
     const hotelPlace: Place = {
       name,
       type: 'hotel',
-      description: isChinese ? '酒店入住' : 'Hotel Check-in',
-      arrivalTime: '3:00 PM',
+      description: isChinese ? '回酒店休息' : 'Return to hotel',
+      arrivalTime: checkinTime,
       duration: isChinese ? '入住' : 'Check-in',
       googleMapsUrl: buildGoogleMapsUrl(name, city),
       googleReviewsUrl: buildGoogleReviewsUrl(name, city),
@@ -87,9 +138,10 @@ export async function POST(request: Request) {
       ...(geo?.lng != null && { lng: geo.lng }),
       ...(geo?.address && { address: geo.address }),
       ...(geo?.rating && { googleRating: geo.rating }),
+      ...(bookingUrl && typeof bookingUrl === 'string' && bookingUrl.trim() && { bookingUrl: bookingUrl.trim() }),
     }
 
-    // Append hotel as last place of the target day
+    // ALWAYS append hotel as the LAST item of the day
     const updatedDays = trip.days.map((day, i) => {
       if (i !== dayIndex) return day
       return { ...day, places: [...day.places, hotelPlace] }

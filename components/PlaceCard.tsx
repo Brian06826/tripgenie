@@ -190,6 +190,17 @@ export function PlaceCard({
             Yelp
           </a>
         )}
+        {place.type === 'hotel' && place.bookingUrl && (
+          <a
+            href={place.bookingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Open booking for ${place.name}`}
+            className="flex-1 flex items-center justify-center gap-1 text-xs font-semibold bg-orange/10 text-orange min-h-[44px] rounded-lg hover:bg-orange/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+          >
+            Book
+          </a>
+        )}
       </div>
     </div>
   )

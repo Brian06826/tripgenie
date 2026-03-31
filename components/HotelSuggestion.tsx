@@ -65,14 +65,41 @@ function buildAgodaUrl(destination: string, checkin?: string, checkout?: string)
 function extractCityFromAddress(address: string): string | null {
   const parts = address.split(',').map(s => s.trim())
   if (parts.length >= 3) {
-    // "123 Street, City, State ZIP" or "123 Street, City, Country"
-    // City is typically second-to-last segment (strip zip/postal codes)
     const candidate = parts[parts.length - 2].replace(/\d{4,}/g, '').trim()
     if (candidate.length >= 2) return candidate
   }
   if (parts.length === 2) {
-    // "City, Country" format
     return parts[0]
+  }
+  return null
+}
+
+// Known city names (CJK + English) to extract from day titles like "探索北京故宮"
+const CITY_NAMES = [
+  // China
+  '北京', '上海', '廣州', '深圳', '成都', '杭州', '西安', '重慶', '南京', '蘇州', '武漢', '長沙', '廈門', '昆明', '大理', '麗江', '桂林', '三亞', '哈爾濱', '青島',
+  'Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 'Chengdu', 'Hangzhou', "Xi'an", 'Xian', 'Chongqing', 'Nanjing', 'Suzhou', 'Wuhan', 'Changsha', 'Xiamen', 'Kunming', 'Dali', 'Lijiang', 'Guilin', 'Sanya', 'Harbin', 'Qingdao',
+  // Japan
+  '東京', '大阪', '京都', '福岡', '札幌', '沖繩', '名古屋', '廣島', '奈良', '神戶', '橫濱',
+  'Tokyo', 'Osaka', 'Kyoto', 'Fukuoka', 'Sapporo', 'Okinawa', 'Nagoya', 'Hiroshima', 'Nara', 'Kobe', 'Yokohama',
+  // Korea
+  '首爾', '釜山', '濟州',
+  'Seoul', 'Busan', 'Jeju',
+  // Taiwan
+  '台北', '台中', '台南', '高雄', '花蓮',
+  'Taipei', 'Taichung', 'Tainan', 'Kaohsiung', 'Hualien',
+  // Southeast Asia
+  '曼谷', '清邁', '普吉', '河內', '胡志明', '峴港', '新加坡', '吉隆坡', '峇里', '雅加達', '馬尼拉', '宿霧',
+  'Bangkok', 'Chiang Mai', 'Phuket', 'Hanoi', 'Ho Chi Minh', 'Da Nang', 'Singapore', 'Kuala Lumpur', 'Bali', 'Jakarta', 'Manila', 'Cebu',
+  // HK / Macau
+  '香港', '澳門',
+  'Hong Kong', 'Macau',
+]
+
+/** Extract city from day title (e.g. "探索北京故宮" → "北京") */
+function extractCityFromTitle(title: string): string | null {
+  for (const city of CITY_NAMES) {
+    if (title.includes(city)) return city
   }
   return null
 }
@@ -81,9 +108,15 @@ interface PlaceWithAddress {
   address?: string
 }
 
-/** Get the best city name for a day's activities, falling back to trip destination */
-export function getDayCity(places: PlaceWithAddress[], tripDestination: string): string {
-  // Try the first place with an address
+/** Get the best city name for a day's activities, falling back to trip destination.
+ *  Priority: day title (most reliable for multi-city) → place addresses → trip destination */
+export function getDayCity(places: PlaceWithAddress[], tripDestination: string, dayTitle?: string): string {
+  // 1. Try extracting from day title (most reliable for multi-city trips)
+  if (dayTitle) {
+    const city = extractCityFromTitle(dayTitle)
+    if (city) return city
+  }
+  // 2. Try from place addresses
   for (const place of places) {
     if (place.address) {
       const city = extractCityFromAddress(place.address)
@@ -106,6 +139,7 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
   const [aiLoading, setAiLoading] = useState(false)
   const [addLoading, setAddLoading] = useState(false)
   const [hotelName, setHotelName] = useState('')
+  const [bookingLink, setBookingLink] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   if (days < 2) return null
@@ -122,7 +156,7 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
     setAiLoading(true)
     setError(null)
     try {
-      const instruction = `Add a highly-rated hotel recommendation near the main itinerary area in ${dayCity}. Add it as the LAST place of Day ${dayNumber} with type "hotel", arrivalTime "3:00 PM", duration "Check-in". Include Google rating, price range, and a brief description. The hotel should be well-located for the planned activities.`
+      const instruction = `Add a highly-rated hotel recommendation near the main itinerary area in ${dayCity}. Add it as the LAST place of Day ${dayNumber} with type "hotel". Set arrivalTime to 30 minutes after the last activity ends. Duration should be "${isChinese ? '入住' : 'Check-in'}". Description should be "${isChinese ? '回酒店休息' : 'Return to hotel'}". Include Google rating, price range, and a brief description. The hotel should be well-located for the planned activities.`
       const res = await fetch('/api/edit-trip', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -149,7 +183,7 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
       const res = await fetch('/api/add-hotel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tripId, hotelName: name, dayNumber, language: language ?? 'en' }),
+        body: JSON.stringify({ tripId, hotelName: name, dayNumber, language: language ?? 'en', bookingUrl: bookingLink.trim() || undefined }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -237,6 +271,23 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
           )}
         </button>
       </div>
+
+      {/* Optional booking link input */}
+      {hotelName.trim() && (
+        <input
+          type="url"
+          value={bookingLink}
+          onChange={(e) => setBookingLink(e.target.value)}
+          placeholder={isChinese ? '貼上訂房連結（選填）' : 'Paste booking link (optional)'}
+          disabled={isLoading}
+          className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 mt-2 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent disabled:opacity-50"
+        />
+      )}
+
+      {/* Hint: nightlife activities */}
+      <p className="text-xs text-gray-400 mt-2">
+        {isChinese ? '💡 想加夜間活動？用下面嘅編輯框告訴 AI！' : '💡 Want to add nightlife? Use the edit box below!'}
+      </p>
 
       {/* Error message */}
       {error && (
