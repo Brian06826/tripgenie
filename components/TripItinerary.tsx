@@ -319,6 +319,7 @@ export function TripItinerary({
                 days={days.length}
                 language={language}
                 tripId={tripId}
+                dayNumber={day.dayNumber}
               />
             </div>
           )}

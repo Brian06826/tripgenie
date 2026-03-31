@@ -66,10 +66,14 @@ interface Props {
   days: number
   language?: string
   tripId: string
+  dayNumber: number
 }
 
-export function HotelSuggestion({ destination, days, language, tripId }: Props) {
+export function HotelSuggestion({ destination, days, language, tripId, dayNumber }: Props) {
   const [aiLoading, setAiLoading] = useState(false)
+  const [addLoading, setAddLoading] = useState(false)
+  const [hotelName, setHotelName] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   if (days < 2) return null
 
@@ -80,28 +84,57 @@ export function HotelSuggestion({ destination, days, language, tripId }: Props) 
   const bookingUrl = buildBookingUrl(destination)
   const agodaUrl = buildAgodaUrl(destination)
 
+  async function callEditApi(instruction: string) {
+    const res = await fetch('/api/edit-trip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tripId, instruction, language: language ?? 'en' }),
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data.error || 'Failed')
+    }
+    window.location.reload()
+  }
+
   async function handleAiRecommend() {
     setAiLoading(true)
+    setError(null)
     try {
-      const instruction = `Add a highly-rated hotel recommendation near the main itinerary area. Add it as the LAST place of Day 1 with type "hotel", arrivalTime around check-in time (3:00 PM). Include Google rating, price range, and a brief description. The hotel should be well-located for the planned activities.`
-      const res = await fetch('/api/edit-trip', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tripId, instruction, language: language ?? 'en' }),
-      })
-      if (!res.ok) throw new Error('Failed')
-      window.location.reload()
+      const instruction = `Add a highly-rated hotel recommendation near the main itinerary area in ${destination}. Add it as the LAST place of Day ${dayNumber} with type "hotel", arrivalTime "3:00 PM", duration "Check-in". Include Google rating, price range, and a brief description. The hotel should be well-located for the planned activities.`
+      await callEditApi(instruction)
     } catch {
+      setError(isChinese ? '推薦失敗，請重試' : 'Failed, please try again')
       setAiLoading(false)
     }
   }
 
+  async function handleAddHotel() {
+    const name = hotelName.trim()
+    if (!name) return
+    setAddLoading(true)
+    setError(null)
+    try {
+      const instruction = isChinese
+        ? `在 Day ${dayNumber} 的最後加入「${name}」作為酒店入住，類型為 "hotel"，到達時間為 "3:00 PM"，時長為 "Check-in"。請加入該酒店的 Google 評分、價格範圍和簡短描述。`
+        : `Add "${name}" as the LAST place of Day ${dayNumber} with type "hotel", arrivalTime "3:00 PM", duration "Check-in". Include the hotel's Google rating, price range, and a brief description.`
+      await callEditApi(instruction)
+    } catch {
+      setError(isChinese ? '加入失敗，請重試' : 'Failed to add, please try again')
+      setAddLoading(false)
+    }
+  }
+
+  const isLoading = aiLoading || addLoading
+
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-4 mb-4">
       <p className="text-sm font-semibold text-gray-700 mb-3">
-        🏨 {isChinese ? '需要酒店？' : 'Need a hotel?'}
+        🏨 {isChinese ? `Day ${dayNumber} 需要酒店？` : `Need a hotel for Day ${dayNumber}?`}
       </p>
-      <div className="flex flex-wrap gap-2">
+
+      {/* Booking links + AI recommend */}
+      <div className="flex flex-wrap gap-2 mb-3">
         <a
           href={googleUrl}
           target="_blank"
@@ -130,7 +163,7 @@ export function HotelSuggestion({ destination, days, language, tripId }: Props) 
         )}
         <button
           onClick={handleAiRecommend}
-          disabled={aiLoading}
+          disabled={isLoading}
           className="inline-flex items-center gap-1.5 text-xs font-medium bg-orange/10 border border-orange/30 text-orange rounded-lg px-3 py-2 hover:bg-orange/20 transition-colors disabled:opacity-50"
         >
           {aiLoading ? (
@@ -143,6 +176,35 @@ export function HotelSuggestion({ destination, days, language, tripId }: Props) 
           )}
         </button>
       </div>
+
+      {/* Manual hotel name input */}
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={hotelName}
+          onChange={(e) => setHotelName(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleAddHotel() }}
+          placeholder={isChinese ? '輸入酒店名稱...' : 'Enter your hotel name...'}
+          disabled={isLoading}
+          className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent disabled:opacity-50"
+        />
+        <button
+          onClick={handleAddHotel}
+          disabled={isLoading || !hotelName.trim()}
+          className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold bg-orange text-white rounded-lg px-3 py-2 hover:opacity-90 transition-opacity disabled:opacity-40"
+        >
+          {addLoading ? (
+            <span className="inline-block w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <>➕ {isChinese ? '加入行程' : 'Add to Trip'}</>
+          )}
+        </button>
+      </div>
+
+      {/* Error message */}
+      {error && (
+        <p className="text-xs text-red-500 mt-2">{error}</p>
+      )}
     </div>
   )
 }
