@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import type { DayPlan } from '@/lib/types'
 import { PlaceCard } from './PlaceCard'
 import { AlternativesPanel } from './AlternativesPanel'
+import { HotelSuggestion } from './HotelSuggestion'
 
 // Yelp is useful for US destinations only
 const US_SIGNALS = [
@@ -40,6 +41,7 @@ export function TripItinerary({
   language,
   onRemovePlace,
   onSaveDays,
+  tripId,
 }: {
   initialDays: DayPlan[]
   validated?: boolean
@@ -47,6 +49,7 @@ export function TripItinerary({
   language?: string
   onRemovePlace?: (dayIndex: number, placeIndex: number) => Promise<boolean>
   onSaveDays?: (updatedDays: DayPlan[]) => Promise<void>
+  tripId?: string
 }) {
   const showYelp = isUSDestination(destination)
   const [days, setDays] = useState(initialDays)
@@ -307,6 +310,18 @@ export function TripItinerary({
               </div>
             )
           })}
+
+          {/* Hotel suggestion at end of each day (except last day, only for 2+ day trips) */}
+          {days.length >= 2 && dayIndex < days.length - 1 && tripId && destination && (
+            <div className="mt-3">
+              <HotelSuggestion
+                destination={destination}
+                days={days.length}
+                language={language}
+                tripId={tripId}
+              />
+            </div>
+          )}
         </section>
       ))}
 

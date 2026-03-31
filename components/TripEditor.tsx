@@ -5,7 +5,6 @@ import type { Trip, DayPlan } from '@/lib/types'
 import { TripItinerary } from './TripItinerary'
 import { TripMap } from './TripMap'
 import { TripEditBar } from './TripEditBar'
-import { HotelSuggestion } from './HotelSuggestion'
 
 interface Props {
   tripId: string
@@ -126,18 +125,13 @@ export function TripEditor({ tripId, trip }: Props) {
   return (
     <>
       <TripMap key={`map-${editVersion}`} days={currentTrip.days} />
-      <HotelSuggestion
-        destination={currentTrip.destination}
-        days={currentTrip.days.length}
-        language={currentTrip.language}
-        tripId={tripId}
-      />
       <TripItinerary
         key={`itin-${editVersion}`}
         initialDays={currentTrip.days}
         validated={currentTrip.validated === true}
         destination={currentTrip.destination}
         language={currentTrip.language}
+        tripId={tripId}
         onRemovePlace={handleRemovePlace}
         onSaveDays={handleSaveDays}
       />
