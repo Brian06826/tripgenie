@@ -54,7 +54,7 @@ export default function HomePage() {
     <div className="min-h-dvh bg-gray-50">
       {/* Hero header */}
       <header
-        className="text-white px-4 pt-10 pb-8 text-center relative"
+        className="text-white px-4 pt-10 pb-12 text-center relative z-0"
         style={{ background: 'linear-gradient(180deg, var(--color-navy-dark) 0%, var(--color-navy) 60%, var(--color-navy-mid) 100%)' }}
       >
         <div className="absolute top-4 right-4">
