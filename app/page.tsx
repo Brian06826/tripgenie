@@ -77,8 +77,8 @@ export default function HomePage() {
           </div>
           <div className="w-px h-6 bg-gray-200" />
           <div>
-            <p className="text-xs font-semibold text-gray-700">Google Verified</p>
-            <p className="text-[10px] text-gray-400">Ratings & Maps</p>
+            <p className="text-xs font-semibold text-gray-700">Verified</p>
+            <p className="text-[10px] text-gray-400">Real restaurants</p>
           </div>
           <div className="w-px h-6 bg-gray-200" />
           <div>
