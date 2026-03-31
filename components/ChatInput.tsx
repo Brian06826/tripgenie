@@ -303,11 +303,11 @@ export function ChatInput() {
           onChange={e => setPrompt(e.target.value)}
           placeholder={'Describe your trip... e.g. 5-day San Diego with SeaWorld, seafood restaurants, couple / 描述你的旅行計劃...'}
           aria-label="Describe your trip / 描述你的旅行計劃"
-          rows={4}
+          rows={3}
           maxLength={500}
           disabled={loading}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e) } }}
-          className="w-full border border-gray-200 rounded-xl p-4 text-base lg:text-lg lg:p-5 lg:min-h-[140px] resize-none focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange disabled:opacity-50"
+          className="w-full border border-gray-200 rounded-xl p-3.5 text-sm lg:text-base resize-none focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange disabled:opacity-50"
         />
 
         {/* Preference chips — Who (exclusive) */}

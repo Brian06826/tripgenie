@@ -53,17 +53,17 @@ export default function HomePage() {
     <div className="min-h-dvh bg-gray-50">
       {/* Hero header */}
       <header
-        className="text-white px-4 pt-14 pb-10 text-center"
+        className="text-white px-4 pt-10 pb-8 text-center"
         style={{ background: 'linear-gradient(180deg, var(--color-navy-dark) 0%, var(--color-navy) 60%, var(--color-navy-mid) 100%)' }}
       >
         <div className="max-w-xl mx-auto">
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-3">
-            Trip<span className="text-orange">Genie</span> <span className="text-3xl sm:text-4xl">✨</span>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
+            Trip<span className="text-orange">Genie</span> <span className="text-2xl sm:text-3xl">✨</span>
           </h1>
-          <p className="text-base sm:text-lg font-medium opacity-90 mb-2">
+          <p className="text-sm sm:text-base font-medium opacity-90 mb-1.5">
             Describe your trip in any language → Beautiful shareable itinerary
           </p>
-          <p className="text-sm opacity-60">
+          <p className="text-xs opacity-60">
             用任何語言描述 → 精美可分享行程
           </p>
         </div>
@@ -96,8 +96,8 @@ export default function HomePage() {
       </div>
 
       {/* Chat input in card */}
-      <section className="max-w-xl lg:max-w-3xl mx-auto px-4 pt-6 pb-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-8">
+      <section className="max-w-xl lg:max-w-3xl mx-auto px-4 pt-4 pb-3">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6">
           <ChatInput />
         </div>
       </section>
@@ -106,7 +106,7 @@ export default function HomePage() {
       <RecentTrips />
 
       {/* Example trips */}
-      <section className="max-w-xl mx-auto px-4 pb-6">
+      <section className="max-w-xl mx-auto px-4 pb-4">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
           範例行程 / Example Trips
         </h2>
@@ -125,7 +125,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="text-center py-8 border-t border-gray-200 bg-white">
+      <footer className="text-center py-6 border-t border-gray-200 bg-white">
         <p className="text-sm text-gray-500">
           Made with ❤️ using Claude AI · © 2026 TripGenie
         </p>
