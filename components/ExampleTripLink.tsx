@@ -7,16 +7,17 @@ interface Props {
   href: string
   title: string
   subtitle: string
+  flag?: string
+  gradient?: string
 }
 
-export function ExampleTripLink({ href, title, subtitle }: Props) {
+export function ExampleTripLink({ href, title, subtitle, flag, gradient }: Props) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
   function handleClick(e: React.MouseEvent) {
     e.preventDefault()
     setLoading(true)
-    // Small delay so the skeleton renders before React starts the navigation
     setTimeout(() => router.push(href), 80)
   }
 
@@ -26,10 +27,11 @@ export function ExampleTripLink({ href, title, subtitle }: Props) {
       <a
         href={href}
         onClick={handleClick}
-        className="block bg-white rounded-xl border border-gray-100 px-4 py-3 hover:border-orange/30 transition-colors"
+        className={`block rounded-2xl px-4 py-4 text-white transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] bg-gradient-to-br ${gradient || 'from-gray-500 to-gray-600'}`}
       >
-        <div className="font-semibold text-gray-900 text-sm">{title}</div>
-        <div className="text-xs text-gray-400 mt-0.5">{subtitle}</div>
+        {flag && <span className="text-lg">{flag}</span>}
+        <div className="font-bold text-sm mt-1 leading-tight">{title}</div>
+        <div className="text-[11px] text-white/70 mt-1 leading-snug">{subtitle}</div>
       </a>
     </>
   )
