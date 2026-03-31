@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid'
 import { revalidatePath } from 'next/cache'
+import { getServerSession } from 'next-auth'
 import { generateTrip, validateTripRequest } from '@/lib/claude'
 import { saveTrip, getTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
@@ -7,6 +8,7 @@ import { generateAndUploadOgImage } from '@/lib/og'
 import { fetchHeroImage } from '@/lib/unsplash'
 import { validateRestaurants, geocodeAllPlaces } from '@/lib/google-places'
 import { optimizeRoutes } from '@/lib/route-optimizer'
+import { authOptions } from '@/lib/auth'
 import type { Trip } from '@/lib/types'
 
 export const maxDuration = 300
@@ -74,6 +76,10 @@ export async function POST(request: Request) {
       const pulse = setInterval(() => { try { send({ type: 'heartbeat' }) } catch {} }, 5000)
 
       try {
+        // Get userId if logged in (optional — anonymous trips work fine)
+        const session = await getServerSession(authOptions).catch(() => null)
+        const userId = (session?.user as any)?.id as string | undefined
+
         const generation = await generateTrip(prompt)
 
         const tripId = nanoid(8)
@@ -99,6 +105,7 @@ export async function POST(request: Request) {
           id: tripId,
           createdAt: new Date().toISOString(),
           validated: false,
+          ...(userId && { userId }),
           days: previewDays,
         }
 
@@ -135,6 +142,7 @@ export async function POST(request: Request) {
           id: tripId,
           createdAt: new Date().toISOString(),
           validated: true,
+          ...(userId && { userId }),
           days,
         }
 

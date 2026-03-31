@@ -77,6 +77,7 @@ export const TripSchema = TripGenerationSchema.extend({
   id: z.string(),
   createdAt: z.string(),
   validated: z.boolean().optional(),
+  userId: z.string().optional(),
   ogImageUrl: z.string().optional(),
   heroImageUrl: z.string().optional(),
   heroImageCredit: z.object({ name: z.string(), link: z.string() }).optional(),

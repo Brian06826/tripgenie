@@ -2,6 +2,7 @@ import { ChatInput } from '@/components/ChatInput'
 import { ExampleTripLink } from '@/components/ExampleTripLink'
 import { RecentTrips } from '@/components/RecentTrips'
 import { TripCounter } from '@/components/TripCounter'
+import { UserMenu } from '@/components/UserMenu'
 
 const EXAMPLE_TRIPS = [
   {
@@ -53,9 +54,12 @@ export default function HomePage() {
     <div className="min-h-dvh bg-gray-50">
       {/* Hero header */}
       <header
-        className="text-white px-4 pt-10 pb-8 text-center"
+        className="text-white px-4 pt-10 pb-8 text-center relative"
         style={{ background: 'linear-gradient(180deg, var(--color-navy-dark) 0%, var(--color-navy) 60%, var(--color-navy-mid) 100%)' }}
       >
+        <div className="absolute top-4 right-4">
+          <UserMenu />
+        </div>
         <div className="max-w-xl mx-auto">
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
             Trip<span className="text-orange">Genie</span> <span className="text-2xl sm:text-3xl">✨</span>
