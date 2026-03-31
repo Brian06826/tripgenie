@@ -69,7 +69,7 @@ export default function HomePage() {
       </header>
 
       {/* Trust indicators */}
-      <div className="max-w-xl mx-auto px-4 -mt-5">
+      <div className="max-w-xl lg:max-w-3xl mx-auto px-4 -mt-5">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-3 flex items-center justify-around gap-2 text-center">
           <div>
             <p className="text-xs font-semibold text-gray-700">AI-Powered</p>
@@ -94,9 +94,9 @@ export default function HomePage() {
       </div>
 
       {/* Chat input in card */}
-      <section className="max-w-xl mx-auto px-4 pt-6 pb-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-          <p className="text-sm font-medium text-gray-600 mb-3">
+      <section className="max-w-xl lg:max-w-3xl mx-auto px-4 pt-6 pb-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-8">
+          <p className="text-sm lg:text-base font-medium text-gray-600 mb-3 lg:mb-4">
             Describe your dream trip...
           </p>
           <ChatInput />

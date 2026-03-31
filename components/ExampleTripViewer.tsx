@@ -5,7 +5,6 @@ import type { Trip } from '@/lib/types'
 import { TripItinerary } from '@/components/TripItinerary'
 import { TripMap } from '@/components/TripMap'
 import { ShareButton } from '@/components/ShareButton'
-import { TripSummaryCard } from '@/components/TripSummaryCard'
 
 export function ExampleTripViewer({ trip }: { trip: Trip }) {
   const [ready, setReady] = useState(false)
@@ -44,7 +43,6 @@ export function ExampleTripViewer({ trip }: { trip: Trip }) {
 
       {/* Day content */}
       <main className="max-w-4xl mx-auto px-4 py-4">
-        <TripSummaryCard days={trip.days} />
         <TripMap days={trip.days} />
         <TripItinerary initialDays={trip.days} validated={false} destination={trip.destination} language={trip.language} />
         <div className="mt-6 mb-4">

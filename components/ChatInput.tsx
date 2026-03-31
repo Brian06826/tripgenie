@@ -295,7 +295,7 @@ export function ChatInput() {
   }
 
   return (
-    <div className="w-full max-w-xl mx-auto px-4">
+    <div className="w-full max-w-xl lg:max-w-3xl mx-auto px-4">
       {loading && <TripLoadingOverlay lang={lang} phase={loadingPhase} estimatedSeconds={estimatedSeconds} vibe={loadingVibe} onCancel={() => abortRef.current?.abort()} />}
       <form onSubmit={handleSubmit} className="space-y-3">
         <textarea
@@ -307,7 +307,7 @@ export function ChatInput() {
           maxLength={500}
           disabled={loading}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e) } }}
-          className="w-full border border-gray-200 rounded-xl p-4 text-base resize-none focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange disabled:opacity-50"
+          className="w-full border border-gray-200 rounded-xl p-4 text-base lg:text-lg lg:p-5 lg:min-h-[140px] resize-none focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange disabled:opacity-50"
         />
 
         {/* Preference chips — Who (exclusive) */}
@@ -322,7 +322,7 @@ export function ChatInput() {
                   type="button"
                   onClick={() => toggleChip(chip.keyword)}
                   disabled={loading}
-                  className={`text-xs rounded-full px-3 py-1.5 min-h-[36px] transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50 ${
+                  className={`text-xs lg:text-sm rounded-full px-3 py-1.5 lg:px-4 lg:py-2 min-h-[36px] lg:min-h-[40px] transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50 ${
                     active
                       ? 'bg-orange text-white border border-orange'
                       : 'border border-gray-200 hover:border-orange hover:text-orange'
@@ -347,7 +347,7 @@ export function ChatInput() {
                   type="button"
                   onClick={() => toggleChip(chip.keyword)}
                   disabled={loading}
-                  className={`text-xs rounded-full px-3 py-1.5 min-h-[36px] transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50 ${
+                  className={`text-xs lg:text-sm rounded-full px-3 py-1.5 lg:px-4 lg:py-2 min-h-[36px] lg:min-h-[40px] transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50 ${
                     active
                       ? 'bg-orange text-white border border-orange'
                       : 'border border-gray-200 hover:border-orange hover:text-orange'
@@ -368,7 +368,7 @@ export function ChatInput() {
               type="button"
               onClick={() => setPrompt(s)}
               disabled={loading}
-              className="text-xs border border-gray-200 rounded-full px-3 py-2 min-h-[44px] hover:border-orange hover:text-orange transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50"
+              className="text-xs lg:text-sm border border-gray-200 rounded-full px-3 py-2 lg:px-4 lg:py-2.5 min-h-[44px] hover:border-orange hover:text-orange transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50"
             >
               {s}
             </button>
@@ -378,7 +378,7 @@ export function ChatInput() {
         <button
           type="submit"
           disabled={!prompt.trim() || loading}
-          className="w-full bg-orange text-white py-3 rounded-xl font-semibold text-sm disabled:opacity-50 hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
+          className="w-full bg-orange text-white py-3 lg:py-4 rounded-xl font-semibold text-sm lg:text-base disabled:opacity-50 hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
         >
           {loading ? '⏳ Generating... / 生成中...' : '✨ Generate Itinerary / 生成行程'}
         </button>
