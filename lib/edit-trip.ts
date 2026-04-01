@@ -13,7 +13,7 @@ function getClient(): Anthropic {
   return _client
 }
 
-const EDIT_TRIP_SYSTEM_PROMPT = `You are TripGenie's trip editor. You receive an existing trip itinerary as JSON and the user's edit instruction. Modify the trip according to the instruction and return the COMPLETE updated trip JSON.
+const EDIT_TRIP_SYSTEM_PROMPT = `You are Lulgo's trip editor. You receive an existing trip itinerary as JSON and the user's edit instruction. Modify the trip according to the instruction and return the COMPLETE updated trip JSON.
 
 Respond ONLY with valid JSON — no markdown, no explanation, no text outside the JSON object.
 

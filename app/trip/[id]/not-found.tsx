@@ -7,7 +7,7 @@ export default function TripNotFound() {
       >
         <div className="max-w-xl mx-auto">
           <h1 className="text-3xl font-bold tracking-tight mb-2">
-            Trip<span className="text-orange">Genie</span> ✨
+            Lul<span className="text-orange">go</span> ✨
           </h1>
         </div>
       </header>

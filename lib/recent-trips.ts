@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'tripgenie_recent_trips'
+const STORAGE_KEY = 'lulgo_recent_trips'
 const MAX_TRIPS = 10
 
 export interface RecentTrip {

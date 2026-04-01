@@ -29,7 +29,7 @@ export interface EditResult {
   }
 }
 
-const EDIT_SYSTEM_PROMPT = `You are TripGenie's place editor. The user wants to modify a single stop in their trip itinerary. You receive the current place data and an edit instruction.
+const EDIT_SYSTEM_PROMPT = `You are Lulgo's place editor. The user wants to modify a single stop in their trip itinerary. You receive the current place data and an edit instruction.
 
 Respond ONLY with valid JSON — no markdown, no explanation.
 

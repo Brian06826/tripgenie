@@ -27,14 +27,14 @@ export function ExampleTripViewer({ trip }: { trip: Trip }) {
           style={{ background: 'linear-gradient(180deg, var(--color-navy) 0%, var(--color-navy-mid) 100%)' }}
         />
         <div className="relative max-w-4xl mx-auto">
-          <p className="text-xs text-orange font-semibold mb-1">TripGenie</p>
+          <p className="text-xs text-orange font-semibold mb-1">Lulgo</p>
           <h1 className="text-2xl font-bold leading-tight mb-1">{trip.title}</h1>
           <p className="text-sm opacity-80 mb-4">
             {trip.destination} · {trip.days.length} day{trip.days.length !== 1 ? 's' : ''}
           </p>
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 flex items-center justify-between gap-3">
             <span className="text-xs opacity-90 truncate font-mono">
-              tripgenie.app{tripUrl}
+              lulgo.com{tripUrl}
             </span>
             <ShareButton tripId={trip.id} tripTitle={trip.title} />
           </div>
@@ -54,7 +54,7 @@ export function ExampleTripViewer({ trip }: { trip: Trip }) {
           </a>
         </div>
         <footer className="text-center text-xs text-gray-400 py-8">
-          Made with <a href="/" className="text-orange underline">TripGenie</a>
+          Made with <a href="/" className="text-orange underline">Lulgo</a>
         </footer>
       </main>
     </div>

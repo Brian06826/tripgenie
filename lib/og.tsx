@@ -35,7 +35,7 @@ export async function generateAndUploadOgImage(
               letterSpacing: '-0.5px',
             }}
           >
-            ✨ TripGenie
+            ✨ Lulgo
           </div>
           <div
             style={{

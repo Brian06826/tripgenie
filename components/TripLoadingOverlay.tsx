@@ -764,7 +764,7 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 text-center pb-10">
         <p className="text-white/40 text-xs tracking-[0.18em] uppercase font-semibold mb-4">
-          TripGenie ✨
+          Lulgo ✨
         </p>
 
         {/* Emoji Quiz */}

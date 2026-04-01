@@ -1,8 +1,8 @@
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Privacy Policy — TripGenie',
-  description: 'TripGenie privacy policy / 隱私政策',
+  title: 'Privacy Policy — Lulgo',
+  description: 'Lulgo privacy policy / 隱私政策',
 }
 
 export default function PrivacyPage() {
@@ -11,7 +11,7 @@ export default function PrivacyPage() {
       <header className="border-b border-gray-100 px-4 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <Link href="/" className="text-lg font-bold text-gray-900">
-            Trip<span className="text-orange">Genie</span> ✨
+            Lul<span className="text-orange">go</span> ✨
           </Link>
           <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">← Back</Link>
         </div>
@@ -38,10 +38,10 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-base font-semibold text-gray-900 mb-2">2. How We Use Your Data / 我們點樣使用你嘅資料</h2>
             <p className="mb-2">
-              Your data is used solely to provide the TripGenie service: generating, saving, and displaying your trip itineraries. We associate trips with your account so you can access them later.
+              Your data is used solely to provide the Lulgo service: generating, saving, and displaying your trip itineraries. We associate trips with your account so you can access them later.
             </p>
             <p className="text-gray-500">
-              你嘅資料只會用嚟提供 TripGenie 服務：生成、儲存同顯示你嘅旅行行程。我們會將行程同你嘅帳戶關聯，方便你之後查閱。
+              你嘅資料只會用嚟提供 Lulgo 服務：生成、儲存同顯示你嘅旅行行程。我們會將行程同你嘅帳戶關聯，方便你之後查閱。
             </p>
           </section>
 
@@ -64,7 +64,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-base font-semibold text-gray-900 mb-2">4. Third-Party Services / 第三方服務</h2>
             <p className="mb-2">
-              TripGenie uses the following third-party services to operate:
+              Lulgo uses the following third-party services to operate:
             </p>
             <ul className="list-disc list-inside space-y-1 mb-2">
               <li><strong>Google OAuth</strong> — for authentication</li>
@@ -73,7 +73,7 @@ export default function PrivacyPage() {
               <li><strong>Unsplash</strong> — for hero images</li>
             </ul>
             <p className="text-gray-500">
-              TripGenie 使用以下第三方服務運作：Google OAuth（認證）、Google Places API（驗證地點）、Anthropic Claude API（生成行程）、Unsplash（封面圖片）。
+              Lulgo 使用以下第三方服務運作：Google OAuth（認證）、Google Places API（驗證地點）、Anthropic Claude API（生成行程）、Unsplash（封面圖片）。
             </p>
           </section>
 
@@ -92,10 +92,10 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-base font-semibold text-gray-900 mb-2">6. Data Storage & Retention / 資料儲存</h2>
             <p className="mb-2">
-              Trip data is stored for up to <strong>90 days</strong> and may be deleted after that period. You can use TripGenie without signing in; anonymous trips are not linked to any account.
+              Trip data is stored for up to <strong>90 days</strong> and may be deleted after that period. You can use Lulgo without signing in; anonymous trips are not linked to any account.
             </p>
             <p className="text-gray-500">
-              行程資料最多儲存 <strong>90 日</strong>，之後可能會被刪除。你可以喺唔登入嘅情況下使用 TripGenie，匿名行程唔會連結到任何帳戶。
+              行程資料最多儲存 <strong>90 日</strong>，之後可能會被刪除。你可以喺唔登入嘅情況下使用 Lulgo，匿名行程唔會連結到任何帳戶。
             </p>
           </section>
 

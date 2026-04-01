@@ -1,4 +1,4 @@
-# TripGenie — TODOS
+# Lulgo — TODOS
 
 ## Pre-Phase A Launch (do these during the Phase A build)
 

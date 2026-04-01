@@ -1,8 +1,8 @@
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Terms of Service — TripGenie',
-  description: 'TripGenie terms of service / 服務條款',
+  title: 'Terms of Service — Lulgo',
+  description: 'Lulgo terms of service / 服務條款',
 }
 
 export default function TermsPage() {
@@ -11,7 +11,7 @@ export default function TermsPage() {
       <header className="border-b border-gray-100 px-4 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <Link href="/" className="text-lg font-bold text-gray-900">
-            Trip<span className="text-orange">Genie</span> ✨
+            Lul<span className="text-orange">go</span> ✨
           </Link>
           <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">← Back</Link>
         </div>
@@ -27,10 +27,10 @@ export default function TermsPage() {
           <section>
             <h2 className="text-base font-semibold text-gray-900 mb-2">1. Acceptance of Terms / 接受條款</h2>
             <p className="mb-2">
-              By using TripGenie, you agree to these terms. If you do not agree, please do not use the service.
+              By using Lulgo, you agree to these terms. If you do not agree, please do not use the service.
             </p>
             <p className="text-gray-500">
-              使用 TripGenie 即表示你同意以下條款。如果你唔同意，請唔好使用本服務。
+              使用 Lulgo 即表示你同意以下條款。如果你唔同意，請唔好使用本服務。
             </p>
           </section>
 
@@ -38,10 +38,10 @@ export default function TermsPage() {
           <section>
             <h2 className="text-base font-semibold text-gray-900 mb-2">2. Service Description / 服務說明</h2>
             <p className="mb-2">
-              TripGenie is a free AI-powered travel itinerary generator. It uses artificial intelligence to create trip plans based on your input. The service is provided &quot;as is&quot; and is currently free to use.
+              Lulgo is a free AI-powered travel itinerary generator. It uses artificial intelligence to create trip plans based on your input. The service is provided &quot;as is&quot; and is currently free to use.
             </p>
             <p className="text-gray-500">
-              TripGenie 係一個免費嘅 AI 旅行行程生成器。佢利用人工智能根據你嘅輸入建立行程計劃。本服務按「現狀」提供，目前免費使用。
+              Lulgo 係一個免費嘅 AI 旅行行程生成器。佢利用人工智能根據你嘅輸入建立行程計劃。本服務按「現狀」提供，目前免費使用。
             </p>
           </section>
 
@@ -49,13 +49,13 @@ export default function TermsPage() {
           <section>
             <h2 className="text-base font-semibold text-gray-900 mb-2">3. Free Tier / 免費使用限制</h2>
             <ul className="list-disc list-inside space-y-1 mb-2">
-              <li>TripGenie is currently free with no guaranteed uptime</li>
+              <li>Lulgo is currently free with no guaranteed uptime</li>
               <li>We may introduce usage limits or paid tiers in the future</li>
               <li>Trip data is stored for up to 90 days and may be removed</li>
               <li>Rate limiting applies (5 requests per minute)</li>
             </ul>
             <ul className="list-disc list-inside space-y-1 text-gray-500">
-              <li>TripGenie 目前免費使用，唔保證服務持續可用</li>
+              <li>Lulgo 目前免費使用，唔保證服務持續可用</li>
               <li>我們可能喺將來引入使用限制或付費方案</li>
               <li>行程資料最多儲存 90 日，之後可能會被移除</li>
               <li>設有速率限制（每分鐘 5 個請求）</li>
@@ -94,10 +94,10 @@ export default function TermsPage() {
           <section>
             <h2 className="text-base font-semibold text-gray-900 mb-2">6. Disclaimer of Warranty / 免責聲明</h2>
             <p className="mb-2">
-              TripGenie is provided <strong>&quot;as is&quot;</strong> without any warranty, express or implied. We make no guarantees regarding the accuracy, reliability, or availability of the service. We are not responsible for any losses or damages arising from the use of AI-generated travel plans.
+              Lulgo is provided <strong>&quot;as is&quot;</strong> without any warranty, express or implied. We make no guarantees regarding the accuracy, reliability, or availability of the service. We are not responsible for any losses or damages arising from the use of AI-generated travel plans.
             </p>
             <p className="text-gray-500">
-              TripGenie 按<strong>「現狀」</strong>提供，唔附帶任何明示或暗示嘅保證。我們唔保證服務嘅準確性、可靠性或可用性。我們唔會對因使用 AI 生成嘅旅行計劃而產生嘅任何損失或損害負責。
+              Lulgo 按<strong>「現狀」</strong>提供，唔附帶任何明示或暗示嘅保證。我們唔保證服務嘅準確性、可靠性或可用性。我們唔會對因使用 AI 生成嘅旅行計劃而產生嘅任何損失或損害負責。
             </p>
           </section>
 
@@ -105,10 +105,10 @@ export default function TermsPage() {
           <section>
             <h2 className="text-base font-semibold text-gray-900 mb-2">7. Changes to Terms / 條款變更</h2>
             <p className="mb-2">
-              We may update these terms from time to time. Continued use of TripGenie after changes constitutes acceptance of the new terms.
+              We may update these terms from time to time. Continued use of Lulgo after changes constitutes acceptance of the new terms.
             </p>
             <p className="text-gray-500">
-              我們可能會不時更新呢啲條款。喺條款變更後繼續使用 TripGenie 即表示你接受新條款。
+              我們可能會不時更新呢啲條款。喺條款變更後繼續使用 Lulgo 即表示你接受新條款。
             </p>
           </section>
 

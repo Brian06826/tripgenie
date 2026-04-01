@@ -63,7 +63,7 @@ export default function HomePage() {
         </div>
         <div className="max-w-xl mx-auto">
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
-            Trip<span className="text-orange">Genie</span> <span className="text-2xl sm:text-3xl">✨</span>
+            Lul<span className="text-orange">go</span> <span className="text-2xl sm:text-3xl">✨</span>
           </h1>
           <p className="text-sm sm:text-base font-medium opacity-90 mb-1.5">
             Describe your trip in any language → Beautiful shareable itinerary
@@ -132,7 +132,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="text-center py-6 border-t border-gray-200 bg-white space-y-2">
         <p className="text-sm text-gray-500">
-          Made with ❤️ using AI · © 2026 TripGenie
+          Made with ❤️ using AI · © 2026 Lulgo
         </p>
         <div className="flex items-center justify-center gap-3 text-xs text-gray-400">
           <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacy Policy 隱私政策</Link>

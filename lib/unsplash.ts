@@ -20,7 +20,7 @@ export async function fetchHeroImage(destination: string): Promise<UnsplashResul
       imageUrl: data.urls.regular,
       credit: {
         name: data.user.name,
-        link: `${data.user.links.html}?utm_source=tripgenie&utm_medium=referral`,
+        link: `${data.user.links.html}?utm_source=lulgo&utm_medium=referral`,
       },
     }
   } catch {
