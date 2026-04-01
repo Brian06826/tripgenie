@@ -35,7 +35,6 @@ export function PlaceCard({
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState('')
   const [editingTime, setEditingTime] = useState(false)
-  const [timeText, setTimeText] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const timeInputRef = useRef<HTMLInputElement>(null)
 
@@ -47,35 +46,36 @@ export function PlaceCard({
     setEditing(false)
   }
 
-  function handleTimeSubmit() {
-    const val = timeText.trim()
+  // Convert "2:00 PM" → "14:00" for HTML time input
+  function to24h(timeStr: string): string {
+    const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+    if (match) {
+      let h = parseInt(match[1])
+      const m = match[2]
+      const period = match[3].toUpperCase()
+      if (period === 'PM' && h !== 12) h += 12
+      if (period === 'AM' && h === 12) h = 0
+      return `${h.toString().padStart(2, '0')}:${m}`
+    }
+    return timeStr
+  }
+
+  // Convert "14:00" → "2:00 PM"
+  function to12h(val: string): string {
+    const [hStr, mStr] = val.split(':')
+    const h = parseInt(hStr)
+    const period = h >= 12 ? 'PM' : 'AM'
+    const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h
+    return `${h12}:${mStr} ${period}`
+  }
+
+  function handleTimeCommit() {
+    const val = timeInputRef.current?.value
     setEditingTime(false)
     if (!val || !onTimeChange) return
-    // Accept formats: "2:00 PM", "14:00", "2pm", "2:30pm", "14:30"
-    const match12 = val.match(/^(\d{1,2}):?(\d{2})?\s*(am|pm)$/i)
-    if (match12) {
-      const h = parseInt(match12[1])
-      const m = match12[2] || '00'
-      const p = match12[3].toUpperCase()
-      onTimeChange(`${h}:${m.padStart(2, '0')} ${p}`)
-      return
-    }
-    const match24 = val.match(/^(\d{1,2}):(\d{2})$/)
-    if (match24) {
-      const h = parseInt(match24[1])
-      const m = match24[2]
-      // Convert to 12h if original was 12h format
-      const was12h = place.arrivalTime?.includes('AM') || place.arrivalTime?.includes('PM')
-      if (was12h) {
-        const period = h >= 12 ? 'PM' : 'AM'
-        const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h
-        onTimeChange(`${h12}:${m} ${period}`)
-      } else {
-        onTimeChange(val)
-      }
-      return
-    }
-    // Invalid format — ignore
+    const is12h = place.arrivalTime?.includes('AM') || place.arrivalTime?.includes('PM')
+    const newTime = is12h ? to12h(val) : val
+    if (newTime !== place.arrivalTime) onTimeChange(newTime)
   }
 
   return (
@@ -87,26 +87,27 @@ export function PlaceCard({
           {editingTime && onTimeChange ? (
             <input
               ref={timeInputRef}
-              type="text"
-              inputMode="numeric"
-              value={timeText}
-              onChange={(e) => setTimeText(e.target.value)}
-              onBlur={handleTimeSubmit}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleTimeSubmit(); if (e.key === 'Escape') setEditingTime(false) }}
-              placeholder="e.g. 2:00 PM"
-              autoComplete="off"
-              className="inline-block w-24 text-xs font-semibold text-orange bg-orange/5 border border-orange/30 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-orange"
+              type="time"
+              defaultValue={to24h(place.arrivalTime)}
+              onBlur={handleTimeCommit}
+              onChange={handleTimeCommit}
+              className="inline-block w-28 text-xs font-semibold text-orange bg-orange/5 border border-orange/30 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-orange"
               autoFocus
             />
           ) : (
-            <button
-              onClick={() => { if (onTimeChange) { setTimeText(place.arrivalTime || ''); setEditingTime(true); setTimeout(() => timeInputRef.current?.focus(), 50) } }}
-              className={onTimeChange ? 'border-b border-dotted border-orange/40 hover:border-orange cursor-pointer transition-colors' : ''}
-              disabled={!onTimeChange}
-              type="button"
+            <span
+              onClick={() => { if (onTimeChange) { setEditingTime(true); setTimeout(() => timeInputRef.current?.showPicker?.(), 100) } }}
+              className={onTimeChange ? 'group/time cursor-pointer inline-flex items-center gap-0.5' : ''}
+              role={onTimeChange ? 'button' : undefined}
+              tabIndex={onTimeChange ? 0 : undefined}
             >
-              {place.arrivalTime}
-            </button>
+              <span className={onTimeChange ? 'border-b border-dotted border-orange/30 hover:border-orange transition-colors' : ''}>
+                {place.arrivalTime}
+              </span>
+              {onTimeChange && (
+                <span className="opacity-0 group-hover/time:opacity-60 transition-opacity text-[10px]">🕐</span>
+              )}
+            </span>
           )}
           {place.duration && ` · ${place.duration}`}
           {place.priceRange && ` · ${place.priceRange}`}

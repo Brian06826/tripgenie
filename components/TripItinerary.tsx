@@ -228,22 +228,37 @@ export function TripItinerary({
     }
   }, [days, destination, language, onSaveDays])
 
-  const handleTimeChange = useCallback((dayIndex: number, placeIndex: number, newTime: string) => {
-    setDays(prev => {
-      const updated = prev.map((d, di) => {
-        if (di !== dayIndex) return d
-        return {
-          ...d,
-          places: d.places.map((p, pi) => {
-            if (pi !== placeIndex) return p
-            return { ...p, arrivalTime: newTime }
-          }),
-        }
+  const handleTimeChange = useCallback(async (dayIndex: number, placeIndex: number, newTime: string) => {
+    // Update local state instantly
+    setDays(prev => prev.map((d, di) => {
+      if (di !== dayIndex) return d
+      return {
+        ...d,
+        places: d.places.map((p, pi) => {
+          if (pi !== placeIndex) return p
+          return { ...p, arrivalTime: newTime }
+        }),
+      }
+    }))
+
+    // Save to Redis via dedicated endpoint
+    if (!tripId) return
+    const dayNumber = days[dayIndex]?.dayNumber
+    if (!dayNumber) return
+    try {
+      const res = await fetch('/api/update-place-time', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tripId, dayNumber, placeIndex, newTime }),
       })
-      if (onSaveQuiet) onSaveQuiet(updated)
-      return updated
-    })
-  }, [onSaveQuiet])
+      if (!res.ok) throw new Error('Save failed')
+    } catch {
+      const isCN = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
+      const msg = isCN ? '儲存失敗' : 'Save failed'
+      setToast(msg)
+      setTimeout(() => setToast(null), 3000)
+    }
+  }, [tripId, days, language])
 
   const isChinese = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
 
@@ -342,7 +357,7 @@ export function TripItinerary({
                       showYelp={showYelp}
                       onEdit={destination ? (instruction) => handleEdit(dayIndex, placeIndex, instruction) : undefined}
                       onRemove={onRemovePlace ? () => handleRemove(dayIndex, placeIndex) : undefined}
-                      onTimeChange={onSaveQuiet ? (newTime) => handleTimeChange(dayIndex, placeIndex, newTime) : undefined}
+                      onTimeChange={tripId ? (newTime) => handleTimeChange(dayIndex, placeIndex, newTime) : undefined}
                       editLoading={isEditing}
                       removeLoading={removingKey === key}
                     />
