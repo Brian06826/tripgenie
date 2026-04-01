@@ -34,11 +34,30 @@ function isUSDestination(destination?: string): boolean {
   return US_SIGNALS.some(signal => dest.includes(signal))
 }
 
+function formatDayDate(startDate: string, dayIndex: number, language?: string): string | null {
+  try {
+    const date = new Date(startDate + 'T00:00:00')
+    if (isNaN(date.getTime())) return null
+    date.setDate(date.getDate() + dayIndex)
+    const isCN = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
+    const weekdays = isCN
+      ? ['日', '一', '二', '三', '四', '五', '六']
+      : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    const wd = weekdays[date.getDay()]
+    return isCN ? `${month}/${day} (${wd})` : `${month}/${day} (${wd})`
+  } catch {
+    return null
+  }
+}
+
 export function TripItinerary({
   initialDays,
   validated = true,
   destination,
   language,
+  startDate,
   onRemovePlace,
   onSaveDays,
   tripId,
@@ -47,6 +66,7 @@ export function TripItinerary({
   validated?: boolean
   destination?: string
   language?: string
+  startDate?: string
   onRemovePlace?: (dayIndex: number, placeIndex: number) => Promise<boolean>
   onSaveDays?: (updatedDays: DayPlan[]) => Promise<void>
   tripId?: string
@@ -253,7 +273,7 @@ export function TripItinerary({
                   : 'bg-white text-gray-500 border border-gray-200 hover:border-orange hover:text-orange'
               }`}
             >
-              Day {day.dayNumber}
+              Day {day.dayNumber}{startDate ? ` · ${formatDayDate(startDate, i, language) ?? ''}` : ''}
             </button>
           ))}
         </div>
@@ -266,7 +286,14 @@ export function TripItinerary({
           className="mb-6"
         >
           <div className="sticky top-[52px] bg-navy text-white px-4 py-2.5 rounded-lg mb-3 z-10">
-            <h2 className="font-bold text-lg">Day {day.dayNumber}</h2>
+            <h2 className="font-bold text-lg">
+              Day {day.dayNumber}
+              {startDate && formatDayDate(startDate, dayIndex, language) && (
+                <span className="font-normal text-sm opacity-70 ml-2">
+                  {formatDayDate(startDate, dayIndex, language)}
+                </span>
+              )}
+            </h2>
             <p className="text-sm opacity-80">{day.title}</p>
           </div>
 

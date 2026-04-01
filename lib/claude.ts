@@ -145,10 +145,13 @@ LANGUAGE: Detect language ONLY by the CHARACTER SCRIPT of the user's input — n
 CRITICAL: "hong kong", "tokyo", "taipei" written in Latin letters = English input. Do NOT switch to Chinese just because the destination is in Asia. The script of the INPUT text determines the language, not the destination.
 ALL descriptive text (titles, descriptions, tips) must be in the detected language. Place names: always include both "name" (English/romanized) and "nameLocal" (local script) when both exist.
 
+DATE AWARENESS: If the user mentions specific dates (e.g. "April 5-7", "4月5日", "next Friday", "this weekend"), extract the start date and include it as "startDate" in YYYY-MM-DD format. If the user says relative dates like "next week" or "this Saturday", calculate the actual date based on today being ${new Date().toISOString().split('T')[0]}. If no date is mentioned, omit the startDate field.
+
 JSON schema:
 {
   "title": "string",
   "destination": "string",
+  "startDate": "string (optional, YYYY-MM-DD format)",
   "language": "en|zh-TW|zh-HK|zh-CN",
   "days": [{
     "dayNumber": 1,

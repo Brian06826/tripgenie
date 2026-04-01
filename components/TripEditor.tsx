@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import type { Trip, DayPlan } from '@/lib/types'
 import { TripItinerary } from './TripItinerary'
 import { TripMap } from './TripMap'
@@ -17,7 +17,23 @@ export function TripEditor({ tripId, trip }: Props) {
   const [undoStack, setUndoStack] = useState<Trip[]>([])
   const [isEditing, setIsEditing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [undoToast, setUndoToast] = useState<{ message: string; tripData: Trip } | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Check sessionStorage for pending undo on mount
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem('lulgo_undo')
+      if (stored) {
+        sessionStorage.removeItem('lulgo_undo')
+        const { message, tripData } = JSON.parse(stored)
+        setUndoToast({ message, tripData })
+        undoTimerRef.current = setTimeout(() => setUndoToast(null), 8000)
+      }
+    } catch {}
+    return () => { if (undoTimerRef.current) clearTimeout(undoTimerRef.current) }
+  }, [])
 
   const handleEdit = useCallback(async (instruction: string, language: string) => {
     setIsEditing(true)
@@ -99,25 +115,41 @@ export function TripEditor({ tripId, trip }: Props) {
   }, [currentTrip, tripId])
 
   const handleRemovePlace = useCallback(async (dayIndex: number, placeIndex: number): Promise<boolean> => {
-    const updatedDays = currentTrip.days.map((d, di) => {
-      if (di !== dayIndex) return d
-      return { ...d, places: d.places.filter((_, pi) => pi !== placeIndex) }
-    })
-    const updatedTrip: Trip = { ...currentTrip, days: updatedDays }
+    const place = currentTrip.days[dayIndex]?.places[placeIndex]
+    if (!place) return false
+
+    // Save current state for undo before AI edit
+    setUndoStack(prev => [currentTrip, ...prev].slice(0, 10))
+    setIsEditing(true)
+    setError(null)
+
+    const dayLabel = `Day ${dayIndex + 1}`
+    const instruction = `Remove "${place.name}" from ${dayLabel} and adjust the remaining schedule times to fill the gap naturally`
 
     try {
       const res = await fetch('/api/edit-trip', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tripId, tripData: updatedTrip }),
+        body: JSON.stringify({ tripId, instruction, language: currentTrip.language }),
       })
-      if (!res.ok) throw new Error('Save failed')
 
-      // Saved to Redis — reload to get fresh server render
-      window.location.reload()
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Remove failed')
+
+      if (data.trip) {
+        const isCN = currentTrip.language !== 'en'
+        const msg = isCN ? `已移除 ${place.name}` : `Removed ${place.name}`
+        try {
+          sessionStorage.setItem('lulgo_undo', JSON.stringify({ message: msg, tripData: currentTrip }))
+        } catch {}
+        window.location.reload()
+      }
       return true
     } catch (err) {
-      console.error('[remove-place] Save failed:', err)
+      setError(err instanceof Error ? err.message : 'Remove failed')
+      setIsEditing(false)
+      // Remove the undo entry we just added since the edit failed
+      setUndoStack(prev => prev.slice(1))
       return false
     }
   }, [currentTrip, tripId])
@@ -131,6 +163,7 @@ export function TripEditor({ tripId, trip }: Props) {
         validated={currentTrip.validated === true}
         destination={currentTrip.destination}
         language={currentTrip.language}
+        startDate={currentTrip.startDate}
         tripId={tripId}
         onRemovePlace={handleRemovePlace}
         onSaveDays={handleSaveDays}
@@ -157,6 +190,44 @@ export function TripEditor({ tripId, trip }: Props) {
         error={error}
         language={currentTrip.language}
       />
+
+      {/* Undo toast after delete */}
+      {undoToast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-gray-800 text-white text-sm px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-fade-in">
+          <span>{undoToast.message}</span>
+          <button
+            onClick={async () => {
+              if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+              setUndoToast(null)
+              setIsEditing(true)
+              try {
+                const res = await fetch('/api/edit-trip', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ tripId, tripData: undoToast.tripData }),
+                })
+                if (!res.ok) throw new Error('Undo failed')
+                window.location.reload()
+              } catch {
+                setError(currentTrip.language === 'en' ? 'Undo failed' : '撤銷失敗')
+                setIsEditing(false)
+              }
+            }}
+            className="font-semibold text-orange hover:text-orange/80 transition-colors whitespace-nowrap"
+          >
+            {currentTrip.language === 'en' ? 'Undo' : '撤銷'}
+          </button>
+          <button
+            onClick={() => {
+              if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+              setUndoToast(null)
+            }}
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </>
   )
 }

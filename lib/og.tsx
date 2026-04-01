@@ -11,6 +11,16 @@ export async function generateAndUploadOgImage(
   try {
     const { put } = await import('@vercel/blob')
 
+    // Extract top highlights from the trip
+    const highlights = trip.days
+      .flatMap(d => d.places)
+      .filter(p => p.type === 'attraction' || p.type === 'restaurant')
+      .slice(0, 4)
+      .map(p => p.name)
+
+    const dayCount = Math.max(...trip.days.map(d => d.dayNumber))
+    const dayLabel = dayCount !== 1 ? `${dayCount} days` : '1 day'
+
     const imageResponse = new ImageResponse(
       (
         <div
@@ -35,7 +45,7 @@ export async function generateAndUploadOgImage(
               letterSpacing: '-0.5px',
             }}
           >
-            ✨ Lulgo
+            Lulgo
           </div>
           <div
             style={{
@@ -53,10 +63,36 @@ export async function generateAndUploadOgImage(
             style={{
               fontSize: 24,
               color: 'rgba(255,255,255,0.7)',
+              marginBottom: 20,
             }}
           >
-            {trip.destination} · {Math.max(...trip.days.map(d => d.dayNumber))} day{Math.max(...trip.days.map(d => d.dayNumber)) !== 1 ? 's' : ''}
+            {trip.destination} · {dayLabel}{trip.startDate ? ` · ${trip.startDate}` : ''}
           </div>
+          {highlights.length > 0 && (
+            <div
+              style={{
+                display: 'flex',
+                gap: '12px',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+              }}
+            >
+              {highlights.map((name, i) => (
+                <div
+                  key={i}
+                  style={{
+                    fontSize: 18,
+                    color: 'rgba(255,255,255,0.85)',
+                    background: 'rgba(255,255,255,0.12)',
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                  }}
+                >
+                  {name}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ),
       { width: 1200, height: 630 }

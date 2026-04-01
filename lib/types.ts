@@ -50,6 +50,7 @@ export const DayPlanGenerationSchema = z.object({
 export const TripGenerationSchema = z.object({
   title: z.string(),
   destination: z.string(),
+  startDate: z.string().optional(),
   days: z.array(DayPlanGenerationSchema),
   language: z.enum(['en', 'zh-TW', 'zh-HK', 'zh-CN']),
 })

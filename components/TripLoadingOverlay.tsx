@@ -767,10 +767,26 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
           Lulgo ✨
         </p>
 
+        {/* Real-time status message */}
+        <div className="mb-4 h-8 flex items-center justify-center" key={msgKey}>
+          <p className="text-white/70 text-sm font-medium animate-fade-in">
+            {displayMsg}
+          </p>
+        </div>
+
         {/* Emoji Quiz */}
-        <div className="mb-6">
+        <div className="mb-4">
           <EmojiQuiz lang={lang} prompt={prompt} />
         </div>
+
+        {/* Fun fact */}
+        {facts.length > 0 && (
+          <div className="mb-6 max-w-sm mx-auto" key={`fact-${factIdx}`}>
+            <p className="text-white/40 text-xs italic animate-fade-in">
+              💡 {facts[factIdx]}
+            </p>
+          </div>
+        )}
 
         {/* Progress bar + timer */}
         <div className="w-72 max-w-xs mx-auto">
