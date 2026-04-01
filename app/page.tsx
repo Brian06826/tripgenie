@@ -70,11 +70,8 @@ export default async function HomePage() {
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
             Lul<span className="text-orange">go</span> <span className="text-2xl sm:text-3xl">✨</span>
           </h1>
-          <p className="text-base sm:text-lg font-semibold opacity-95 mb-1">
-            {isZh ? '懶人專屬旅行規劃' : 'The laziest way to plan a trip.'}
-          </p>
-          <p className="text-xs sm:text-sm opacity-60">
-            {isZh ? 'Describe in any language → AI itinerary in seconds' : '用任何語言描述 → 幾秒內生成 AI 行程'}
+          <p className="text-base sm:text-lg font-semibold opacity-95">
+            {isZh ? '懶人專屬旅行規劃。' : 'The laziest way to plan a trip.'}
           </p>
         </div>
       </header>
