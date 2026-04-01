@@ -261,6 +261,9 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
           onKeyDown={(e) => { if (e.key === 'Enter') handleAddHotel() }}
           placeholder={isChinese ? '輸入酒店名稱...' : 'Enter your hotel name...'}
           disabled={isLoading}
+          autoComplete="off"
+          autoCorrect="off"
+          name="hotel-search-field"
           className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent disabled:opacity-50"
         />
         <button
@@ -284,6 +287,7 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
           onChange={(e) => setBookingLink(e.target.value)}
           placeholder={isChinese ? '貼上訂房連結（選填）' : 'Paste booking link (optional)'}
           disabled={isLoading}
+          autoComplete="off"
           className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 mt-2 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent disabled:opacity-50"
         />
       )}
