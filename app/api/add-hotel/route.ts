@@ -115,15 +115,28 @@ export async function POST(request: Request) {
     }
 
     const name = hotelName.trim()
-    const isChinese = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
+    // Use request language, fall back to trip's language
+    const lang = language || trip.language || 'en'
+    const isChinese = lang === 'zh-TW' || lang === 'zh-HK' || lang === 'zh-CN'
     const city = trip.destination
     const dayPlaces = trip.days[dayIndex].places
 
     // Calculate check-in time based on last activity
     const checkinTime = calculateCheckinTime(dayPlaces)
 
-    // Geocode the hotel to get real coordinates, address, and rating
+    // Geocode the hotel to get real coordinates and address (NOT rating — unreliable for manual input)
     const geo = await geocodeHotel(name, city)
+
+    // Ensure bookingUrl has protocol prefix
+    let cleanBookingUrl: string | undefined
+    if (bookingUrl && typeof bookingUrl === 'string' && bookingUrl.trim()) {
+      let url = bookingUrl.trim()
+      if (!/^https?:\/\//i.test(url)) url = 'https://' + url
+      cleanBookingUrl = url
+    }
+
+    // Use "hotel" keyword in search URLs for better results
+    const searchName = `${name} hotel`
 
     const hotelPlace: Place = {
       name,
@@ -131,14 +144,14 @@ export async function POST(request: Request) {
       description: isChinese ? '回酒店休息' : 'Return to hotel',
       arrivalTime: checkinTime,
       duration: isChinese ? '入住' : 'Check-in',
-      googleMapsUrl: buildGoogleMapsUrl(name, city),
-      googleReviewsUrl: buildGoogleReviewsUrl(name, city),
+      googleMapsUrl: buildGoogleMapsUrl(searchName, city),
+      googleReviewsUrl: buildGoogleReviewsUrl(searchName, city),
       yelpUrl: buildYelpUrl(name, city),
       ...(geo?.lat != null && { lat: geo.lat }),
       ...(geo?.lng != null && { lng: geo.lng }),
       ...(geo?.address && { address: geo.address }),
-      ...(geo?.rating && { googleRating: geo.rating }),
-      ...(bookingUrl && typeof bookingUrl === 'string' && bookingUrl.trim() && { bookingUrl: bookingUrl.trim() }),
+      // Do NOT include googleRating — manual hotel adds have no verified rating
+      ...(cleanBookingUrl && { bookingUrl: cleanBookingUrl }),
     }
 
     // ALWAYS append hotel as the LAST item of the day

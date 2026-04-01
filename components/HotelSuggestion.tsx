@@ -31,18 +31,21 @@ function formatDateForGoogle(dateStr: string): string {
   return d.toISOString().slice(0, 10)
 }
 
-function buildGoogleHotelsUrl(destination: string, checkin?: string, checkout?: string): string {
+function buildGoogleHotelsUrl(destination: string, lang?: string, checkin?: string, checkout?: string): string {
+  const hl = lang === 'zh-TW' || lang === 'zh-HK' ? 'zh-TW' : lang === 'zh-CN' ? 'zh-CN' : 'en'
   const base = `https://www.google.com/travel/hotels/${encodeURIComponent(destination)}`
+  const params = `hl=${hl}`
   if (checkin && checkout) {
     const ci = formatDateForGoogle(checkin)
     const co = formatDateForGoogle(checkout)
-    if (ci && co) return `${base}?q=${encodeURIComponent(destination)}&dates=${ci}_${co}`
+    if (ci && co) return `${base}?q=${encodeURIComponent(destination)}&dates=${ci}_${co}&${params}`
   }
-  return base
+  return `${base}?${params}`
 }
 
-function buildBookingUrl(destination: string, checkin?: string, checkout?: string): string {
-  let url = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(destination)}`
+function buildBookingUrl(destination: string, lang?: string, checkin?: string, checkout?: string): string {
+  const langCode = lang === 'zh-TW' || lang === 'zh-HK' ? 'zh-tw' : lang === 'zh-CN' ? 'zh-cn' : 'en-us'
+  let url = `https://www.booking.com/searchresults.${langCode}.html?ss=${encodeURIComponent(destination)}`
   if (checkin && checkout) {
     const ci = formatDateForGoogle(checkin)
     const co = formatDateForGoogle(checkout)
@@ -51,8 +54,9 @@ function buildBookingUrl(destination: string, checkin?: string, checkout?: strin
   return url
 }
 
-function buildAgodaUrl(destination: string, checkin?: string, checkout?: string): string {
-  let url = `https://www.agoda.com/search?city=${encodeURIComponent(destination)}`
+function buildAgodaUrl(destination: string, lang?: string, checkin?: string, checkout?: string): string {
+  const cid = lang === 'zh-TW' || lang === 'zh-HK' ? '&cid=-1&languageId=12' : lang === 'zh-CN' ? '&cid=-1&languageId=1' : ''
+  let url = `https://www.agoda.com/search?city=${encodeURIComponent(destination)}${cid}`
   if (checkin && checkout) {
     const ci = formatDateForGoogle(checkin)
     const co = formatDateForGoogle(checkout)
@@ -148,9 +152,9 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
   const showAgoda = isAsianDestination(dayCity) || isAsianDestination(destination)
 
   // Use per-day city for booking links so multi-city trips search the right city
-  const googleUrl = buildGoogleHotelsUrl(dayCity)
-  const bookingUrl = buildBookingUrl(dayCity)
-  const agodaUrl = buildAgodaUrl(dayCity)
+  const googleUrl = buildGoogleHotelsUrl(dayCity, language)
+  const bookingUrl = buildBookingUrl(dayCity, language)
+  const agodaUrl = buildAgodaUrl(dayCity, language)
 
   async function handleAiRecommend() {
     setAiLoading(true)
