@@ -93,6 +93,20 @@ export async function generateAndUploadOgImage(
               ))}
             </div>
           )}
+          {/* Watermark */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 24,
+              right: 40,
+              fontSize: 16,
+              color: 'rgba(255,255,255,0.4)',
+              fontWeight: 600,
+              letterSpacing: '0.5px',
+            }}
+          >
+            lulgo.com
+          </div>
         </div>
       ),
       { width: 1200, height: 630 }

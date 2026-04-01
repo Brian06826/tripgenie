@@ -87,7 +87,7 @@ export default async function TripPage({ params }: Props) {
             <span className="text-xs opacity-90 truncate font-mono">
               lulgo.com{tripUrl}
             </span>
-            <ShareButton tripId={id} tripTitle={trip.title} />
+            <ShareButton tripId={id} tripTitle={trip.title} language={trip.language} />
           </div>
 
           {/* Photo credit (Unsplash attribution requirement) */}

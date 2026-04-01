@@ -36,7 +36,7 @@ export function ExampleTripViewer({ trip }: { trip: Trip }) {
             <span className="text-xs opacity-90 truncate font-mono">
               lulgo.com{tripUrl}
             </span>
-            <ShareButton tripId={trip.id} tripTitle={trip.title} />
+            <ShareButton tripId={trip.id} tripTitle={trip.title} language={trip.language} />
           </div>
         </div>
       </header>

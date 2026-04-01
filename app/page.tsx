@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { headers } from 'next/headers'
 import { ChatInput } from '@/components/ChatInput'
 import { ExampleTripLink } from '@/components/ExampleTripLink'
+import { ProductPreview } from '@/components/ProductPreview'
 import { RecentTrips } from '@/components/RecentTrips'
 import { TripCounter } from '@/components/TripCounter'
 import { UserMenu } from '@/components/UserMenu'
@@ -13,6 +14,8 @@ const EXAMPLE_TRIPS = [
     href: '/trip/example-longbeach',
     flag: '🇺🇸',
     gradient: 'from-sky-500 to-blue-600',
+    stops: 6,
+    avgRating: 4.4,
   },
   {
     title: 'San Diego 5-Day Getaway',
@@ -20,6 +23,8 @@ const EXAMPLE_TRIPS = [
     href: '/trip/example-sandiego',
     flag: '🇺🇸',
     gradient: 'from-amber-400 to-orange-500',
+    stops: 25,
+    avgRating: 4.5,
   },
   {
     title: 'Tokyo Food Adventure',
@@ -27,6 +32,8 @@ const EXAMPLE_TRIPS = [
     href: '/trip/example-tokyo',
     flag: '🇯🇵',
     gradient: 'from-rose-400 to-pink-600',
+    stops: 20,
+    avgRating: 4.5,
   },
   {
     title: 'San Francisco Weekend',
@@ -34,6 +41,8 @@ const EXAMPLE_TRIPS = [
     href: '/trip/example-sf',
     flag: '🇺🇸',
     gradient: 'from-orange-400 to-red-500',
+    stops: 12,
+    avgRating: 4.4,
   },
   {
     title: 'Taipei Night Market Tour',
@@ -41,6 +50,8 @@ const EXAMPLE_TRIPS = [
     href: '/trip/example-taipei',
     flag: '🇹🇼',
     gradient: 'from-emerald-400 to-teal-600',
+    stops: 10,
+    avgRating: 4.3,
   },
   {
     title: 'New York City Explorer',
@@ -48,6 +59,8 @@ const EXAMPLE_TRIPS = [
     href: '/trip/example-nyc',
     flag: '🇺🇸',
     gradient: 'from-violet-400 to-indigo-600',
+    stops: 18,
+    avgRating: 4.5,
   },
 ]
 
@@ -109,6 +122,9 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Product preview — show what a real itinerary looks like */}
+      <ProductPreview isZh={isZh} />
+
       {/* Recent trips from localStorage */}
       <RecentTrips />
 
@@ -126,6 +142,9 @@ export default async function HomePage() {
               subtitle={trip.subtitle}
               flag={trip.flag}
               gradient={trip.gradient}
+              stops={trip.stops}
+              avgRating={trip.avgRating}
+              isZh={isZh}
             />
           ))}
         </div>

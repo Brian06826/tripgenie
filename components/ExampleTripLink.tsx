@@ -9,9 +9,13 @@ interface Props {
   subtitle: string
   flag?: string
   gradient?: string
+  imageUrl?: string
+  stops?: number
+  avgRating?: number
+  isZh?: boolean
 }
 
-export function ExampleTripLink({ href, title, subtitle, flag, gradient }: Props) {
+export function ExampleTripLink({ href, title, subtitle, flag, gradient, imageUrl, stops, avgRating, isZh }: Props) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
@@ -27,12 +31,44 @@ export function ExampleTripLink({ href, title, subtitle, flag, gradient }: Props
       <a
         href={href}
         onClick={handleClick}
-        className={`flex items-center gap-3 rounded-2xl p-4 h-[88px] text-white transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] bg-gradient-to-br ${gradient || 'from-gray-500 to-gray-600'}`}
+        className="relative flex items-center gap-3 rounded-2xl p-4 h-[96px] text-white transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] overflow-hidden"
       >
-        {flag && <span className="text-2xl shrink-0">{flag}</span>}
-        <div className="min-w-0">
-          <div className="font-bold text-base leading-tight truncate">{title}</div>
-          <div className="text-sm text-white/70 mt-0.5 leading-snug truncate">{subtitle}</div>
+        {/* Background: image or gradient */}
+        {imageUrl ? (
+          <>
+            <img
+              src={imageUrl}
+              alt=""
+              loading="lazy"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/40 to-black/20" />
+          </>
+        ) : (
+          <div className={`absolute inset-0 bg-gradient-to-br ${gradient || 'from-gray-500 to-gray-600'}`} />
+        )}
+
+        {/* Content */}
+        <div className="relative flex items-center gap-3 w-full">
+          {flag && <span className="text-2xl shrink-0">{flag}</span>}
+          <div className="min-w-0 flex-1">
+            <div className="font-bold text-base leading-tight truncate">{title}</div>
+            <div className="text-sm text-white/70 mt-0.5 leading-snug truncate">{subtitle}</div>
+            {(stops || avgRating) && (
+              <div className="flex items-center gap-2 mt-1">
+                {stops && (
+                  <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full">
+                    📍 {stops} {isZh ? '個景點' : 'stops'}
+                  </span>
+                )}
+                {avgRating && (
+                  <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full">
+                    ⭐ {avgRating.toFixed(1)} avg
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </a>
     </>
