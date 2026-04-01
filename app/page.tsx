@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { headers } from 'next/headers'
 import { ChatInput } from '@/components/ChatInput'
 import { ExampleTripLink } from '@/components/ExampleTripLink'
 import { RecentTrips } from '@/components/RecentTrips'
@@ -50,7 +51,11 @@ const EXAMPLE_TRIPS = [
   },
 ]
 
-export default function HomePage() {
+export default async function HomePage() {
+  const headersList = await headers()
+  const acceptLang = headersList.get('accept-language') ?? ''
+  const isZh = /^zh\b/i.test(acceptLang) || /,\s*zh\b/i.test(acceptLang)
+
   return (
     <div className="min-h-dvh bg-gray-50">
       {/* Hero header */}
@@ -65,45 +70,45 @@ export default function HomePage() {
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
             Lul<span className="text-orange">go</span> <span className="text-2xl sm:text-3xl">✨</span>
           </h1>
-          <p className="text-sm sm:text-base font-medium opacity-90 mb-1.5">
-            Describe your trip in any language → Beautiful shareable itinerary
+          <p className="text-base sm:text-lg font-semibold opacity-95 mb-1">
+            {isZh ? '懶人專屬旅行規劃' : 'The laziest way to plan a trip.'}
           </p>
-          <p className="text-xs opacity-60">
-            用任何語言描述 → 精美可分享行程
+          <p className="text-xs sm:text-sm opacity-60">
+            {isZh ? 'Describe in any language → AI itinerary in seconds' : '用任何語言描述 → 幾秒內生成 AI 行程'}
           </p>
         </div>
       </header>
 
-      {/* Trust indicators */}
-      <div className="max-w-xl lg:max-w-3xl mx-auto px-4 -mt-5 relative z-10">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-3 flex items-center justify-around gap-2 text-center">
-          <div>
-            <p className="text-xs font-semibold text-gray-700">AI-Powered</p>
-            <p className="text-[10px] text-gray-400">AI</p>
-          </div>
-          <div className="w-px h-6 bg-gray-200" />
-          <div>
-            <p className="text-xs font-semibold text-gray-700">Verified</p>
-            <p className="text-[10px] text-gray-400">Real restaurants</p>
-          </div>
-          <div className="w-px h-6 bg-gray-200" />
-          <div>
-            <p className="text-xs font-semibold text-gray-700">100+ Cities</p>
-            <p className="text-[10px] text-gray-400">Worldwide</p>
-          </div>
-          <div className="w-px h-6 bg-gray-200" />
-          <div>
-            <p className="text-xs font-semibold text-gray-700">✏️ Editable</p>
-            <p className="text-[10px] text-gray-400">Modify anytime</p>
-          </div>
-        </div>
+      {/* Trip counter */}
+      <div className="max-w-xl lg:max-w-3xl mx-auto px-4 -mt-3 relative z-10">
         <TripCounter />
       </div>
 
       {/* Chat input in card */}
       <section className="max-w-xl lg:max-w-3xl mx-auto px-4 pt-4 pb-3">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6">
-          <ChatInput />
+          <ChatInput browserLang={isZh ? 'zh' : 'en'} />
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="max-w-xl lg:max-w-3xl mx-auto px-4 py-6">
+        <div className="grid grid-cols-3 gap-4 text-center">
+          <div>
+            <div className="text-2xl mb-1">💬</div>
+            <p className="text-xs font-semibold text-gray-700">{isZh ? '描述行程' : 'Describe'}</p>
+            <p className="text-[10px] text-gray-400">{isZh ? '任何語言都得' : 'Any language'}</p>
+          </div>
+          <div>
+            <div className="text-2xl mb-1">🤖</div>
+            <p className="text-xs font-semibold text-gray-700">{isZh ? 'AI 規劃' : 'AI Plans'}</p>
+            <p className="text-[10px] text-gray-400">{isZh ? '餐廳已驗證' : 'Verified spots'}</p>
+          </div>
+          <div>
+            <div className="text-2xl mb-1">✏️</div>
+            <p className="text-xs font-semibold text-gray-700">{isZh ? '編輯出發' : 'Edit & Go'}</p>
+            <p className="text-[10px] text-gray-400">{isZh ? '隨時修改' : 'Modify anytime'}</p>
+          </div>
         </div>
       </section>
 
@@ -113,7 +118,7 @@ export default function HomePage() {
       {/* Example trips */}
       <section className="max-w-xl mx-auto px-4 pb-4">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          範例行程 / Example Trips
+          {isZh ? '範例行程' : 'Example Trips'}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {EXAMPLE_TRIPS.map(trip => (
@@ -135,9 +140,13 @@ export default function HomePage() {
           Made with ❤️ using AI · © 2026 Lulgo
         </p>
         <div className="flex items-center justify-center gap-3 text-xs text-gray-400">
-          <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacy Policy 隱私政策</Link>
+          <Link href="/privacy" className="hover:text-gray-600 transition-colors">
+            {isZh ? '隱私政策' : 'Privacy Policy'}
+          </Link>
           <span>·</span>
-          <Link href="/terms" className="hover:text-gray-600 transition-colors">Terms 服務條款</Link>
+          <Link href="/terms" className="hover:text-gray-600 transition-colors">
+            {isZh ? '服務條款' : 'Terms'}
+          </Link>
         </div>
       </footer>
     </div>

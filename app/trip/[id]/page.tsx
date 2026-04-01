@@ -112,13 +112,16 @@ export default async function TripPage({ params }: Props) {
       <main className="max-w-4xl mx-auto px-4 py-4">
         <TripEditor tripId={id} trip={trip} />
 
-        {/* Create new trip CTA */}
+        {/* Viral CTA — pre-fill destination */}
         <div className="mt-6 mb-4">
           <a
-            href="/"
+            href={`/?dest=${encodeURIComponent(trip.destination)}&days=${Math.max(...trip.days.map(d => d.dayNumber))}`}
             className="flex items-center justify-center w-full bg-orange text-white py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
           >
-            建立新行程 / Create New Trip
+            {trip.language === 'zh-TW' || trip.language === 'zh-HK' || trip.language === 'zh-CN'
+              ? `✨ 規劃類似行程 → ${trip.destination}`
+              : `✨ Plan a trip like this → ${trip.destination}`
+            }
           </a>
         </div>
 

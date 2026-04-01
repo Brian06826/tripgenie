@@ -47,10 +47,13 @@ export function ExampleTripViewer({ trip }: { trip: Trip }) {
         <TripItinerary initialDays={trip.days} validated={false} destination={trip.destination} language={trip.language} />
         <div className="mt-6 mb-4">
           <a
-            href="/"
+            href={`/?dest=${encodeURIComponent(trip.destination)}&days=${trip.days.length}`}
             className="flex items-center justify-center w-full bg-orange text-white py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
           >
-            建立新行程 / Create New Trip
+            {trip.language === 'zh-TW' || trip.language === 'zh-HK' || trip.language === 'zh-CN'
+              ? `✨ 規劃類似行程 → ${trip.destination}`
+              : `✨ Plan a trip like this → ${trip.destination}`
+            }
           </a>
         </div>
         <footer className="text-center text-xs text-gray-400 py-8">

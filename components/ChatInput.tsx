@@ -1,27 +1,43 @@
 'use client'
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { TripLoadingOverlay } from '@/components/TripLoadingOverlay'
 
-const SUGGESTIONS = [
+const ROTATING_PLACEHOLDERS = [
+  '"3 days Tokyo food trip"',
+  '"週末台北夜市之旅"',
+  '"5 days Italy, romantic, $$"',
+  '"Seoul 3 days, girls trip"',
+  '"一日遊 San Diego，家庭"',
+  '"London weekend, budget, solo"',
+]
+
+const SUGGESTIONS_EN = [
+  'SD day trip, seafood dinner, couple',
+  '5 days San Diego, SeaWorld, $$',
+  "Weekend SF, Fisherman's Wharf, family",
+  '3 days Tokyo, ramen, temples',
+]
+
+const SUGGESTIONS_ZH = [
   '一日遊 Long Beach，海鮮晚餐，情侶',
   '5日4夜 San Diego，SeaWorld，$$ 預算',
   "週末 San Francisco，Fisherman's Wharf，家庭",
-  'SD day trip, seafood dinner, couple',
+  '3日東京拉麵寺廟之旅',
 ]
 
 type ChipGroup = 'who' | 'style'
-const PREFERENCE_CHIPS: { emoji: string; label: string; keyword: string; group: ChipGroup }[] = [
+const PREFERENCE_CHIPS: { emoji: string; label: string; labelZh: string; keyword: string; group: ChipGroup }[] = [
   // Who (exclusive — pick one)
-  { emoji: '👫', label: 'With Partner', keyword: 'romantic couple', group: 'who' },
-  { emoji: '👨‍👩‍👧', label: 'With Kids', keyword: 'family-friendly', group: 'who' },
-  { emoji: '👨‍👩‍👦‍👦', label: 'With Friends', keyword: 'group of friends', group: 'who' },
-  { emoji: '🧍', label: 'Solo', keyword: 'solo traveler', group: 'who' },
+  { emoji: '👫', label: 'With Partner', labelZh: '情侶', keyword: 'romantic couple', group: 'who' },
+  { emoji: '👨‍👩‍👧', label: 'With Kids', labelZh: '親子', keyword: 'family-friendly', group: 'who' },
+  { emoji: '👨‍👩‍👦‍👦', label: 'With Friends', labelZh: '朋友', keyword: 'group of friends', group: 'who' },
+  { emoji: '🧍', label: 'Solo', labelZh: '一個人', keyword: 'solo traveler', group: 'who' },
   // Style (multi-select)
-  { emoji: '🍜', label: 'Foodie', keyword: 'food-focused', group: 'style' },
-  { emoji: '💰', label: 'Budget', keyword: 'budget', group: 'style' },
-  { emoji: '🌿', label: 'Relaxed', keyword: 'relaxed', group: 'style' },
-  { emoji: '🎉', label: 'Nightlife', keyword: 'nightlife', group: 'style' },
+  { emoji: '🍜', label: 'Foodie', labelZh: '美食', keyword: 'food-focused', group: 'style' },
+  { emoji: '💰', label: 'Budget', labelZh: '平價', keyword: 'budget', group: 'style' },
+  { emoji: '🌿', label: 'Relaxed', labelZh: '悠閒', keyword: 'relaxed', group: 'style' },
+  { emoji: '🎉', label: 'Nightlife', labelZh: '夜生活', keyword: 'nightlife', group: 'style' },
 ]
 
 // Client-side trip length detection for time estimates
@@ -89,7 +105,7 @@ function detectVibe(prompt: string, chips: Set<string>): LoadingVibe {
   return 'default'
 }
 
-export function ChatInput() {
+export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
   const [prompt, setPrompt] = useState('')
   const [activeChips, setActiveChips] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
@@ -97,10 +113,39 @@ export function ChatInput() {
   const [estimatedSeconds, setEstimatedSeconds] = useState(120)
   const [loadingVibe, setLoadingVibe] = useState<LoadingVibe>('default')
   const [error, setError] = useState('')
+  const [placeholderIdx, setPlaceholderIdx] = useState(0)
+  const [placeholderVisible, setPlaceholderVisible] = useState(true)
   const abortRef = useRef<AbortController | null>(null)
   const pendingTripIdRef = useRef<string | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const isZh = browserLang === 'zh'
+  const suggestions = isZh ? SUGGESTIONS_ZH : SUGGESTIONS_EN
+
+  // Pre-fill from ?dest= query param (viral CTA from shared trips)
+  useEffect(() => {
+    const dest = searchParams.get('dest')
+    const days = searchParams.get('days')
+    if (dest) {
+      const prefill = days ? `${days} days ${dest}` : dest
+      setPrompt(prefill)
+    }
+  }, [searchParams])
+
+  // Rotating placeholder
+  useEffect(() => {
+    if (prompt) return // Don't rotate when user is typing
+    const interval = setInterval(() => {
+      setPlaceholderVisible(false)
+      setTimeout(() => {
+        setPlaceholderIdx(prev => (prev + 1) % ROTATING_PLACEHOLDERS.length)
+        setPlaceholderVisible(true)
+      }, 300)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [prompt])
 
   // Poll for trip completion — used as fallback when SSE disconnects
   const startPolling = useCallback((tripId: string) => {
@@ -306,21 +351,32 @@ export function ChatInput() {
     <div className="w-full max-w-xl lg:max-w-3xl mx-auto px-4">
       {loading && <TripLoadingOverlay lang={lang} phase={loadingPhase} estimatedSeconds={estimatedSeconds} vibe={loadingVibe} prompt={prompt} onCancel={() => abortRef.current?.abort()} />}
       <form onSubmit={handleSubmit} className="space-y-3">
-        <textarea
-          value={prompt}
-          onChange={e => setPrompt(e.target.value)}
-          placeholder={'Describe your trip... e.g. 5-day San Diego with SeaWorld, seafood restaurants, couple / 描述你的旅行計劃...'}
-          aria-label="Describe your trip / 描述你的旅行計劃"
-          rows={3}
-          maxLength={500}
-          disabled={loading}
-          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e) } }}
-          className="w-full border border-gray-200 rounded-xl p-3.5 text-sm lg:text-base resize-none focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange disabled:opacity-50"
-        />
+        {/* Textarea with rotating placeholder overlay */}
+        <div className="relative">
+          <textarea
+            value={prompt}
+            onChange={e => setPrompt(e.target.value)}
+            aria-label={isZh ? '描述你的旅行計劃' : 'Describe your trip'}
+            rows={3}
+            maxLength={500}
+            disabled={loading}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e) } }}
+            className="w-full border border-gray-200 rounded-xl p-3.5 text-sm lg:text-base resize-none focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange disabled:opacity-50"
+          />
+          {/* Custom rotating placeholder */}
+          {!prompt && (
+            <div
+              className="absolute top-0 left-0 p-3.5 text-sm lg:text-base text-gray-400 pointer-events-none transition-opacity duration-300"
+              style={{ opacity: placeholderVisible ? 1 : 0 }}
+            >
+              {ROTATING_PLACEHOLDERS[placeholderIdx]}
+            </div>
+          )}
+        </div>
 
         {/* Preference chips — Who (exclusive) */}
         <div>
-          <p className="text-xs text-gray-400 mb-1.5">Who&apos;s going?</p>
+          <p className="text-xs text-gray-400 mb-1.5">{isZh ? '同邊個去？' : "Who's going?"}</p>
           <div className="flex flex-wrap gap-2">
             {PREFERENCE_CHIPS.filter(c => c.group === 'who').map(chip => {
               const active = activeChips.has(chip.keyword)
@@ -336,7 +392,7 @@ export function ChatInput() {
                       : 'border border-gray-200 hover:border-orange hover:text-orange'
                   }`}
                 >
-                  {chip.emoji} {chip.label}
+                  {chip.emoji} {isZh ? chip.labelZh : chip.label}
                 </button>
               )
             })}
@@ -345,7 +401,7 @@ export function ChatInput() {
 
         {/* Preference chips — Style (multi-select) */}
         <div>
-          <p className="text-xs text-gray-400 mb-1.5">Trip style</p>
+          <p className="text-xs text-gray-400 mb-1.5">{isZh ? '旅行風格' : 'Trip style'}</p>
           <div className="flex flex-wrap gap-2">
             {PREFERENCE_CHIPS.filter(c => c.group === 'style').map(chip => {
               const active = activeChips.has(chip.keyword)
@@ -361,7 +417,7 @@ export function ChatInput() {
                       : 'border border-gray-200 hover:border-orange hover:text-orange'
                   }`}
                 >
-                  {chip.emoji} {chip.label}
+                  {chip.emoji} {isZh ? chip.labelZh : chip.label}
                 </button>
               )
             })}
@@ -370,7 +426,7 @@ export function ChatInput() {
 
         {/* Quick suggestions */}
         <div className="flex flex-wrap gap-2">
-          {SUGGESTIONS.map(s => (
+          {suggestions.map(s => (
             <button
               key={s}
               type="button"
@@ -388,7 +444,10 @@ export function ChatInput() {
           disabled={!prompt.trim() || loading}
           className="w-full bg-orange text-white py-3 lg:py-4 rounded-xl font-semibold text-sm lg:text-base disabled:opacity-50 hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
         >
-          {loading ? '⏳ Generating... / 生成中...' : '✨ Generate Itinerary / 生成行程'}
+          {loading
+            ? (isZh ? '⏳ 生成中...' : '⏳ Generating...')
+            : (isZh ? '✨ 免費規劃行程' : '✨ Plan My Trip — Free')
+          }
         </button>
       </form>
 
@@ -401,7 +460,7 @@ export function ChatInput() {
             onClick={() => { setError(''); handleSubmit({ preventDefault: () => {} } as React.FormEvent) }}
             className="w-full bg-red-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-red-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
           >
-            Try Again / 重試
+            {isZh ? '重試' : 'Try Again'}
           </button>
         </div>
       )}
