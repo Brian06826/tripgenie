@@ -60,6 +60,7 @@ export function TripItinerary({
   startDate,
   onRemovePlace,
   onSaveDays,
+  onSaveQuiet,
   tripId,
 }: {
   initialDays: DayPlan[]
@@ -69,6 +70,7 @@ export function TripItinerary({
   startDate?: string
   onRemovePlace?: (dayIndex: number, placeIndex: number) => Promise<boolean>
   onSaveDays?: (updatedDays: DayPlan[]) => Promise<void>
+  onSaveQuiet?: (updatedDays: DayPlan[]) => Promise<void>
   tripId?: string
 }) {
   const showYelp = isUSDestination(destination)
@@ -226,6 +228,23 @@ export function TripItinerary({
     }
   }, [days, destination, language, onSaveDays])
 
+  const handleTimeChange = useCallback((dayIndex: number, placeIndex: number, newTime: string) => {
+    setDays(prev => {
+      const updated = prev.map((d, di) => {
+        if (di !== dayIndex) return d
+        return {
+          ...d,
+          places: d.places.map((p, pi) => {
+            if (pi !== placeIndex) return p
+            return { ...p, arrivalTime: newTime }
+          }),
+        }
+      })
+      if (onSaveQuiet) onSaveQuiet(updated)
+      return updated
+    })
+  }, [onSaveQuiet])
+
   const isChinese = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
 
   const handleRemove = useCallback(async (dayIndex: number, placeIndex: number) => {
@@ -323,6 +342,7 @@ export function TripItinerary({
                       showYelp={showYelp}
                       onEdit={destination ? (instruction) => handleEdit(dayIndex, placeIndex, instruction) : undefined}
                       onRemove={onRemovePlace ? () => handleRemove(dayIndex, placeIndex) : undefined}
+                      onTimeChange={onSaveQuiet ? (newTime) => handleTimeChange(dayIndex, placeIndex, newTime) : undefined}
                       editLoading={isEditing}
                       removeLoading={removingKey === key}
                     />

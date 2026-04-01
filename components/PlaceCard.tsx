@@ -19,6 +19,7 @@ export function PlaceCard({
   showYelp = true,
   onEdit,
   onRemove,
+  onTimeChange,
   editLoading = false,
   removeLoading = false,
 }: {
@@ -27,12 +28,15 @@ export function PlaceCard({
   showYelp?: boolean
   onEdit?: (instruction: string) => void
   onRemove?: () => void
+  onTimeChange?: (newTime: string) => void
   editLoading?: boolean
   removeLoading?: boolean
 }) {
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState('')
+  const [editingTime, setEditingTime] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const timeInputRef = useRef<HTMLInputElement>(null)
 
   function handleSubmitEdit() {
     const instruction = editText.trim()
@@ -42,12 +46,64 @@ export function PlaceCard({
     setEditing(false)
   }
 
+  // Convert "2:00 PM" → "14:00" for HTML time input
+  function to24h(timeStr: string): string {
+    const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+    if (match) {
+      let h = parseInt(match[1])
+      const m = match[2]
+      const period = match[3].toUpperCase()
+      if (period === 'PM' && h !== 12) h += 12
+      if (period === 'AM' && h === 12) h = 0
+      return `${h.toString().padStart(2, '0')}:${m}`
+    }
+    return timeStr // already 24h or unknown format
+  }
+
+  // Convert "14:00" → "2:00 PM"
+  function to12h(time24: string): string {
+    const [hStr, mStr] = time24.split(':')
+    const h = parseInt(hStr)
+    const period = h >= 12 ? 'PM' : 'AM'
+    const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h
+    return `${h12}:${mStr} ${period}`
+  }
+
+  function handleTimeBlur() {
+    const val = timeInputRef.current?.value
+    setEditingTime(false)
+    if (!val || !onTimeChange) return
+    const is12h = place.arrivalTime?.includes('AM') || place.arrivalTime?.includes('PM')
+    const newTime = is12h ? to12h(val) : val
+    if (newTime !== place.arrivalTime) onTimeChange(newTime)
+  }
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-3 transition-all duration-300">
       {/* Time + type */}
       {place.arrivalTime && (
         <div className="text-xs font-semibold text-orange mb-1">
-          {TYPE_ICONS[place.type]} {place.arrivalTime}
+          {TYPE_ICONS[place.type]}{' '}
+          {editingTime && onTimeChange ? (
+            <input
+              ref={timeInputRef}
+              type="time"
+              defaultValue={to24h(place.arrivalTime)}
+              onBlur={handleTimeBlur}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleTimeBlur(); if (e.key === 'Escape') setEditingTime(false) }}
+              className="inline-block w-24 text-xs font-semibold text-orange bg-orange/5 border border-orange/30 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-orange"
+              autoFocus
+            />
+          ) : (
+            <button
+              onClick={() => { if (onTimeChange) { setEditingTime(true); setTimeout(() => timeInputRef.current?.focus(), 50) } }}
+              className={onTimeChange ? 'border-b border-dotted border-orange/40 hover:border-orange cursor-pointer transition-colors' : ''}
+              disabled={!onTimeChange}
+              type="button"
+            >
+              {place.arrivalTime}
+            </button>
+          )}
           {place.duration && ` · ${place.duration}`}
           {place.priceRange && ` · ${place.priceRange}`}
         </div>

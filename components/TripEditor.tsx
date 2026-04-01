@@ -1,10 +1,65 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import type { Trip, DayPlan } from '@/lib/types'
+import type { Trip, DayPlan, Place } from '@/lib/types'
 import { TripItinerary } from './TripItinerary'
 import { TripMap } from './TripMap'
 import { TripEditBar } from './TripEditBar'
+
+// --- Time utilities for instant delete ---
+function parseTimeToMinutes(timeStr: string): number | null {
+  // Parse "2:00 PM", "14:00", "9:30 AM" etc.
+  const match12 = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+  if (match12) {
+    let h = parseInt(match12[1])
+    const m = parseInt(match12[2])
+    const period = match12[3].toUpperCase()
+    if (period === 'PM' && h !== 12) h += 12
+    if (period === 'AM' && h === 12) h = 0
+    return h * 60 + m
+  }
+  const match24 = timeStr.match(/^(\d{1,2}):(\d{2})$/)
+  if (match24) return parseInt(match24[1]) * 60 + parseInt(match24[2])
+  return null
+}
+
+function minutesToTimeStr(mins: number, use12h = true): string {
+  const h24 = Math.floor(mins / 60) % 24
+  const m = mins % 60
+  if (!use12h) return `${h24}:${m.toString().padStart(2, '0')}`
+  const period = h24 >= 12 ? 'PM' : 'AM'
+  const h12 = h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24
+  return `${h12}:${m.toString().padStart(2, '0')} ${period}`
+}
+
+function parseDurationMinutes(dur: string): number {
+  // "1-2 hours" → 90, "30 mins" → 30, "2 hours" → 120, "1.5 hours" → 90
+  const rangeMatch = dur.match(/(\d+\.?\d*)\s*-\s*(\d+\.?\d*)\s*hour/i)
+  if (rangeMatch) return Math.round((parseFloat(rangeMatch[1]) + parseFloat(rangeMatch[2])) / 2 * 60)
+  const hourMatch = dur.match(/(\d+\.?\d*)\s*hour/i)
+  if (hourMatch) return Math.round(parseFloat(hourMatch[1]) * 60)
+  const minMatch = dur.match(/(\d+)\s*min/i)
+  if (minMatch) return parseInt(minMatch[1])
+  return 60 // default 1 hour
+}
+
+function adjustTimesAfterRemoval(places: Place[], removedIndex: number): Place[] {
+  if (places.length === 0 || removedIndex <= 0) return places
+  // Figure out the gap: removed place's start → next place's original start
+  // Shift subsequent places forward to fill the gap with a small buffer (15 min travel)
+  return places.map((p, i) => {
+    if (i < removedIndex || !p.arrivalTime) return p
+    const prevPlace = places[i - 1]
+    if (!prevPlace?.arrivalTime) return p
+    const prevStart = parseTimeToMinutes(prevPlace.arrivalTime)
+    if (prevStart === null) return p
+    const prevDur = prevPlace.duration ? parseDurationMinutes(prevPlace.duration) : 60
+    const buffer = 15 // travel buffer
+    const newStart = prevStart + prevDur + buffer
+    const is12h = p.arrivalTime.includes('AM') || p.arrivalTime.includes('PM')
+    return { ...p, arrivalTime: minutesToTimeStr(newStart, is12h) }
+  })
+}
 
 interface Props {
   tripId: string
@@ -118,40 +173,54 @@ export function TripEditor({ tripId, trip }: Props) {
     const place = currentTrip.days[dayIndex]?.places[placeIndex]
     if (!place) return false
 
-    // Save current state for undo before AI edit
-    setUndoStack(prev => [currentTrip, ...prev].slice(0, 10))
-    setIsEditing(true)
-    setError(null)
+    const isCN = currentTrip.language !== 'en'
 
-    const dayLabel = `Day ${dayIndex + 1}`
-    const instruction = `Remove "${place.name}" from ${dayLabel} and adjust the remaining schedule times to fill the gap naturally`
+    // Save current trip for undo
+    const previousTrip = currentTrip
 
-    try {
-      const res = await fetch('/api/edit-trip', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tripId, instruction, language: currentTrip.language }),
-      })
+    // Instant removal + time adjustment on frontend
+    const updatedDays = currentTrip.days.map((d, di) => {
+      if (di !== dayIndex) return d
+      const filtered = d.places.filter((_, pi) => pi !== placeIndex)
+      const adjusted = adjustTimesAfterRemoval(filtered, placeIndex)
+      return { ...d, places: adjusted }
+    })
+    const updatedTrip: Trip = { ...currentTrip, days: updatedDays }
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Remove failed')
+    // Update UI instantly
+    setCurrentTrip(updatedTrip)
+    setEditVersion(v => v + 1)
 
-      if (data.trip) {
-        const isCN = currentTrip.language !== 'en'
-        const msg = isCN ? `已移除 ${place.name}` : `Removed ${place.name}`
-        try {
-          sessionStorage.setItem('lulgo_undo', JSON.stringify({ message: msg, tripData: currentTrip }))
-        } catch {}
-        window.location.reload()
-      }
-      return true
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Remove failed')
-      setIsEditing(false)
-      // Remove the undo entry we just added since the edit failed
-      setUndoStack(prev => prev.slice(1))
-      return false
-    }
+    // Show undo toast
+    const msg = isCN ? `已移除 ${place.name}` : `Removed ${place.name}`
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+    setUndoToast({ message: msg, tripData: previousTrip })
+    undoTimerRef.current = setTimeout(() => setUndoToast(null), 8000)
+
+    // Save to Redis in background (fire-and-forget)
+    fetch('/api/edit-trip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tripId, tripData: updatedTrip }),
+    }).catch(() => {
+      setError(isCN ? '儲存失敗' : 'Save failed')
+    })
+
+    return true
+  }, [currentTrip, tripId])
+
+  // Save to Redis without page reload (for lightweight edits like time changes)
+  const handleSaveQuiet = useCallback(async (updatedDays: DayPlan[]) => {
+    const updatedTrip: Trip = { ...currentTrip, days: updatedDays }
+    setCurrentTrip(updatedTrip)
+
+    fetch('/api/edit-trip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tripId, tripData: updatedTrip }),
+    }).catch(() => {
+      setError(currentTrip.language === 'en' ? 'Save failed' : '儲存失敗')
+    })
   }, [currentTrip, tripId])
 
   return (
@@ -167,16 +236,15 @@ export function TripEditor({ tripId, trip }: Props) {
         tripId={tripId}
         onRemovePlace={handleRemovePlace}
         onSaveDays={handleSaveDays}
+        onSaveQuiet={handleSaveQuiet}
       />
 
-      {/* Hotel reminder tip for multi-day trips */}
-      {currentTrip.days.length >= 2 && (
-        <p className="text-center text-xs text-gray-400 mt-2 mb-1">
-          {currentTrip.language === 'zh-TW' || currentTrip.language === 'zh-HK' || currentTrip.language === 'zh-CN'
-            ? '💡 提示：你可以喺每日行程最尾加入酒店'
-            : '💡 Tip: You can add a hotel at the end of each day\'s itinerary'}
-        </p>
-      )}
+      {/* Activity hint */}
+      <p className="text-center text-xs text-gray-400 mt-2 mb-1">
+        {currentTrip.language === 'zh-TW' || currentTrip.language === 'zh-HK' || currentTrip.language === 'zh-CN'
+          ? "💡 想加活動？用下面嘅編輯框話畀 AI！例如：'加個酒吧' 或 '加個夜市'"
+          : "💡 Want to add activities? Use the edit box below! e.g. 'add a bar' or 'add night market'"}
+      </p>
 
       {/* Spacer so fixed edit bar doesn't cover content */}
       <div className="h-20" />
@@ -198,20 +266,18 @@ export function TripEditor({ tripId, trip }: Props) {
           <button
             onClick={async () => {
               if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+              const restored = undoToast.tripData
               setUndoToast(null)
-              setIsEditing(true)
-              try {
-                const res = await fetch('/api/edit-trip', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ tripId, tripData: undoToast.tripData }),
-                })
-                if (!res.ok) throw new Error('Undo failed')
-                window.location.reload()
-              } catch {
+              setCurrentTrip(restored)
+              setEditVersion(v => v + 1)
+              // Save restored state to Redis in background
+              fetch('/api/edit-trip', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tripId, tripData: restored }),
+              }).catch(() => {
                 setError(currentTrip.language === 'en' ? 'Undo failed' : '撤銷失敗')
-                setIsEditing(false)
-              }
+              })
             }}
             className="font-semibold text-orange hover:text-orange/80 transition-colors whitespace-nowrap"
           >
