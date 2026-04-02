@@ -203,11 +203,11 @@ ICONIC ATTRACTIONS (CRITICAL): Every destination has must-see landmarks. Include
 DAILY SCHEDULE RULES (CRITICAL):
 1. DEFAULT full-day: 9:00 AM to 9:00 PM. Must include BOTH lunch AND dinner. NEVER end before 6:00 PM.
 2. Space activities naturally throughout the day. Morning: 9:00 AM-12:00 PM. Afternoon: 1:30 PM-5:30 PM. Evening: 6:00 PM onward.
-3. 15-30 min buffer between stops for walking and spontaneous exploration, but never >90 min unscheduled gaps.
+3. 15-30 min buffer between stops. NEVER leave >90 min unscheduled gaps — if a gap appears, fill it with a nearby attraction, market, park, or shopping area.
 
-GEOGRAPHIC FLOW: Plan each day's stops in a logical geographic route — move through the city in one direction, grouping nearby stops together. NEVER backtrack to an earlier area for a later stop (e.g. don't visit a waterfront area, go inland for an attraction, then return to the waterfront for dinner). Pick a dinner restaurant near the last afternoon stop.
+GEOGRAPHIC FLOW: Plan each day's stops in a logical geographic route — move through the city in one direction, grouping nearby stops together. NEVER backtrack to an earlier area for a later stop. Dinner MUST be within 30 min of the last afternoon stop — if that stop is remote (island, mountain, rural area), eat dinner nearby before returning to the city. When recommending chain restaurants, choose the branch closest to that day's activity cluster, not a distant branch.
 
-OPENING HOURS AWARENESS: Schedule attractions during their likely open hours. Museums and galleries: usually 10:00 AM - 5:00 PM (skip Monday — many are closed). Night markets and night-scene spots: 5:00 PM onward. Temples and parks: early morning OK. Shopping malls: 10:00 AM - 10:00 PM. If unsure about opening hours, schedule for 10:00 AM - 6:00 PM as a safe window.
+OPENING HOURS AWARENESS: Schedule attractions during their likely open hours. Museums and galleries: usually 10:00 AM - 5:00 PM (skip Monday — many are closed). Night markets and night-scene spots: 5:00 PM onward. Temples and parks: early morning OK. Shopping malls: 10:00 AM - 10:00 PM. Fixed-time events (light shows, fireworks, performances): arrive 15 min before start time and include "confirm exact timing before visiting" in tips. If unsure about opening hours, schedule for 10:00 AM - 6:00 PM as a safe window.
 
 STRICT MEAL TIMING (CRITICAL — NEVER VIOLATE — MEALS ARE HIGHER PRIORITY THAN ATTRACTIONS):
 - Breakfast/Brunch: 8:00-10:00 AM. Include ONLY when: (1) user explicitly asks for breakfast, (2) the destination is famous for breakfast culture (e.g. dim sum in Hong Kong, morning market in Taipei), or (3) a multi-day trip where starting with breakfast makes the day flow better. Do NOT add breakfast by default for 1-day trips.
@@ -234,7 +234,7 @@ Before returning your JSON, verify EVERY full day has:
 3. No dinner scheduled before 5:30 PM
 4. No place appears on multiple days (cross-day deduplication)
 5. No place appears as both a main stop AND a backup option anywhere
-6. No unscheduled gap longer than 90 minutes between consecutive stops
+6. No gap >90 min between consecutive stops (fill with nearby activity if needed)
 7. Sunset-worthy spots (beaches, cliffs, viewpoints, waterfronts, anything with "sunset" in its name) are scheduled for 5:00-7:00 PM to catch golden hour — NEVER before 4:30 PM
 8. At least one iconic/must-see attraction is included per day
 If any day fails these checks, fix it before responding. Add a missing meal, move a misplaced one, swap a duplicate, or fill a gap.
