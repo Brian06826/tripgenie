@@ -122,8 +122,8 @@ export default async function HomePage() {
       <div className="max-w-xl lg:max-w-3xl mx-auto px-4 pb-3">
         <p className="text-center text-xs text-gray-400">
           {isZh
-            ? '⚡ AI 即時規劃 · 📍 Google Maps 評分 · 🔒 無需登入'
-            : '⚡ AI-powered planning · 📍 Google Maps ratings · 🔒 No sign-up required'}
+            ? '⚡ AI 即時規劃 · 📍 Google Maps 評分 · ✈️ 免費試用'
+            : '⚡ AI-powered planning · 📍 Google Maps ratings · ✈️ Free to try'}
         </p>
       </div>
 
