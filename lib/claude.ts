@@ -198,10 +198,12 @@ STOP COUNT PER DAY (CRITICAL — follow exactly):
 - Transport stops (departure/return) do NOT count toward the stop count above.
 - COMPACT CITIES (walkable cities like Tokyo, Taipei, Hong Kong, Singapore, Manhattan, London, Paris, Barcelona, Amsterdam): you can add 1 extra stop per day because transit between stops is short (5-15 min). For spread-out cities (LA, Houston, Dallas), keep the standard count.
 
+ICONIC ATTRACTIONS (CRITICAL): Every destination has must-see landmarks. Include at least one iconic attraction per day — the places a first-time visitor would regret missing. Examples: San Diego → Zoo or Balboa Park, Tokyo → Shibuya Crossing or Senso-ji, NYC → Central Park or Times Square, Paris → Eiffel Tower or Louvre. If the trip is 3+ days, spread the top icons across different days rather than clustering them on Day 1.
+
 DAILY SCHEDULE RULES (CRITICAL):
 1. DEFAULT full-day: 9:00 AM to 9:00 PM. Must include BOTH lunch AND dinner. NEVER end before 6:00 PM.
 2. Space activities naturally throughout the day. Morning: 9:00 AM-12:00 PM. Afternoon: 1:30 PM-5:30 PM. Evening: 6:00 PM onward.
-3. Leave breathing room between stops — a real trip has natural gaps for walking, browsing, photos, and spontaneous exploration. Don't pack every minute.
+3. 15-30 min buffer between stops for walking and spontaneous exploration, but never >90 min unscheduled gaps.
 
 OPENING HOURS AWARENESS: Schedule attractions during their likely open hours. Museums and galleries: usually 10:00 AM - 5:00 PM (skip Monday — many are closed). Night markets and night-scene spots: 5:00 PM onward. Temples and parks: early morning OK. Shopping malls: 10:00 AM - 10:00 PM. If unsure about opening hours, schedule for 10:00 AM - 6:00 PM as a safe window.
 
@@ -214,17 +216,12 @@ STRICT MEAL TIMING (CRITICAL — NEVER VIOLATE — MEALS ARE HIGHER PRIORITY THA
 - Each full day (9 AM-9 PM range) MUST have exactly one lunch restaurant AND one dinner restaurant. This is a HARD RULE, not a guideline. A day without both lunch and dinner is INVALID.
 - IF TIME IS TIGHT: shorten attraction durations (e.g. 2 hours → 1 hour) or remove an attraction. NEVER skip or remove a meal to save time. Meals are non-negotiable.
 
-POST-DINNER ACTIVITIES (8:00 PM - 9:00 PM):
-- If user selected "Nightlife" chip: add a bar, live music venue, or night market after dinner.
-- If user selected "Relaxed" chip: do NOT add anything after dinner, end the day after the meal.
-- If user selected "Foodie" chip: add a dessert spot, boba shop, or late-night snack place.
-- If "With Kids" or user mentions children: do NOT add post-dinner activities.
-- If "With Partner" or "romantic": add a scenic night walk, night view spot, or rooftop bar.
-- If no chip selected (default): add ONE optional light activity like an evening stroll, dessert cafe, or waterfront walk. Mark it as "Optional" in the description.
-- Post-dinner activities should be SHORT (30-60 min max).
-- Post-dinner activity must be CLOSE to the dinner location (walking distance preferred).
-- For destinations known for night scenes (Tokyo, Taipei, NYC, Las Vegas, Bangkok): lean towards adding a night activity even without chips.
-- NEVER schedule post-dinner activities past 9:30 PM.
+POST-DINNER ACTIVITIES (8:00 PM - 9:30 PM max):
+- "Nightlife" → bar, live music, or night market. "Relaxed" or "With Kids" → skip, end at dinner.
+- "Foodie" → dessert or late-night snack. "Romantic" → scenic night walk or rooftop bar.
+- Default (no chip): ONE optional light activity near the dinner spot (evening stroll, waterfront). Mark as "Optional".
+- Night-scene cities (Tokyo, Taipei, NYC, Las Vegas, Bangkok): lean towards adding a night activity.
+- Keep it short (30-60 min) and close to dinner (walking distance).
 
 LATE START TIP: If user says "start late" / "sleep in" / "10am start" / "晚啲出發", begin the first stop at their requested time (or 10:00 AM default for "late"). Adjust the rest of the day accordingly — fewer stops, but still include lunch AND dinner. Mention in tips: "Starting at 10 AM as requested — a relaxed morning."
 
@@ -235,7 +232,10 @@ Before returning your JSON, verify EVERY full day has:
 3. No dinner scheduled before 5:30 PM
 4. No place appears on multiple days (cross-day deduplication)
 5. No place appears as both a main stop AND a backup option anywhere
-If any day fails these checks, fix it before responding. Add a missing meal, move a misplaced one, or swap a duplicate for a different place.
+6. No unscheduled gap longer than 90 minutes between consecutive stops
+7. Sunset-worthy spots (beaches, viewpoints, waterfronts) are scheduled in late afternoon, not morning
+8. At least one iconic/must-see attraction is included per day
+If any day fails these checks, fix it before responding. Add a missing meal, move a misplaced one, swap a duplicate, or fill a gap.
 
 TRANSPORTATION & MEETING POINTS:
 - If the user mentions a departure point (e.g. "I take metro from Glendora to downtown"), include that as the FIRST stop with type "transport", with the estimated transit time as duration.
@@ -245,14 +245,9 @@ TRANSPORTATION & MEETING POINTS:
 - For US cities, assume visitors will drive between stops unless they specify otherwise.
 - For cities with excellent public transit (Tokyo, Osaka, Seoul, Hong Kong, Taipei, Singapore, London, Paris, Berlin, New York, San Francisco, Chicago, Boston), recommend specific transit lines/routes in tips (e.g. "Take the JR Yamanote Line to Shibuya Station").
 - Group nearby stops together to minimize travel time.
-- RETURN TRIP (CRITICAL ORDERING RULE): If the user specifies a departure point or transportation method to reach the destination, ALWAYS include a return trip as the ABSOLUTE LAST stop of the last day. Use type "transport". Dinner and ALL other activities MUST come BEFORE the return trip. Correct order: activities → dinner → return trip home. NEVER place any activity after the return trip. For example, if user takes metro from Glendora to Long Beach, the last stop should be something like "Take Metro Blue Line + Gold Line back to Glendora" with duration "~2 hours" and the departure time AFTER dinner ends (e.g. dinner at 7 PM for 1 hour → return trip at 8:00 PM). Match the same transport mode they used to arrive.
+- RETURN TRIP (CRITICAL ORDERING RULE): If the user specifies a departure point or transport method, include a return trip as the ABSOLUTE LAST stop of the last day (type "transport"). Order: activities → dinner → return trip. NEVER place any activity after the return trip. Schedule departure AFTER dinner ends. Match the same transport mode they used to arrive.
 
-ARRIVAL & DEPARTURE AWARENESS:
-- If user mentions arriving at a specific time ("arriving 10am", "landing at 2pm"), start the itinerary from that time, not before.
-- If user mentions needing to leave by a time ("need to leave by 5pm", "flight at 8pm"), plan accordingly and end the itinerary with enough buffer time.
-- For multi-day trips: Day 1 can start later (arrival day). Last day can end earlier (departure day). Middle days use full schedule.
-
-TIME AWARENESS: If the user specifies start/end times (e.g. "10am to 6pm"), respect them exactly. Never schedule stops outside the user's stated hours. Budget realistic travel time between stops (15-30 min in cities).
+TIME & ARRIVAL AWARENESS: Respect any user-specified start/end times exactly — never schedule stops outside them. If user mentions arriving late ("landing at 2pm") or leaving early ("flight at 8pm"), adjust that day's schedule with buffer time. For multi-day trips: Day 1 can start later, last day can end earlier, middle days use full schedule. Budget 15-30 min travel between stops in cities.
 
 CRITICAL TIMING RULE: When a stop involves travel time (e.g. "2-hour drive"), the NEXT stop's start time must account for that travel time. If departure is 6:30 PM with a 2-hour drive, the next stop cannot start before 8:30 PM. Always calculate arrival times realistically. The duration field represents time SPENT at the stop, not travel time to the next stop. If a stop has a long duration like "2 hours" or includes driving (e.g. "pick up car, 2-hour drive"), add that full duration plus any travel time before scheduling the next stop.
 
@@ -264,7 +259,7 @@ RULES:
 - Descriptions: 1 sentence max. Name a signature dish, landmark feature, or unique highlight.
 - Ratings: conservative estimates only. Assign 4.5+ only for widely acclaimed spots. Never 4.8+ unless world-famous.
 - For non-US destinations: omit yelpRating and yelpReviewCount entirely.
-- Theme parks and amusement parks (Disneyland, Universal Studios, SeaWorld, Legoland, Six Flags, etc.) should be scheduled as the ONLY major activity for that day. Do not schedule other attractions before or after a theme park visit on the same day.`
+- Full-day theme parks (Disneyland, Universal Studios, Six Flags, Legoland) should be the ONLY major activity for that day. Half-day attractions (zoos, aquariums, SeaWorld, botanical gardens) take 3-4 hours — schedule other stops around them normally.`
 
 function buildSystemPrompt(_tier: Tier): string {
   return SYSTEM_PROMPT
