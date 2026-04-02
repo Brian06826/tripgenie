@@ -5,42 +5,72 @@ import type { GeocodedPlace } from './google-places'
 // Transportation mode detection
 // ---------------------------------------------------------------------------
 
-const TRANSIT_CITIES = new Set([
-  'tokyo', 'osaka', 'kyoto', 'seoul', 'busan',
-  'hong kong', 'taipei', 'singapore',
-  'london', 'paris', 'berlin', 'amsterdam', 'barcelona', 'madrid', 'rome', 'milan',
-  'new york', 'manhattan', 'brooklyn', 'chicago', 'san francisco', 'boston', 'washington dc',
-  'shanghai', 'beijing', 'guangzhou', 'shenzhen',
-  'bangkok', 'kuala lumpur',
-  'sydney', 'melbourne',
-  'toronto', 'montreal', 'vancouver',
+// Compact walkable core + excellent metro — walk short distances, metro for longer
+const WALKABLE_TRANSIT_CITIES = new Set([
+  // Japan
+  'tokyo', 'osaka', 'kyoto', 'kobe', 'yokohama', 'fukuoka', 'nagoya',
+  // East Asia
+  'taipei', 'kaohsiung', 'hong kong', 'macau', 'singapore', 'seoul',
+  // Europe
+  'london', 'paris', 'amsterdam', 'barcelona', 'madrid', 'rome', 'florence',
+  'venice', 'milan', 'berlin', 'munich', 'vienna', 'prague', 'budapest',
+  'copenhagen', 'stockholm', 'lisbon', 'porto', 'brussels', 'dublin',
+  'edinburgh', 'zurich',
+  // US walkable
+  'new york', 'manhattan', 'brooklyn',
 ])
 
-// Cities where driving is fast (wide roads, highways, less congestion)
+// Good transit but less walkable (sprawling, hot, or transit-gaps)
+const TRANSIT_CITIES = new Set([
+  'bangkok', 'kuala lumpur',
+  'shanghai', 'beijing', 'guangzhou', 'shenzhen',
+  'chicago', 'san francisco', 'boston', 'washington dc',
+  'toronto', 'montreal', 'vancouver',
+  'sydney', 'melbourne',
+  'busan', 'delhi', 'mumbai', 'istanbul',
+])
+
+// Taxi/Grab/private car — poor public transit for tourists
+const TAXI_CITIES = new Set([
+  'bali', 'ubud', 'seminyak', 'kuta', 'canggu',
+  'phuket', 'krabi', 'koh samui', 'chiang mai', 'chiang rai',
+  'cancun', 'tulum', 'playa del carmen',
+  'marrakech', 'cairo', 'luxor',
+  'dubai', 'abu dhabi', 'doha',
+  'hanoi', 'ho chi minh', 'saigon', 'da nang', 'hoi an', 'nha trang',
+  'phnom penh', 'siem reap',
+  'colombo', 'galle',
+  'cape town', 'zanzibar',
+  'athens',
+])
+
+// Wide roads, highways — fast driving (mostly US car cities)
 const FAST_DRIVING_CITIES = new Set([
   'los angeles', 'la', 'long beach', 'san diego', 'phoenix', 'scottsdale',
   'las vegas', 'houston', 'dallas', 'austin', 'san antonio',
   'denver', 'salt lake city', 'portland', 'seattle',
   'orlando', 'miami', 'tampa', 'jacksonville', 'atlanta',
   'nashville', 'charlotte', 'raleigh', 'minneapolis',
+  'honolulu', 'waikiki', 'maui',
+  'gold coast', 'brisbane', 'perth', 'adelaide',
 ])
 
-// Walking-friendly cities (compact, walkable core)
-const WALKING_CITIES = new Set([
-  'tokyo', 'osaka', 'kyoto', 'taipei', 'hong kong', 'singapore',
-  'london', 'paris', 'amsterdam', 'barcelona', 'rome', 'florence', 'venice',
-  'manhattan', 'brooklyn',
-])
-
-type TransportMode = { mode: string; emoji: string; speedProfile: 'transit' | 'fast-driving' | 'walking' | 'driving' }
+type TransportMode = {
+  mode: string
+  emoji: string
+  speedProfile: 'walkable-transit' | 'transit' | 'taxi' | 'fast-driving' | 'driving'
+}
 
 function getTransportMode(destination: string): TransportMode {
   const dest = destination.toLowerCase()
-  for (const city of WALKING_CITIES) {
-    if (dest.includes(city)) return { mode: 'transit', emoji: '🚇', speedProfile: 'walking' }
+  for (const city of WALKABLE_TRANSIT_CITIES) {
+    if (dest.includes(city)) return { mode: 'transit', emoji: '🚇', speedProfile: 'walkable-transit' }
   }
   for (const city of TRANSIT_CITIES) {
     if (dest.includes(city)) return { mode: 'transit', emoji: '🚇', speedProfile: 'transit' }
+  }
+  for (const city of TAXI_CITIES) {
+    if (dest.includes(city)) return { mode: 'taxi', emoji: '🚕', speedProfile: 'taxi' }
   }
   for (const city of FAST_DRIVING_CITIES) {
     if (dest.includes(city)) return { mode: 'driving', emoji: '🚗', speedProfile: 'fast-driving' }
@@ -80,24 +110,38 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
 // ---------------------------------------------------------------------------
 
 function estimateTravelMinutes(distKm: number, mode: TransportMode): number {
-  let speedKmh: number
+  let minutes: number
   switch (mode.speedProfile) {
-    case 'walking':
-      // Walkable cities: short distances walked, longer by train
-      speedKmh = distKm > 3 ? 30 : distKm > 1 ? 5 : 4 // train vs brisk walk vs stroll
+    case 'walkable-transit':
+      // Walk <800m, metro for longer (includes walk to station + wait + walk out)
+      if (distKm <= 0.8) {
+        minutes = (distKm / 4.5) * 60
+      } else {
+        const rideSpeed = distKm <= 5 ? 30 : distKm <= 15 ? 35 : 45
+        minutes = 8 + (distKm / rideSpeed) * 60 // 8 min platform overhead
+      }
       break
     case 'transit':
-      speedKmh = distKm > 30 ? 40 : 20 // express train vs local transit
+      // Metro/BTS but less walkable — higher overhead for wayfinding
+      if (distKm <= 0.5) {
+        minutes = (distKm / 4) * 60
+      } else {
+        const speed = distKm <= 10 ? 20 : 35
+        minutes = 10 + (distKm / speed) * 60
+      }
+      break
+    case 'taxi':
+      // Grab/taxi — 5 min pickup overhead + variable traffic
+      minutes = 5 + (distKm / (distKm <= 5 ? 15 : distKm <= 15 ? 25 : 40)) * 60
       break
     case 'fast-driving':
-      // LA, San Diego, etc.: wide roads, highway-accessible
-      speedKmh = distKm > 50 ? 90 : distKm > 15 ? 55 : 35
+      // US highway cities — 5 min to car + drive
+      minutes = 5 + (distKm / (distKm <= 5 ? 30 : distKm <= 20 ? 50 : 80)) * 60
       break
     default: // driving
-      speedKmh = distKm > 50 ? 80 : distKm > 15 ? 45 : 30
+      minutes = 5 + (distKm / (distKm <= 5 ? 25 : distKm <= 20 ? 40 : 70)) * 60
       break
   }
-  const minutes = (distKm / speedKmh) * 60
   // Minimum 5 min, round to nearest 5
   return Math.max(5, Math.round(minutes / 5) * 5)
 }

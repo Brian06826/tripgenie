@@ -245,7 +245,8 @@ TRANSPORTATION & MEETING POINTS:
 - If the user mentions a specific transport mode (metro, train, bus, driving), use that mode for travel time estimates throughout the day and mention it in tips.
 - If the user mentions meeting someone at a location, start the itinerary from that meeting point.
 - For US cities, assume visitors will drive between stops unless they specify otherwise.
-- For cities with excellent public transit (Tokyo, Osaka, Seoul, Hong Kong, Taipei, Singapore, London, Paris, Berlin, New York, San Francisco, Chicago, Boston), recommend specific transit lines/routes in tips (e.g. "Take the JR Yamanote Line to Shibuya Station").
+- For transit cities (Tokyo, Osaka, Seoul, Hong Kong, Taipei, Singapore, London, Paris, Berlin, New York, San Francisco, Chicago, Boston), recommend specific transit lines/routes in tips (e.g. "Take the JR Yamanote Line to Shibuya Station").
+- For taxi-dependent destinations (Bali, Phuket, Cancun, Dubai, Vietnam, Chiang Mai, Marrakech, Siem Reap), suggest Grab/taxi in tips and note approximate ride time between stops.
 - Group nearby stops together to minimize travel time.
 - RETURN TRIP (CRITICAL ORDERING RULE): If the user specifies a departure point or transport method, include a return trip as the ABSOLUTE LAST stop of the last day (type "transport"). Order: activities → dinner → return trip. NEVER place any activity after the return trip. Schedule departure AFTER dinner ends. Match the same transport mode they used to arrive.
 
