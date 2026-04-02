@@ -205,7 +205,7 @@ DAILY SCHEDULE RULES (CRITICAL):
 2. Space activities naturally throughout the day. Morning: 9:00 AM-12:00 PM. Afternoon: 1:30 PM-5:30 PM. Evening: 6:00 PM onward.
 3. 15-30 min buffer between stops. NEVER leave >90 min unscheduled gaps — if a gap appears, fill it with a nearby attraction, market, park, or shopping area.
 
-GEOGRAPHIC FLOW: Plan each day's stops in a logical geographic route — move through the city in one direction, grouping nearby stops together. NEVER backtrack to an earlier area for a later stop. Dinner MUST be within 30 min of the last afternoon stop — if that stop is remote (island, mountain, rural area), eat dinner nearby before returning to the city. When recommending chain restaurants, choose the branch closest to that day's activity cluster, not a distant branch.
+GEOGRAPHIC FLOW: Plan each day's stops in a logical geographic route — move through the city in one direction, grouping nearby stops together. NEVER backtrack to an earlier area for a later stop. Dinner MUST be reachable within 30 min transit from the last afternoon stop — NEVER schedule dinner in a completely different district requiring >30 min transit. If the last stop is remote (e.g. Tai O in Hong Kong, Kamakura from Tokyo, outer islands), eat dinner IN that area or along the return route. When recommending chain restaurants, choose the branch closest to that day's activity cluster.
 
 OPENING HOURS AWARENESS: Schedule attractions during their likely open hours. Museums and galleries: usually 10:00 AM - 5:00 PM (skip Monday — many are closed). Night markets and night-scene spots: 5:00 PM onward. Temples and parks: early morning OK. Shopping malls: 10:00 AM - 10:00 PM. Fixed-time events (light shows, fireworks, performances): arrive 15 min before start time and include "confirm exact timing before visiting" in tips. If unsure about opening hours, schedule for 10:00 AM - 6:00 PM as a safe window.
 
@@ -258,6 +258,7 @@ RULES:
 - CROSS-DAY DEDUPLICATION (CRITICAL): NEVER recommend the same place on multiple days. Every stop across the entire trip must be unique. If Day 1 visits "Shibuya Crossing", no other day may include it. This applies to attractions, restaurants, AND backup options.
 - Exactly 1 backupOption per restaurant and attraction. Omit backupOptions for hotel/transport/other.
 - No place may appear as both a main stop and a backup option anywhere in the same itinerary.
+- Tips must not suggest activities that conflict with scheduled timing. If recommending a timed event in tips (light show, sunset, performance), either schedule it as a proper stop OR ensure surrounding stops have enough time to accommodate it.
 - Descriptions: 1 sentence max. Name a signature dish, landmark feature, or unique highlight.
 - Ratings: conservative estimates only. Assign 4.5+ only for widely acclaimed spots. Never 4.8+ unless world-famous.
 - For non-US destinations: omit yelpRating and yelpReviewCount entirely.
@@ -360,7 +361,7 @@ function looksLikeRefusal(text: string): boolean {
 // ---------------------------------------------------------------------------
 
 // Post-processing: remove cross-day duplicate places (main stops AND backup options)
-function deduplicatePlaces(trip: TripGeneration): TripGeneration {
+export function deduplicatePlaces(trip: TripGeneration): TripGeneration {
   // Normalize: lowercase, strip parenthetical (Shibuya Branch), (本店), trailing branch/location info
   function normalize(name: string): string {
     return name

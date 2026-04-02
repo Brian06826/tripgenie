@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid'
 import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
-import { generateTrip, validateTripRequest } from '@/lib/claude'
+import { generateTrip, validateTripRequest, deduplicatePlaces } from '@/lib/claude'
 import { saveTrip, getTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
 import { generateAndUploadOgImage } from '@/lib/og'
@@ -115,7 +115,7 @@ export async function POST(request: Request) {
 
         // Validate restaurants against Google Places API
         send({ type: 'validating' })
-        const validated = await validateRestaurants(generation)
+        const validated = deduplicatePlaces(await validateRestaurants(generation))
 
         // Geocode all places and optimize routes per day
         send({ type: 'optimizing' })

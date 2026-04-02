@@ -126,11 +126,12 @@ export async function validateRestaurants(generation: TripGeneration): Promise<T
     }
   }
 
-  // Find all restaurant slots
+  // Find all restaurant AND attraction slots (skip hotel/transport/other)
   const refs: { di: number; pi: number }[] = []
   for (let di = 0; di < generation.days.length; di++) {
     for (let pi = 0; pi < generation.days[di].places.length; pi++) {
-      if (generation.days[di].places[pi].type === 'restaurant') {
+      const type = generation.days[di].places[pi].type
+      if (type === 'restaurant' || type === 'attraction') {
         refs.push({ di, pi })
       }
     }
@@ -143,10 +144,11 @@ export async function validateRestaurants(generation: TripGeneration): Promise<T
     refs.map(async ({ di, pi }): Promise<ValidationEntry> => {
       const place = generation.days[di].places[pi]
       try {
-        const found = await findPlace(`${place.name} restaurant ${dest}`, apiKey)
+        const typeHint = place.type === 'restaurant' ? 'restaurant' : ''
+        const found = await findPlace(`${place.name} ${typeHint} ${dest}`.trim(), apiKey)
 
         if (!found) {
-          console.log(`[Google Places] FAIL "${place.name}" — not found on Google`)
+          console.log(`[Google Places] FAIL "${place.name}" (${place.type}) — not found on Google`)
           return { di, pi, valid: false, reason: 'not_found' }
         }
 
@@ -212,44 +214,60 @@ export async function validateRestaurants(generation: TripGeneration): Promise<T
     for (const f of failures) {
       const place = out.days[f.di].places[f.pi]
 
-      // Try cuisine-specific search first based on the original description
-      const desc = (place.description ?? '').toLowerCase()
-      const cuisineHints = ['seafood', 'mexican', 'italian', 'japanese', 'chinese',
-        'thai', 'korean', 'vietnamese', 'indian', 'french', 'american', 'bbq',
-        'sushi', 'ramen', 'pizza', 'burger', 'taco', 'steak', 'brunch', 'breakfast',
-        'cafe', 'bakery', 'dim sum', 'noodle', 'pho', 'curry']
-      const cuisine = cuisineHints.find(c => desc.includes(c) || place.name.toLowerCase().includes(c))
+      if (place.type === 'restaurant') {
+        // Try cuisine-specific search first based on the original description
+        const desc = (place.description ?? '').toLowerCase()
+        const cuisineHints = ['seafood', 'mexican', 'italian', 'japanese', 'chinese',
+          'thai', 'korean', 'vietnamese', 'indian', 'french', 'american', 'bbq',
+          'sushi', 'ramen', 'pizza', 'burger', 'taco', 'steak', 'brunch', 'breakfast',
+          'cafe', 'bakery', 'dim sum', 'noodle', 'pho', 'curry']
+        const cuisine = cuisineHints.find(c => desc.includes(c) || place.name.toLowerCase().includes(c))
 
-      // Search cuisine-specific pool first, fall back to general
-      const pools = cuisine
-        ? [await getPool(`best ${cuisine} restaurant in ${dest}`), poolCache.get(`best restaurants in ${dest}`) ?? []]
-        : [poolCache.get(`best restaurants in ${dest}`) ?? []]
+        // Search cuisine-specific pool first, fall back to general
+        const pools = cuisine
+          ? [await getPool(`best ${cuisine} restaurant in ${dest}`), poolCache.get(`best restaurants in ${dest}`) ?? []]
+          : [poolCache.get(`best restaurants in ${dest}`) ?? []]
 
-      let replacement: PlaceResult | undefined
-      for (const pool of pools) {
-        replacement = pool.find(r =>
-          r.business_status !== 'CLOSED_PERMANENTLY' &&
-          r.business_status !== 'CLOSED_TEMPORARILY' &&
-          !usedNames.has(r.name.toLowerCase()) &&
-          isInCity(r.formatted_address ?? '', dest)
-        )
-        if (replacement) break
-      }
+        let replacement: PlaceResult | undefined
+        for (const pool of pools) {
+          replacement = pool.find(r =>
+            r.business_status !== 'CLOSED_PERMANENTLY' &&
+            r.business_status !== 'CLOSED_TEMPORARILY' &&
+            !usedNames.has(r.name.toLowerCase()) &&
+            isInCity(r.formatted_address ?? '', dest)
+          )
+          if (replacement) break
+        }
 
-      if (replacement) {
-        console.log(`[Google Places] Replacing "${place.name}" → "${replacement.name}" (reason: ${f.reason}${cuisine ? `, cuisine: ${cuisine}` : ''})`)
+        if (replacement) {
+          console.log(`[Google Places] Replacing "${place.name}" → "${replacement.name}" (reason: ${f.reason}${cuisine ? `, cuisine: ${cuisine}` : ''})`)
 
-        usedNames.add(replacement.name.toLowerCase())
+          usedNames.add(replacement.name.toLowerCase())
 
-        place.name = replacement.name
-        place.nameLocal = undefined
-        place.description = `Popular ${cuisine ?? 'local'} restaurant in ${dest}.`
-        place.googleRating = replacement.rating
-        place.googleReviewCount = replacement.user_ratings_total
-        place.priceRange = priceLevelToRange(replacement.price_level)
-        place.backupOptions = undefined
+          place.name = replacement.name
+          place.nameLocal = undefined
+          place.description = `Popular ${cuisine ?? 'local'} restaurant in ${dest}.`
+          place.googleRating = replacement.rating
+          place.googleReviewCount = replacement.user_ratings_total
+          place.priceRange = priceLevelToRange(replacement.price_level)
+          place.backupOptions = undefined
+        } else {
+          console.warn(`[Google Places] No replacement found for "${place.name}" in ${dest}`)
+        }
       } else {
-        console.warn(`[Google Places] No replacement found for "${place.name}" in ${dest}`)
+        // Non-restaurant (attraction): promote backup option if available
+        if (place.backupOptions?.length) {
+          const backup = place.backupOptions[0]
+          console.log(`[Google Places] Replacing closed attraction "${place.name}" → backup "${backup.name}" (reason: ${f.reason})`)
+          usedNames.add(backup.name.toLowerCase())
+          place.name = backup.name
+          place.nameLocal = (backup as any).nameLocal ?? undefined
+          place.description = backup.description
+          place.googleRating = backup.googleRating
+          place.backupOptions = place.backupOptions.slice(1)
+        } else {
+          console.warn(`[Google Places] Closed attraction "${place.name}" has no backup — keeping with warning`)
+        }
       }
     }
   }
