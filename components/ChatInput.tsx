@@ -12,20 +12,6 @@ const ROTATING_PLACEHOLDERS = [
   '"London weekend, budget, solo"',
 ]
 
-const SUGGESTIONS_EN = [
-  'SD day trip, seafood dinner, couple',
-  '5 days San Diego, SeaWorld, $$',
-  "Weekend SF, Fisherman's Wharf, family",
-  '3 days Tokyo, ramen, temples',
-]
-
-const SUGGESTIONS_ZH = [
-  '一日遊 Long Beach，海鮮晚餐，情侶',
-  '5日4夜 San Diego，SeaWorld，$$ 預算',
-  "週末 San Francisco，Fisherman's Wharf，家庭",
-  '3日東京拉麵寺廟之旅',
-]
-
 type ChipGroup = 'who' | 'style'
 const PREFERENCE_CHIPS: { emoji: string; label: string; labelZh: string; keyword: string; group: ChipGroup }[] = [
   // Who (exclusive — pick one)
@@ -108,6 +94,7 @@ function detectVibe(prompt: string, chips: Set<string>): LoadingVibe {
 export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
   const [prompt, setPrompt] = useState('')
   const [activeChips, setActiveChips] = useState<Set<string>>(new Set())
+  const [showPreferences, setShowPreferences] = useState(false)
   const [loading, setLoading] = useState(false)
   const [loadingPhase, setLoadingPhase] = useState<'generating' | 'validating' | 'optimizing' | 'saving'>('generating')
   const [estimatedSeconds, setEstimatedSeconds] = useState(120)
@@ -122,7 +109,6 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
   const searchParams = useSearchParams()
 
   const isZh = browserLang === 'zh'
-  const suggestions = isZh ? SUGGESTIONS_ZH : SUGGESTIONS_EN
 
   // Pre-fill from ?dest= query param (viral CTA from shared trips)
   useEffect(() => {
@@ -348,25 +334,25 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
   }
 
   return (
-    <div className="w-full max-w-xl lg:max-w-3xl mx-auto px-4">
+    <div className="w-full">
       {loading && <TripLoadingOverlay lang={lang} phase={loadingPhase} estimatedSeconds={estimatedSeconds} vibe={loadingVibe} prompt={prompt} onCancel={() => abortRef.current?.abort()} />}
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form onSubmit={handleSubmit} className="space-y-2.5">
         {/* Textarea with rotating placeholder overlay */}
         <div className="relative">
           <textarea
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
             aria-label={isZh ? '描述你的旅行計劃' : 'Describe your trip'}
-            rows={3}
+            rows={2}
             maxLength={500}
             disabled={loading}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e) } }}
-            className="w-full border border-gray-200 rounded-xl p-3.5 text-sm lg:text-base resize-none focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange disabled:opacity-50"
+            className="w-full border border-gray-200 rounded-xl p-3 text-sm lg:text-base resize-none focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange disabled:opacity-50"
           />
           {/* Custom rotating placeholder */}
           {!prompt && (
             <div
-              className="absolute top-0 left-0 p-3.5 text-sm lg:text-base text-gray-400 pointer-events-none transition-opacity duration-300"
+              className="absolute top-0 left-0 p-3 text-sm lg:text-base text-gray-400 pointer-events-none transition-opacity duration-300"
               style={{ opacity: placeholderVisible ? 1 : 0 }}
             >
               {ROTATING_PLACEHOLDERS[placeholderIdx]}
@@ -374,91 +360,95 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
           )}
         </div>
 
-        {/* Preference chips — Who (exclusive) */}
-        <div>
-          <p className="text-xs text-gray-400 mb-1.5">{isZh ? '同邊個去？' : "Who's going?"}</p>
-          <div className="flex flex-wrap gap-2">
-            {PREFERENCE_CHIPS.filter(c => c.group === 'who').map(chip => {
-              const active = activeChips.has(chip.keyword)
-              return (
-                <button
-                  key={chip.keyword}
-                  type="button"
-                  onClick={() => toggleChip(chip.keyword)}
-                  disabled={loading}
-                  className={`text-xs lg:text-sm rounded-full px-3 py-1.5 lg:px-4 lg:py-2 min-h-[36px] lg:min-h-[40px] transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50 ${
-                    active
-                      ? 'bg-orange text-white border border-orange'
-                      : 'border border-gray-200 hover:border-orange hover:text-orange'
-                  }`}
-                >
-                  {chip.emoji} {isZh ? chip.labelZh : chip.label}
-                </button>
-              )
-            })}
+        {/* Collapsible preference chips */}
+        <div
+          className="overflow-hidden transition-all duration-200 ease-out"
+          style={{ maxHeight: showPreferences ? '200px' : '0', opacity: showPreferences ? 1 : 0 }}
+        >
+          <div className="space-y-2 pt-0.5 pb-1">
+            {/* Who (exclusive) */}
+            <div>
+              <p className="text-xs text-gray-400 mb-1.5">{isZh ? '同邊個去？' : "Who's going?"}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {PREFERENCE_CHIPS.filter(c => c.group === 'who').map(chip => {
+                  const active = activeChips.has(chip.keyword)
+                  return (
+                    <button
+                      key={chip.keyword}
+                      type="button"
+                      onClick={() => toggleChip(chip.keyword)}
+                      disabled={loading}
+                      className={`text-xs rounded-full px-2.5 py-1.5 transition-colors disabled:opacity-50 ${
+                        active
+                          ? 'bg-orange text-white border border-orange'
+                          : 'border border-gray-200 hover:border-orange hover:text-orange'
+                      }`}
+                    >
+                      {chip.emoji} {isZh ? chip.labelZh : chip.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+            {/* Style (multi-select) */}
+            <div>
+              <p className="text-xs text-gray-400 mb-1.5">{isZh ? '旅行風格' : 'Trip style'}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {PREFERENCE_CHIPS.filter(c => c.group === 'style').map(chip => {
+                  const active = activeChips.has(chip.keyword)
+                  return (
+                    <button
+                      key={chip.keyword}
+                      type="button"
+                      onClick={() => toggleChip(chip.keyword)}
+                      disabled={loading}
+                      className={`text-xs rounded-full px-2.5 py-1.5 transition-colors disabled:opacity-50 ${
+                        active
+                          ? 'bg-orange text-white border border-orange'
+                          : 'border border-gray-200 hover:border-orange hover:text-orange'
+                      }`}
+                    >
+                      {chip.emoji} {isZh ? chip.labelZh : chip.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Preference chips — Style (multi-select) */}
-        <div>
-          <p className="text-xs text-gray-400 mb-1.5">{isZh ? '旅行風格' : 'Trip style'}</p>
-          <div className="flex flex-wrap gap-2">
-            {PREFERENCE_CHIPS.filter(c => c.group === 'style').map(chip => {
-              const active = activeChips.has(chip.keyword)
-              return (
-                <button
-                  key={chip.keyword}
-                  type="button"
-                  onClick={() => toggleChip(chip.keyword)}
-                  disabled={loading}
-                  className={`text-xs lg:text-sm rounded-full px-3 py-1.5 lg:px-4 lg:py-2 min-h-[36px] lg:min-h-[40px] transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50 ${
-                    active
-                      ? 'bg-orange text-white border border-orange'
-                      : 'border border-gray-200 hover:border-orange hover:text-orange'
-                  }`}
-                >
-                  {chip.emoji} {isZh ? chip.labelZh : chip.label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Quick suggestions */}
-        <div className="flex flex-wrap gap-2">
-          {suggestions.map(s => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setPrompt(s)}
-              disabled={loading}
-              className="text-xs lg:text-sm border border-gray-200 rounded-full px-3 py-2 lg:px-4 lg:py-2.5 min-h-[44px] hover:border-orange hover:text-orange transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50"
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-
+        {/* CTA */}
         <button
           type="submit"
           disabled={!prompt.trim() || loading}
-          className="w-full bg-orange text-white py-3 lg:py-4 rounded-xl font-semibold text-sm lg:text-base disabled:opacity-50 hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
+          className="w-full bg-orange text-white py-2.5 lg:py-3 rounded-xl font-semibold text-sm lg:text-base disabled:opacity-50 hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
         >
           {loading
             ? (isZh ? '⏳ 生成中...' : '⏳ Generating...')
             : (isZh ? '✨ 免費規劃行程' : '✨ Plan My Trip — Free')
           }
         </button>
+
+        {/* Add preferences toggle */}
+        {!showPreferences && (
+          <button
+            type="button"
+            onClick={() => setShowPreferences(true)}
+            className="w-full text-xs text-gray-400 hover:text-orange transition-colors py-0.5"
+          >
+            {isZh ? '+ 添加偏好' : '+ Add preferences'}
+          </button>
+        )}
       </form>
 
       {/* Error state */}
       {error && (
-        <div className="mt-4 bg-red-50 border border-red-100 rounded-xl p-4">
-          <p className="text-sm text-red-600 mb-3">⚠️ {error}</p>
+        <div className="mt-3 bg-red-50 border border-red-100 rounded-xl p-3">
+          <p className="text-sm text-red-600 mb-2">⚠️ {error}</p>
           <button
             type="button"
             onClick={() => { setError(''); handleSubmit({ preventDefault: () => {} } as React.FormEvent) }}
-            className="w-full bg-red-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-red-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+            className="w-full bg-red-600 text-white py-2 rounded-lg font-semibold text-sm hover:bg-red-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
           >
             {isZh ? '重試' : 'Try Again'}
           </button>

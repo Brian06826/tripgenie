@@ -3,7 +3,6 @@ import { headers } from 'next/headers'
 import { ChatInput } from '@/components/ChatInput'
 import { ExampleTripLink } from '@/components/ExampleTripLink'
 import { RecentTrips } from '@/components/RecentTrips'
-import { TripCounter } from '@/components/TripCounter'
 import { UserMenu } from '@/components/UserMenu'
 
 const EXAMPLE_TRIPS = [
@@ -13,6 +12,7 @@ const EXAMPLE_TRIPS = [
     href: '/trip/example-tokyo',
     flag: '🇯🇵',
     gradient: 'from-rose-400 to-pink-600',
+    imageUrl: '/trips/tokyo.jpg',
     stops: 20,
     avgRating: 4.5,
   },
@@ -22,6 +22,7 @@ const EXAMPLE_TRIPS = [
     href: '/trip/example-sandiego',
     flag: '🇺🇸',
     gradient: 'from-amber-400 to-orange-500',
+    imageUrl: '/trips/sandiego.jpg',
     stops: 25,
     avgRating: 4.5,
   },
@@ -31,6 +32,7 @@ const EXAMPLE_TRIPS = [
     href: '/trip/example-taipei',
     flag: '🇹🇼',
     gradient: 'from-emerald-400 to-teal-600',
+    imageUrl: '/trips/taipei.jpg',
     stops: 10,
     avgRating: 4.3,
   },
@@ -40,6 +42,7 @@ const EXAMPLE_TRIPS = [
     href: '/trip/example-nyc',
     flag: '🇺🇸',
     gradient: 'from-violet-400 to-indigo-600',
+    imageUrl: '/trips/nyc.jpg',
     stops: 18,
     avgRating: 4.5,
   },
@@ -49,6 +52,7 @@ const EXAMPLE_TRIPS = [
     href: '/trip/example-longbeach',
     flag: '🇺🇸',
     gradient: 'from-sky-500 to-blue-600',
+    imageUrl: '/trips/longbeach.jpg',
     stops: 6,
     avgRating: 4.4,
   },
@@ -58,6 +62,7 @@ const EXAMPLE_TRIPS = [
     href: '/trip/example-sf',
     flag: '🇺🇸',
     gradient: 'from-orange-400 to-red-500',
+    imageUrl: '/trips/sf.jpg',
     stops: 12,
     avgRating: 4.4,
   },
@@ -72,7 +77,7 @@ export default async function HomePage() {
     <div className="min-h-dvh bg-gray-50">
       {/* Hero header */}
       <header
-        className="text-white px-4 pt-10 pb-10 text-center relative z-0"
+        className="text-white px-4 pt-8 pb-6 text-center relative z-0"
         style={{ background: 'linear-gradient(180deg, var(--color-navy-dark) 0%, var(--color-navy) 60%, var(--color-navy-mid) 100%)' }}
       >
         <div className="absolute top-4 right-4">
@@ -82,7 +87,7 @@ export default async function HomePage() {
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-1.5">
             Lul<span className="text-orange">go</span> <span className="text-2xl sm:text-3xl">✨</span>
           </h1>
-          <p className="text-base sm:text-lg font-semibold opacity-95 mb-5">
+          <p className="text-base sm:text-lg font-semibold opacity-95 mb-4">
             {isZh ? '懶人專屬旅行規劃。' : 'The laziest way to plan a trip.'}
           </p>
 
@@ -106,17 +111,21 @@ export default async function HomePage() {
         </div>
       </header>
 
-      {/* Trip counter */}
-      <div className="max-w-xl lg:max-w-3xl mx-auto px-4 -mt-3 relative z-10">
-        <TripCounter />
-      </div>
-
       {/* Chat input */}
       <section className="max-w-xl lg:max-w-3xl mx-auto px-4 pt-4 pb-3">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6">
           <ChatInput browserLang={isZh ? 'zh' : 'en'} />
         </div>
       </section>
+
+      {/* Trust strip */}
+      <div className="max-w-xl lg:max-w-3xl mx-auto px-4 pb-3">
+        <p className="text-center text-xs text-gray-400">
+          {isZh
+            ? '⚡ AI 即時規劃 · 📍 Google Maps 評分 · 🔒 無需登入'
+            : '⚡ AI-powered planning · 📍 Google Maps ratings · 🔒 No sign-up required'}
+        </p>
+      </div>
 
       {/* Recent trips — returning users see their trips first */}
       <RecentTrips />
@@ -135,6 +144,7 @@ export default async function HomePage() {
               subtitle={trip.subtitle}
               flag={trip.flag}
               gradient={trip.gradient}
+              imageUrl={trip.imageUrl}
               stops={trip.stops}
               avgRating={trip.avgRating}
               isZh={isZh}
