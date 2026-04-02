@@ -198,12 +198,14 @@ STOP COUNT PER DAY (CRITICAL — follow exactly):
 - Transport stops (departure/return) do NOT count toward the stop count above.
 - COMPACT CITIES (walkable cities like Tokyo, Taipei, Hong Kong, Singapore, Manhattan, London, Paris, Barcelona, Amsterdam): you can add 1 extra stop per day because transit between stops is short (5-15 min). For spread-out cities (LA, Houston, Dallas), keep the standard count.
 
-ICONIC ATTRACTIONS (CRITICAL): Every destination has must-see landmarks. Include at least one iconic attraction per day — the places a first-time visitor would regret missing. Examples: San Diego → Zoo or Balboa Park, Tokyo → Shibuya Crossing or Senso-ji, NYC → Central Park or Times Square, Paris → Eiffel Tower or Louvre. If the trip is 3+ days, spread the top icons across different days rather than clustering them on Day 1.
+ICONIC ATTRACTIONS (CRITICAL): Every destination has must-see landmarks. Include at least one iconic attraction per day as a MAIN STOP — never relegate icons to backup options. These are the places a first-time visitor would regret missing. Examples: San Diego → Zoo or Balboa Park, Tokyo → Shibuya Crossing or Senso-ji, NYC → Central Park or Times Square, Paris → Eiffel Tower or Louvre. If the trip is 3+ days, spread the top icons across different days rather than clustering them on Day 1.
 
 DAILY SCHEDULE RULES (CRITICAL):
 1. DEFAULT full-day: 9:00 AM to 9:00 PM. Must include BOTH lunch AND dinner. NEVER end before 6:00 PM.
 2. Space activities naturally throughout the day. Morning: 9:00 AM-12:00 PM. Afternoon: 1:30 PM-5:30 PM. Evening: 6:00 PM onward.
 3. 15-30 min buffer between stops for walking and spontaneous exploration, but never >90 min unscheduled gaps.
+
+GEOGRAPHIC FLOW: Plan each day's stops in a logical geographic route — move through the city in one direction, grouping nearby stops together. NEVER backtrack to an earlier area for a later stop (e.g. don't visit a waterfront area, go inland for an attraction, then return to the waterfront for dinner). Pick a dinner restaurant near the last afternoon stop.
 
 OPENING HOURS AWARENESS: Schedule attractions during their likely open hours. Museums and galleries: usually 10:00 AM - 5:00 PM (skip Monday — many are closed). Night markets and night-scene spots: 5:00 PM onward. Temples and parks: early morning OK. Shopping malls: 10:00 AM - 10:00 PM. If unsure about opening hours, schedule for 10:00 AM - 6:00 PM as a safe window.
 
@@ -233,7 +235,7 @@ Before returning your JSON, verify EVERY full day has:
 4. No place appears on multiple days (cross-day deduplication)
 5. No place appears as both a main stop AND a backup option anywhere
 6. No unscheduled gap longer than 90 minutes between consecutive stops
-7. Sunset-worthy spots (beaches, viewpoints, waterfronts) are scheduled in late afternoon, not morning
+7. Sunset-worthy spots (beaches, cliffs, viewpoints, waterfronts, anything with "sunset" in its name) are scheduled for 5:00-7:00 PM to catch golden hour — NEVER before 4:30 PM
 8. At least one iconic/must-see attraction is included per day
 If any day fails these checks, fix it before responding. Add a missing meal, move a misplaced one, swap a duplicate, or fill a gap.
 
@@ -357,19 +359,62 @@ function looksLikeRefusal(text: string): boolean {
 // Public API
 // ---------------------------------------------------------------------------
 
-// Post-processing: remove cross-day duplicate places
+// Post-processing: remove cross-day duplicate places (main stops AND backup options)
 function deduplicatePlaces(trip: TripGeneration): TripGeneration {
-  const seen = new Set<string>()
+  // Normalize: lowercase, strip parenthetical (Shibuya Branch), (本店), trailing branch/location info
+  function normalize(name: string): string {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/\s*[\(（].*?[\)）]\s*/g, '')
+      .replace(/\s*[-–—]\s*(main|branch|store|shop|outlet|honten|本店)\s*$/i, '')
+      .trim()
+  }
+
+  // Check if two normalized names refer to the same place
+  // Exact match OR prefix match when shorter name ≥ 6 chars
+  // Catches: "Ichiran" vs "Ichiran Ramen", "Ichiran Ramen" vs "Ichiran Ramen Shibuya"
+  function isSameName(a: string, b: string): boolean {
+    if (a === b) return true
+    if (a.length >= 6 && b.startsWith(a)) return true
+    if (b.length >= 6 && a.startsWith(b)) return true
+    return false
+  }
+
+  const seenKeys: string[] = []
+
+  function isDuplicate(name: string): boolean {
+    const key = normalize(name)
+    return seenKeys.some(existing => isSameName(key, existing))
+  }
+
+  function addSeen(name: string) {
+    seenKeys.push(normalize(name))
+  }
+
   const updatedDays = trip.days.map(day => ({
     ...day,
     places: day.places.filter(place => {
-      const key = place.name.toLowerCase().trim()
-      if (seen.has(key)) {
+      if (isDuplicate(place.name)) {
         console.warn(`[dedup] Removed duplicate place: ${place.name} on day ${day.dayNumber}`)
         return false
       }
-      seen.add(key)
+      addSeen(place.name)
       return true
+    }).map(place => {
+      // Also dedup backup options against all seen names (main stops + earlier backups)
+      if (!place.backupOptions?.length) return place
+      const filtered = place.backupOptions.filter(backup => {
+        if (isDuplicate(backup.name)) {
+          console.warn(`[dedup] Removed duplicate backup: ${backup.name} on day ${day.dayNumber}`)
+          return false
+        }
+        addSeen(backup.name)
+        return true
+      })
+      return filtered.length === place.backupOptions.length
+        ? place
+        : { ...place, backupOptions: filtered }
     }),
   }))
   return { ...trip, days: updatedDays }
