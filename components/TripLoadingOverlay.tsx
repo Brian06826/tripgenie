@@ -160,30 +160,30 @@ const MSGS: Record<string, { en: string[]; 'zh-TW': string[]; 'zh-CN': string[] 
 function getPhaseSteps(dest: string, lang: Lang): { msg: string; maxSec: number }[] {
   const d = dest
   if (lang === 'zh-TW') return [
-    { msg: `🔍 研究${d}的必去景點...`, maxSec: 5 },
-    { msg: `🍜 尋找${d}最好的餐廳...`, maxSec: 12 },
-    { msg: `📍 規劃完美路線...`, maxSec: 20 },
-    { msg: `⭐ 查看 Google 評分和評論...`, maxSec: 30 },
-    { msg: `💡 加入當地人才知道的小貼士...`, maxSec: 42 },
-    { msg: `💰 優化你的預算...`, maxSec: 55 },
+    { msg: `🔍 研究${d}的必去景點...`, maxSec: 8 },
+    { msg: `🍜 尋找${d}最好的餐廳...`, maxSec: 20 },
+    { msg: `📍 規劃完美路線...`, maxSec: 35 },
+    { msg: `⭐ 查看 Google 評分和評論...`, maxSec: 50 },
+    { msg: `💡 加入當地人才知道的小貼士...`, maxSec: 70 },
+    { msg: `💰 優化你的預算...`, maxSec: 90 },
     { msg: `🎁 最後整理行程中...`, maxSec: Infinity },
   ]
   if (lang === 'zh-CN') return [
-    { msg: `🔍 研究${d}的必去景点...`, maxSec: 5 },
-    { msg: `🍜 找${d}最好的餐厅...`, maxSec: 12 },
-    { msg: `📍 规划完美路线...`, maxSec: 20 },
-    { msg: `⭐ 查看 Google 评分和评论...`, maxSec: 30 },
-    { msg: `💡 加入当地人才知道的小贴士...`, maxSec: 42 },
-    { msg: `💰 优化你的预算...`, maxSec: 55 },
+    { msg: `🔍 研究${d}的必去景点...`, maxSec: 8 },
+    { msg: `🍜 找${d}最好的餐厅...`, maxSec: 20 },
+    { msg: `📍 规划完美路线...`, maxSec: 35 },
+    { msg: `⭐ 查看 Google 评分和评论...`, maxSec: 50 },
+    { msg: `💡 加入当地人才知道的小贴士...`, maxSec: 70 },
+    { msg: `💰 优化你的预算...`, maxSec: 90 },
     { msg: `🎁 最后整理行程中...`, maxSec: Infinity },
   ]
   return [
-    { msg: `🔍 Researching ${d}'s best spots...`, maxSec: 5 },
-    { msg: `🍜 Finding top-rated restaurants in ${d}...`, maxSec: 12 },
-    { msg: `📍 Mapping out the perfect route...`, maxSec: 20 },
-    { msg: `⭐ Checking Google ratings & reviews...`, maxSec: 30 },
-    { msg: `💡 Adding local insider tips...`, maxSec: 42 },
-    { msg: `💰 Optimizing for your budget...`, maxSec: 55 },
+    { msg: `🔍 Researching ${d}'s best spots...`, maxSec: 8 },
+    { msg: `🍜 Finding top-rated restaurants in ${d}...`, maxSec: 20 },
+    { msg: `📍 Mapping out the perfect route...`, maxSec: 35 },
+    { msg: `⭐ Checking Google ratings & reviews...`, maxSec: 50 },
+    { msg: `💡 Adding local insider tips...`, maxSec: 70 },
+    { msg: `💰 Optimizing for your budget...`, maxSec: 90 },
     { msg: `🎁 Finalizing your itinerary...`, maxSec: Infinity },
   ]
 }
@@ -596,14 +596,8 @@ const STARS: [number, number, number][] = [
   [41, 70, 1], [38, 84, 2], [50, 6, 1.5], [55, 43, 2], [48, 93, 1],
 ]
 
-// Human-friendly estimated time labels
-function getEstLabel(seconds: number): string {
-  if (seconds <= 29) return '~29s'
-  if (seconds <= 40) return '~40s'
-  if (seconds <= 55) return '~55s'
-  if (seconds <= 60) return '~1 min'
-  return '~1.5 min'
-}
+// Overtime threshold multiplier — after this, show "almost there" messaging
+const OVERTIME_MULTIPLIER = 1.3
 
 interface Props {
   lang: Lang
@@ -660,13 +654,16 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
     : phase === 'validating' ? 78
     : 60 // generating
 
-  // Eased progress — fast start, slows dramatically toward the end
+  // Asymptotic progress — always moving, never stops, approaches phaseCap but never reaches it
   useEffect(() => {
     const t = setInterval(() => {
       setProgress(p => {
-        if (p >= phaseCap) return phaseCap
-        const step = p < 30 ? 4.5 : p < 60 ? 1.8 : p < 80 ? 0.6 : 0.2
-        return Math.min(p + step, phaseCap)
+        const remaining = phaseCap - p
+        if (remaining <= 0.05) return phaseCap
+        // Approach at 8% of remaining distance — fast start, exponential slowdown
+        // At 30%→cap60: step=2.4, at 50%: step=0.8, at 58%: step=0.16
+        const step = remaining * 0.08
+        return p + Math.max(step, 0.03) // min 0.03% per tick so bar never truly stops
       })
     }, 800)
     return () => clearInterval(t)
@@ -695,12 +692,8 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
   const displayMsg = serverPhaseMsg ?? timePhaseMsg ?? msgs[idx]
   const msgKey = serverPhaseMsg ? phase : timePhaseMsg ? `time-${elapsed < 5 ? 0 : elapsed < 12 ? 1 : elapsed < 20 ? 2 : elapsed < 30 ? 3 : elapsed < 42 ? 4 : elapsed < 55 ? 5 : 6}` : idx
 
-  const estLabel = getEstLabel(estimatedSeconds)
-
-  // Format elapsed
-  const elapsedLabel = elapsed >= 60
-    ? `${Math.floor(elapsed / 60)}m ${(elapsed % 60).toString().padStart(2, '0')}s`
-    : `${elapsed}s`
+  // Overtime detection — when elapsed exceeds estimate, show reassuring message
+  const isOvertime = elapsed > estimatedSeconds * OVERTIME_MULTIPLIER
 
   return (
     <div
@@ -809,8 +802,10 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
                 ? (lang === 'zh-CN' ? '验证餐厅中...' : lang === 'zh-TW' ? '驗證餐廳中...' : 'Verifying restaurants...')
                 : (lang === 'zh-CN' ? 'AI 生成中...' : lang === 'zh-TW' ? 'AI 生成中...' : 'AI is working its magic...')}
             </span>
-            <span className="text-white/40 text-xs tabular-nums">
-              ⏱️ {elapsedLabel} / {estLabel}
+            <span className="text-white/40 text-xs">
+              {isOvertime
+                ? (lang === 'zh-CN' ? '✨ 快好了...' : lang === 'zh-TW' ? '✨ 快好了...' : '✨ Almost there...')
+                : (lang === 'zh-CN' ? '✨ 正在生成中' : lang === 'zh-TW' ? '✨ 正在生成中' : '✨ Working on it')}
             </span>
           </div>
         </div>

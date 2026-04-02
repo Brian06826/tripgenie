@@ -42,11 +42,12 @@ function detectTripDays(prompt: string): number {
 }
 
 function getEstimatedSeconds(days: number): number {
-  if (days <= 1) return 29
-  if (days <= 2) return 40
-  if (days <= 3) return 55
-  if (days <= 5) return 60
-  return 90
+  // Used internally for progress curve pacing + overtime detection (not displayed to user)
+  if (days <= 1) return 35
+  if (days <= 2) return 55
+  if (days <= 3) return 70
+  if (days <= 5) return 90
+  return 120
 }
 
 const TRIP_VALIDATION_MSG = "Please describe a trip! Include a destination and how long.\nFor example: '3 days Tokyo food trip' or '一日遊 Long Beach 情侶'"
