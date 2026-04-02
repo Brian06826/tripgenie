@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
 import { ChatInput } from '@/components/ChatInput'
-import { ExampleTripsGrid } from '@/components/ExampleTripsGrid'
+import { ExampleTripLink } from '@/components/ExampleTripLink'
 import { RecentTrips } from '@/components/RecentTrips'
 import { TripCounter } from '@/components/TripCounter'
 import { UserMenu } from '@/components/UserMenu'
@@ -72,19 +72,37 @@ export default async function HomePage() {
     <div className="min-h-dvh bg-gray-50">
       {/* Hero header */}
       <header
-        className="text-white px-4 pt-10 pb-12 text-center relative z-0"
+        className="text-white px-4 pt-10 pb-10 text-center relative z-0"
         style={{ background: 'linear-gradient(180deg, var(--color-navy-dark) 0%, var(--color-navy) 60%, var(--color-navy-mid) 100%)' }}
       >
         <div className="absolute top-4 right-4">
           <UserMenu />
         </div>
         <div className="max-w-xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-1.5">
             Lul<span className="text-orange">go</span> <span className="text-2xl sm:text-3xl">✨</span>
           </h1>
-          <p className="text-base sm:text-lg font-semibold opacity-95">
+          <p className="text-base sm:text-lg font-semibold opacity-95 mb-5">
             {isZh ? '懶人專屬旅行規劃。' : 'The laziest way to plan a trip.'}
           </p>
+
+          {/* How It Works — compact inline, no heading */}
+          <div className="flex items-center justify-center gap-6 sm:gap-8 text-white/60">
+            <div className="flex items-center gap-1.5">
+              <span className="text-base">💬</span>
+              <span className="text-[11px] font-medium">{isZh ? '描述行程' : 'Describe'}</span>
+            </div>
+            <span className="text-white/25">→</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-base">🤖</span>
+              <span className="text-[11px] font-medium">{isZh ? 'AI 規劃' : 'AI Plans'}</span>
+            </div>
+            <span className="text-white/25">→</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-base">✏️</span>
+              <span className="text-[11px] font-medium">{isZh ? '編輯出發' : 'Edit & Go'}</span>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -100,38 +118,28 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Example trips — right after input so users see them immediately */}
-      <section className="max-w-xl lg:max-w-3xl mx-auto px-4 pt-3 pb-2">
+      {/* Recent trips — returning users see their trips first */}
+      <RecentTrips />
+
+      {/* Example trips — full 2x3 grid */}
+      <section className="max-w-xl lg:max-w-3xl mx-auto px-4 pt-2 pb-4">
         <h2 className="text-sm font-semibold text-gray-500 mb-2.5">
           {isZh ? '唔知去邊？試下呢啲 ✨' : 'Not sure where to go? Try these ✨'}
         </h2>
-        <ExampleTripsGrid trips={EXAMPLE_TRIPS} isZh={isZh} />
-      </section>
-
-      {/* Recent trips from localStorage */}
-      <RecentTrips />
-
-      {/* How It Works — lower since example trips already show the product */}
-      <section className="max-w-xl lg:max-w-3xl mx-auto px-4 py-6">
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 text-center">
-          {isZh ? '點樣用' : 'How it works'}
-        </h2>
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <div className="text-2xl mb-1">💬</div>
-            <p className="text-xs font-semibold text-gray-700">{isZh ? '描述行程' : 'Describe'}</p>
-            <p className="text-[10px] text-gray-400">{isZh ? '任何語言都得' : 'Any language'}</p>
-          </div>
-          <div>
-            <div className="text-2xl mb-1">🤖</div>
-            <p className="text-xs font-semibold text-gray-700">{isZh ? 'AI 規劃' : 'AI Plans'}</p>
-            <p className="text-[10px] text-gray-400">{isZh ? '餐廳已驗證' : 'Verified spots'}</p>
-          </div>
-          <div>
-            <div className="text-2xl mb-1">✏️</div>
-            <p className="text-xs font-semibold text-gray-700">{isZh ? '編輯出發' : 'Edit & Go'}</p>
-            <p className="text-[10px] text-gray-400">{isZh ? '隨時修改' : 'Modify anytime'}</p>
-          </div>
+        <div className="grid grid-cols-2 gap-2.5">
+          {EXAMPLE_TRIPS.map(trip => (
+            <ExampleTripLink
+              key={trip.href}
+              href={trip.href}
+              title={trip.title}
+              subtitle={trip.subtitle}
+              flag={trip.flag}
+              gradient={trip.gradient}
+              stops={trip.stops}
+              avgRating={trip.avgRating}
+              isZh={isZh}
+            />
+          ))}
         </div>
       </section>
 
