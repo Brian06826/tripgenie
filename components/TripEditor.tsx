@@ -44,21 +44,47 @@ function parseDurationMinutes(dur: string): number {
 }
 
 function adjustTimesAfterRemoval(places: Place[], removedIndex: number): Place[] {
-  if (places.length === 0 || removedIndex <= 0) return places
-  // Figure out the gap: removed place's start → next place's original start
-  // Shift subsequent places forward to fill the gap with a small buffer (15 min travel)
-  return places.map((p, i) => {
-    if (i < removedIndex || !p.arrivalTime) return p
-    const prevPlace = places[i - 1]
-    if (!prevPlace?.arrivalTime) return p
+  if (places.length === 0) return places
+
+  // Build result sequentially so each place uses the ADJUSTED previous place's time
+  const result = [...places]
+  const startIdx = Math.max(removedIndex, 1) // adjust from removedIndex, but at least from index 1
+
+  for (let i = startIdx; i < result.length; i++) {
+    const p = result[i]
+    if (!p.arrivalTime) continue
+
+    const prevPlace = result[i - 1]
+    if (!prevPlace?.arrivalTime) continue
+
     const prevStart = parseTimeToMinutes(prevPlace.arrivalTime)
-    if (prevStart === null) return p
+    if (prevStart === null) continue
+
     const prevDur = prevPlace.duration ? parseDurationMinutes(prevPlace.duration) : 60
     const buffer = 15 // travel buffer
-    const newStart = prevStart + prevDur + buffer
+    let newStart = prevStart + prevDur + buffer
+
+    const currentMins = parseTimeToMinutes(p.arrivalTime)
+    if (currentMins === null) continue
+
+    // Only move earlier (close the gap), never push later
+    if (newStart >= currentMins) continue
+
+    // Meal-time guards: don't break meal windows
+    const isLunchMeal = p.type === 'restaurant' && currentMins >= 660 && currentMins <= 840
+    const isDinnerMeal = p.type === 'restaurant' && currentMins >= 1020 && currentMins <= 1260
+
+    if (isLunchMeal && newStart < 690) newStart = 690     // Lunch no earlier than 11:30 AM
+    if (isDinnerMeal && newStart < 1080) newStart = 1080  // Dinner no earlier than 6:00 PM
+
+    // Still only move earlier, never push later
+    if (newStart >= currentMins) continue
+
     const is12h = p.arrivalTime.includes('AM') || p.arrivalTime.includes('PM')
-    return { ...p, arrivalTime: minutesToTimeStr(newStart, is12h) }
-  })
+    result[i] = { ...p, arrivalTime: minutesToTimeStr(newStart, is12h) }
+  }
+
+  return result
 }
 
 interface Props {
