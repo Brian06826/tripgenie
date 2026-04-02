@@ -52,6 +52,78 @@ function formatDayDate(startDate: string, dayIndex: number, language?: string): 
   }
 }
 
+// --- Time utilities for cascade ---
+function parseTimeToMinutes(timeStr: string): number | null {
+  const match12 = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+  if (match12) {
+    let h = parseInt(match12[1])
+    const m = parseInt(match12[2])
+    const period = match12[3].toUpperCase()
+    if (period === 'PM' && h !== 12) h += 12
+    if (period === 'AM' && h === 12) h = 0
+    return h * 60 + m
+  }
+  const match24 = timeStr.match(/^(\d{1,2}):(\d{2})$/)
+  if (match24) return parseInt(match24[1]) * 60 + parseInt(match24[2])
+  return null
+}
+
+function minutesToTimeStr(mins: number, use12h = true): string {
+  const h24 = Math.floor(mins / 60) % 24
+  const m = mins % 60
+  if (!use12h) return `${h24}:${m.toString().padStart(2, '0')}`
+  const period = h24 >= 12 ? 'PM' : 'AM'
+  const h12 = h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24
+  return `${h12}:${m.toString().padStart(2, '0')} ${period}`
+}
+
+interface CascadeResult {
+  updatedPlaces: DayPlan['places']
+  adjustedCount: number
+}
+
+function cascadeTimes(places: DayPlan['places'], changedIndex: number, newTime: string): CascadeResult {
+  const oldTime = places[changedIndex]?.arrivalTime
+  const oldMins = oldTime ? parseTimeToMinutes(oldTime) : null
+  const newMins = parseTimeToMinutes(newTime)
+
+  // Can't calculate delta — just update the one place
+  if (oldMins === null || newMins === null || oldMins === newMins) {
+    return {
+      updatedPlaces: places.map((p, i) => i === changedIndex ? { ...p, arrivalTime: newTime } : p),
+      adjustedCount: 0,
+    }
+  }
+
+  const delta = newMins - oldMins
+  let adjustedCount = 0
+
+  const updatedPlaces = places.map((p, i) => {
+    if (i === changedIndex) return { ...p, arrivalTime: newTime }
+    if (i <= changedIndex || !p.arrivalTime) return p
+
+    const currentMins = parseTimeToMinutes(p.arrivalTime)
+    if (currentMins === null) return p
+
+    const adjusted = currentMins + delta
+
+    // Meal-time guards
+    const isLunchMeal = p.type === 'restaurant' && currentMins >= 660 && currentMins <= 840
+    const isDinnerMeal = p.type === 'restaurant' && currentMins >= 1020 && currentMins <= 1260
+
+    if (isLunchMeal && adjusted < 690) return p   // Lunch can't be before 11:30 AM
+    if (isDinnerMeal && adjusted < 1080) return p  // Dinner can't be before 6:00 PM
+    if (adjusted > 1410) return p                  // Nothing past 11:30 PM
+    if (adjusted < 0) return p                     // Nothing before midnight
+
+    adjustedCount++
+    const is12h = p.arrivalTime.includes('AM') || p.arrivalTime.includes('PM')
+    return { ...p, arrivalTime: minutesToTimeStr(adjusted, is12h) }
+  })
+
+  return { updatedPlaces, adjustedCount }
+}
+
 export function TripItinerary({
   initialDays,
   validated = true,
@@ -61,6 +133,7 @@ export function TripItinerary({
   onRemovePlace,
   onSaveDays,
   onSaveQuiet,
+  onTimeCascade,
   tripId,
 }: {
   initialDays: DayPlan[]
@@ -71,6 +144,7 @@ export function TripItinerary({
   onRemovePlace?: (dayIndex: number, placeIndex: number) => Promise<boolean>
   onSaveDays?: (updatedDays: DayPlan[]) => Promise<void>
   onSaveQuiet?: (updatedDays: DayPlan[]) => Promise<void>
+  onTimeCascade?: (updatedDays: DayPlan[], adjustedCount: number) => void
   tripId?: string
 }) {
   const showYelp = isUSDestination(destination)
@@ -229,36 +303,38 @@ export function TripItinerary({
   }, [days, destination, language, onSaveDays])
 
   const handleTimeChange = useCallback(async (dayIndex: number, placeIndex: number, newTime: string) => {
-    // Update local state instantly
-    setDays(prev => prev.map((d, di) => {
-      if (di !== dayIndex) return d
-      return {
-        ...d,
-        places: d.places.map((p, pi) => {
-          if (pi !== placeIndex) return p
-          return { ...p, arrivalTime: newTime }
-        }),
-      }
-    }))
+    const isCN = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
 
-    // Save to Redis via dedicated endpoint
-    if (!tripId) return
-    const dayNumber = days[dayIndex]?.dayNumber
-    if (!dayNumber) return
-    try {
-      const res = await fetch('/api/update-place-time', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tripId, dayNumber, placeIndex, newTime }),
-      })
-      if (!res.ok) throw new Error('Save failed')
-    } catch {
-      const isCN = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
-      const msg = isCN ? '儲存失敗' : 'Save failed'
-      setToast(msg)
-      setTimeout(() => setToast(null), 3000)
-    }
-  }, [tripId, days, language])
+    // Apply cascade: adjust subsequent places by delta with meal-time guards
+    setDays(prev => {
+      const day = prev[dayIndex]
+      if (!day) return prev
+
+      const { updatedPlaces, adjustedCount } = cascadeTimes(day.places, placeIndex, newTime)
+      const updatedDays = prev.map((d, di) => di === dayIndex ? { ...d, places: updatedPlaces } : d)
+
+      // Notify parent for undo support + Redis save
+      if (onTimeCascade && adjustedCount > 0) {
+        onTimeCascade(updatedDays, adjustedCount)
+      } else if (onTimeCascade) {
+        // Single change, still save to Redis via parent
+        onTimeCascade(updatedDays, 0)
+      } else if (tripId) {
+        // Fallback: save via dedicated endpoint
+        const dayNumber = day.dayNumber
+        fetch('/api/update-place-time', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tripId, dayNumber, placeIndex, newTime }),
+        }).catch(() => {
+          setToast(isCN ? '儲存失敗' : 'Save failed')
+          setTimeout(() => setToast(null), 3000)
+        })
+      }
+
+      return updatedDays
+    })
+  }, [tripId, language, onTimeCascade])
 
   const isChinese = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
 

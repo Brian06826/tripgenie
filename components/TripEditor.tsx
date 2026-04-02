@@ -209,6 +209,35 @@ export function TripEditor({ tripId, trip }: Props) {
     return true
   }, [currentTrip, tripId])
 
+  // Time cascade: save with undo support
+  const handleTimeCascade = useCallback((updatedDays: DayPlan[], adjustedCount: number) => {
+    const previousTrip = currentTrip
+    const isCN = currentTrip.language !== 'en'
+    const updatedTrip: Trip = { ...currentTrip, days: updatedDays }
+
+    // Update parent state (TripItinerary already updated its own local state)
+    setCurrentTrip(updatedTrip)
+
+    // Show undo toast only when cascade actually adjusted other stops
+    if (adjustedCount > 0) {
+      const msg = isCN
+        ? `已調整 ${adjustedCount} 個景點時間`
+        : `Times adjusted for ${adjustedCount} stop${adjustedCount > 1 ? 's' : ''}`
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+      setUndoToast({ message: msg, tripData: previousTrip })
+      undoTimerRef.current = setTimeout(() => setUndoToast(null), 8000)
+    }
+
+    // Fire-and-forget save to Redis
+    fetch('/api/edit-trip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tripId, tripData: updatedTrip }),
+    }).catch(() => {
+      setError(isCN ? '儲存失敗' : 'Save failed')
+    })
+  }, [currentTrip, tripId])
+
   // Save to Redis without page reload (for lightweight edits like time changes)
   const handleSaveQuiet = useCallback(async (updatedDays: DayPlan[]) => {
     const updatedTrip: Trip = { ...currentTrip, days: updatedDays }
@@ -237,6 +266,7 @@ export function TripEditor({ tripId, trip }: Props) {
         onRemovePlace={handleRemovePlace}
         onSaveDays={handleSaveDays}
         onSaveQuiet={handleSaveQuiet}
+        onTimeCascade={handleTimeCascade}
       />
 
       {/* Activity hint */}

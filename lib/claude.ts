@@ -196,14 +196,17 @@ STOP COUNT PER DAY (CRITICAL — follow exactly):
 - "morning only" / "半日" / "half day": plan until ~1:00 PM. 2-3 stops + lunch. No dinner.
 - User-specified times (e.g. "9am-3pm"): respect EXACTLY. Only include meals that fall within those hours.
 - Transport stops (departure/return) do NOT count toward the stop count above.
+- COMPACT CITIES (walkable cities like Tokyo, Taipei, Hong Kong, Singapore, Manhattan, London, Paris, Barcelona, Amsterdam): you can add 1 extra stop per day because transit between stops is short (5-15 min). For spread-out cities (LA, Houston, Dallas), keep the standard count.
 
 DAILY SCHEDULE RULES (CRITICAL):
 1. DEFAULT full-day: 9:00 AM to 9:00 PM. Must include BOTH lunch AND dinner. NEVER end before 6:00 PM.
 2. Space activities naturally throughout the day. Morning: 9:00 AM-12:00 PM. Afternoon: 1:30 PM-5:30 PM. Evening: 6:00 PM onward.
 3. Leave breathing room between stops — a real trip has natural gaps for walking, browsing, photos, and spontaneous exploration. Don't pack every minute.
 
+OPENING HOURS AWARENESS: Schedule attractions during their likely open hours. Museums and galleries: usually 10:00 AM - 5:00 PM (skip Monday — many are closed). Night markets and night-scene spots: 5:00 PM onward. Temples and parks: early morning OK. Shopping malls: 10:00 AM - 10:00 PM. If unsure about opening hours, schedule for 10:00 AM - 6:00 PM as a safe window.
+
 STRICT MEAL TIMING (CRITICAL — NEVER VIOLATE — MEALS ARE HIGHER PRIORITY THAN ATTRACTIONS):
-- Breakfast/Brunch: 8:00-10:00 AM. Only include if user requests it OR multi-day trip where it makes sense.
+- Breakfast/Brunch: 8:00-10:00 AM. Include ONLY when: (1) user explicitly asks for breakfast, (2) the destination is famous for breakfast culture (e.g. dim sum in Hong Kong, morning market in Taipei), or (3) a multi-day trip where starting with breakfast makes the day flow better. Do NOT add breakfast by default for 1-day trips.
 - Lunch: 11:30 AM - 1:00 PM. REQUIRED for every full day.
 - Dinner: 6:00-8:00 PM. REQUIRED for every full day. NEVER schedule dinner before 5:30 PM under ANY circumstance. A dinner at 4:00 PM or 5:00 PM is WRONG — add afternoon activities to fill the gap between lunch and dinner. If you run out of activities, add a relaxation break, park visit, or shopping time.
 - Do NOT add afternoon snack/cafe/dessert stops unless the user specifically asks for them.
@@ -223,12 +226,16 @@ POST-DINNER ACTIVITIES (8:00 PM - 9:00 PM):
 - For destinations known for night scenes (Tokyo, Taipei, NYC, Las Vegas, Bangkok): lean towards adding a night activity even without chips.
 - NEVER schedule post-dinner activities past 9:30 PM.
 
+LATE START TIP: If user says "start late" / "sleep in" / "10am start" / "晚啲出發", begin the first stop at their requested time (or 10:00 AM default for "late"). Adjust the rest of the day accordingly — fewer stops, but still include lunch AND dinner. Mention in tips: "Starting at 10 AM as requested — a relaxed morning."
+
 SELF-CHECK (MANDATORY — run after generating the full itinerary):
 Before returning your JSON, verify EVERY full day has:
 1. Exactly one restaurant-type stop between 11:30 AM - 1:00 PM (lunch)
 2. Exactly one restaurant-type stop between 6:00 PM - 8:00 PM (dinner)
 3. No dinner scheduled before 5:30 PM
-If any day fails these checks, fix it before responding. Add a missing meal or move a misplaced one.
+4. No place appears on multiple days (cross-day deduplication)
+5. No place appears as both a main stop AND a backup option anywhere
+If any day fails these checks, fix it before responding. Add a missing meal, move a misplaced one, or swap a duplicate for a different place.
 
 TRANSPORTATION & MEETING POINTS:
 - If the user mentions a departure point (e.g. "I take metro from Glendora to downtown"), include that as the FIRST stop with type "transport", with the estimated transit time as duration.
@@ -355,6 +362,24 @@ function looksLikeRefusal(text: string): boolean {
 // Public API
 // ---------------------------------------------------------------------------
 
+// Post-processing: remove cross-day duplicate places
+function deduplicatePlaces(trip: TripGeneration): TripGeneration {
+  const seen = new Set<string>()
+  const updatedDays = trip.days.map(day => ({
+    ...day,
+    places: day.places.filter(place => {
+      const key = place.name.toLowerCase().trim()
+      if (seen.has(key)) {
+        console.warn(`[dedup] Removed duplicate place: ${place.name} on day ${day.dayNumber}`)
+        return false
+      }
+      seen.add(key)
+      return true
+    }),
+  }))
+  return { ...trip, days: updatedDays }
+}
+
 export async function generateTrip(userPrompt: string, onChunk?: () => void): Promise<TripGeneration> {
   const validation = validateTripRequest(userPrompt)
   if (!validation.valid) throw new Error(validation.message)
@@ -381,7 +406,7 @@ export async function generateTrip(userPrompt: string, onChunk?: () => void): Pr
     try {
       const { parsed } = await callClaude(buildConciseRetryPrompt(userPrompt), systemPrompt, maxTokens)
       const r = TripGenerationSchema.safeParse(parsed)
-      if (r.success) return r.data
+      if (r.success) return deduplicatePlaces(r.data)
       throw new Error(`Validation failed after concise retry: ${JSON.stringify(r.error.issues)}`)
     } catch {
       throw new Error(`Unable to generate itinerary. Please rephrase your request and try again.`)
@@ -393,7 +418,7 @@ export async function generateTrip(userPrompt: string, onChunk?: () => void): Pr
     try {
       const { parsed } = await callClaude(buildRefusalRetryPrompt(userPrompt), systemPrompt, maxTokens)
       const r = TripGenerationSchema.safeParse(parsed)
-      if (r.success) return r.data
+      if (r.success) return deduplicatePlaces(r.data)
     } catch {
       // fall through
     }
@@ -401,7 +426,7 @@ export async function generateTrip(userPrompt: string, onChunk?: () => void): Pr
   }
 
   const firstResult = TripGenerationSchema.safeParse(firstParsed)
-  if (firstResult.success) return firstResult.data
+  if (firstResult.success) return deduplicatePlaces(firstResult.data)
 
   // Attempt 2
   const retryPrompt = truncated
@@ -414,7 +439,7 @@ export async function generateTrip(userPrompt: string, onChunk?: () => void): Pr
   try {
     const { parsed: retryParsed } = await callClaude(retryPrompt, systemPrompt, maxTokens)
     const retryResult = TripGenerationSchema.safeParse(retryParsed)
-    if (retryResult.success) return retryResult.data
+    if (retryResult.success) return deduplicatePlaces(retryResult.data)
     throw new Error(`Validation failed: ${JSON.stringify(retryResult.error.issues)}`)
   } catch {
     throw new Error(`Unable to generate itinerary. Please try again or rephrase your request.`)
