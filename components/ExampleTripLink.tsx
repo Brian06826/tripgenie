@@ -31,7 +31,7 @@ export function ExampleTripLink({ href, title, subtitle, flag, gradient, imageUr
       <a
         href={href}
         onClick={handleClick}
-        className="relative flex items-center gap-3 rounded-2xl p-4 h-[96px] text-white transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] overflow-hidden"
+        className="relative flex items-center gap-2.5 rounded-xl p-3 h-[88px] text-white transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] overflow-hidden"
       >
         {/* Background: image or gradient */}
         {imageUrl ? (
@@ -49,11 +49,11 @@ export function ExampleTripLink({ href, title, subtitle, flag, gradient, imageUr
         )}
 
         {/* Content */}
-        <div className="relative flex items-center gap-3 w-full">
-          {flag && <span className="text-2xl shrink-0">{flag}</span>}
+        <div className="relative flex items-center gap-2.5 w-full">
+          {flag && <span className="text-xl shrink-0">{flag}</span>}
           <div className="min-w-0 flex-1">
-            <div className="font-bold text-base leading-tight truncate">{title}</div>
-            <div className="text-sm text-white/70 mt-0.5 leading-snug truncate">{subtitle}</div>
+            <div className="font-bold text-sm leading-tight truncate">{title}</div>
+            <div className="text-xs text-white/70 mt-0.5 leading-snug truncate">{subtitle}</div>
             {(stops || avgRating) && (
               <div className="flex items-center gap-2 mt-1">
                 {stops && (

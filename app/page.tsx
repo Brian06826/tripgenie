@@ -1,31 +1,12 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
 import { ChatInput } from '@/components/ChatInput'
-import { ExampleTripLink } from '@/components/ExampleTripLink'
-import { ProductPreview } from '@/components/ProductPreview'
+import { ExampleTripsGrid } from '@/components/ExampleTripsGrid'
 import { RecentTrips } from '@/components/RecentTrips'
 import { TripCounter } from '@/components/TripCounter'
 import { UserMenu } from '@/components/UserMenu'
 
 const EXAMPLE_TRIPS = [
-  {
-    title: 'Long Beach Day Trip',
-    subtitle: 'Couple · Seafood · Waterfront',
-    href: '/trip/example-longbeach',
-    flag: '🇺🇸',
-    gradient: 'from-sky-500 to-blue-600',
-    stops: 6,
-    avgRating: 4.4,
-  },
-  {
-    title: 'San Diego 5-Day Getaway',
-    subtitle: '5 Days · SeaWorld · Old Town',
-    href: '/trip/example-sandiego',
-    flag: '🇺🇸',
-    gradient: 'from-amber-400 to-orange-500',
-    stops: 25,
-    avgRating: 4.5,
-  },
   {
     title: 'Tokyo Food Adventure',
     subtitle: '3 Days · Ramen · Temples',
@@ -36,13 +17,13 @@ const EXAMPLE_TRIPS = [
     avgRating: 4.5,
   },
   {
-    title: 'San Francisco Weekend',
-    subtitle: 'Family · Golden Gate · Wharf',
-    href: '/trip/example-sf',
+    title: 'San Diego 5-Day Getaway',
+    subtitle: '5 Days · SeaWorld · Old Town',
+    href: '/trip/example-sandiego',
     flag: '🇺🇸',
-    gradient: 'from-orange-400 to-red-500',
-    stops: 12,
-    avgRating: 4.4,
+    gradient: 'from-amber-400 to-orange-500',
+    stops: 25,
+    avgRating: 4.5,
   },
   {
     title: 'Taipei Night Market Tour',
@@ -61,6 +42,24 @@ const EXAMPLE_TRIPS = [
     gradient: 'from-violet-400 to-indigo-600',
     stops: 18,
     avgRating: 4.5,
+  },
+  {
+    title: 'Long Beach Day Trip',
+    subtitle: 'Couple · Seafood · Waterfront',
+    href: '/trip/example-longbeach',
+    flag: '🇺🇸',
+    gradient: 'from-sky-500 to-blue-600',
+    stops: 6,
+    avgRating: 4.4,
+  },
+  {
+    title: 'San Francisco Weekend',
+    subtitle: 'Family · Golden Gate · Wharf',
+    href: '/trip/example-sf',
+    flag: '🇺🇸',
+    gradient: 'from-orange-400 to-red-500',
+    stops: 12,
+    avgRating: 4.4,
   },
 ]
 
@@ -94,15 +93,29 @@ export default async function HomePage() {
         <TripCounter />
       </div>
 
-      {/* Chat input in card */}
+      {/* Chat input */}
       <section className="max-w-xl lg:max-w-3xl mx-auto px-4 pt-4 pb-3">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6">
           <ChatInput browserLang={isZh ? 'zh' : 'en'} />
         </div>
       </section>
 
-      {/* How It Works */}
+      {/* Example trips — right after input so users see them immediately */}
+      <section className="max-w-xl lg:max-w-3xl mx-auto px-4 pt-3 pb-2">
+        <h2 className="text-sm font-semibold text-gray-500 mb-2.5">
+          {isZh ? '唔知去邊？試下呢啲 ✨' : 'Not sure where to go? Try these ✨'}
+        </h2>
+        <ExampleTripsGrid trips={EXAMPLE_TRIPS} isZh={isZh} />
+      </section>
+
+      {/* Recent trips from localStorage */}
+      <RecentTrips />
+
+      {/* How It Works — lower since example trips already show the product */}
       <section className="max-w-xl lg:max-w-3xl mx-auto px-4 py-6">
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 text-center">
+          {isZh ? '點樣用' : 'How it works'}
+        </h2>
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-2xl mb-1">💬</div>
@@ -119,34 +132,6 @@ export default async function HomePage() {
             <p className="text-xs font-semibold text-gray-700">{isZh ? '編輯出發' : 'Edit & Go'}</p>
             <p className="text-[10px] text-gray-400">{isZh ? '隨時修改' : 'Modify anytime'}</p>
           </div>
-        </div>
-      </section>
-
-      {/* Product preview — show what a real itinerary looks like */}
-      <ProductPreview isZh={isZh} />
-
-      {/* Recent trips from localStorage */}
-      <RecentTrips />
-
-      {/* Example trips */}
-      <section className="max-w-xl mx-auto px-4 pb-4">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          {isZh ? '範例行程' : 'Example Trips'}
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {EXAMPLE_TRIPS.map(trip => (
-            <ExampleTripLink
-              key={trip.href}
-              href={trip.href}
-              title={trip.title}
-              subtitle={trip.subtitle}
-              flag={trip.flag}
-              gradient={trip.gradient}
-              stops={trip.stops}
-              avgRating={trip.avgRating}
-              isZh={isZh}
-            />
-          ))}
         </div>
       </section>
 
