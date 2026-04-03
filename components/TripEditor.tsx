@@ -74,8 +74,8 @@ function adjustTimesAfterRemoval(places: Place[], removedIndex: number): Place[]
     const isLunchMeal = p.type === 'restaurant' && currentMins >= 660 && currentMins <= 840
     const isDinnerMeal = p.type === 'restaurant' && currentMins >= 1020 && currentMins <= 1260
 
-    if (isLunchMeal && newStart < 690) newStart = 690     // Lunch no earlier than 11:30 AM
-    if (isDinnerMeal && newStart < 1080) newStart = 1080  // Dinner no earlier than 6:00 PM
+    if (isLunchMeal && newStart < 660) newStart = 660     // Lunch no earlier than 11:00 AM
+    if (isDinnerMeal && newStart < 1050) newStart = 1050  // Dinner no earlier than 5:30 PM
 
     // Still only move earlier, never push later
     if (newStart >= currentMins) continue

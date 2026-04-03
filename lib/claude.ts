@@ -155,7 +155,7 @@ JSON schema:
   "language": "en|zh-TW|zh-HK|zh-CN",
   "days": [{
     "dayNumber": 1,
-    "title": "string",
+    "title": "string (generic theme like 'City Exploration', 'Coastal Day', 'Culture & History' — NEVER include specific place names or district names in the title)",
     "places": [{
       "name": "string",
       "nameLocal": "string (optional, local script)",
@@ -238,7 +238,7 @@ Before returning your JSON, verify EVERY full day has:
 6. No gap >90 min between consecutive stops (fill with nearby activity if needed)
 7. Sunset-worthy spots (beaches, cliffs, viewpoints, waterfronts, anything with "sunset" in its name) are scheduled for 5:00-7:00 PM to catch golden hour — NEVER before 4:30 PM
 8. At least one iconic/must-see attraction is included per day
-9. Each day's title accurately reflects the actual scheduled stops — never mention a place in the title that is not in that day's itinerary
+9. Each day's title uses a generic theme (e.g. "Old Town & Local Eats", "Nature Day") — no specific place names or district names in day titles
 If any day fails these checks, fix it before responding. Add a missing meal, move a misplaced one, swap a duplicate, or fill a gap.
 
 TRANSPORTATION & MEETING POINTS:

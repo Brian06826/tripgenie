@@ -111,8 +111,8 @@ function cascadeTimes(places: DayPlan['places'], changedIndex: number, newTime: 
     const isLunchMeal = p.type === 'restaurant' && currentMins >= 660 && currentMins <= 840
     const isDinnerMeal = p.type === 'restaurant' && currentMins >= 1020 && currentMins <= 1260
 
-    if (isLunchMeal && adjusted < 690) return p   // Lunch can't be before 11:30 AM
-    if (isDinnerMeal && adjusted < 1080) return p  // Dinner can't be before 6:00 PM
+    if (isLunchMeal && adjusted < 660) return p   // Lunch can't be before 11:00 AM
+    if (isDinnerMeal && adjusted < 1050) return p  // Dinner can't be before 5:30 PM
     if (adjusted > 1410) return p                  // Nothing past 11:30 PM
     if (adjusted < 0) return p                     // Nothing before midnight
 
