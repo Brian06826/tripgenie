@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { getTrip } from '@/lib/storage'
 import { EXAMPLE_TRIPS } from '@/lib/example-trips'
 import { ShareButton } from '@/components/ShareButton'
+import { ExportButton } from '@/components/ExportButton'
 import { ExampleTripViewer } from '@/components/ExampleTripViewer'
 import { TripEditor } from '@/components/TripEditor'
 import { SaveRecentTrip } from '@/components/SaveRecentTrip'
@@ -87,7 +88,10 @@ export default async function TripPage({ params }: Props) {
             <span className="text-xs opacity-90 truncate font-mono">
               lulgo.com{tripUrl}
             </span>
-            <ShareButton tripId={id} tripTitle={trip.title} language={trip.language} />
+            <div className="flex items-center gap-2">
+              <ExportButton trip={trip} />
+              <ShareButton tripId={id} tripTitle={trip.title} language={trip.language} />
+            </div>
           </div>
 
           {/* Photo credit (Unsplash attribution requirement) */}
