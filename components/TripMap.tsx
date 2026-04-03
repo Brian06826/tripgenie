@@ -41,7 +41,13 @@ export function TripMap({ days, onSelectPlace }: Props) {
   const hasCoords = allPlaces.length > 0
 
   useEffect(() => {
-    if (!isOpen || !hasCoords || !mapRef.current || leafletMap.current) return
+    if (!isOpen || !hasCoords || !mapRef.current) return
+
+    // Destroy stale map instance from previous open/close cycle
+    if (leafletMap.current) {
+      try { leafletMap.current.remove() } catch {}
+      leafletMap.current = null
+    }
 
     let cancelled = false
 

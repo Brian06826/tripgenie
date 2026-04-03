@@ -21,7 +21,7 @@ export function ExampleTripViewer({ trip }: { trip: Trip }) {
   return (
     <div className="min-h-screen bg-gray-50 animate-in fade-in duration-500">
       {/* Header */}
-      <header className="relative text-white px-4 pt-8 pb-6">
+      <header className="relative z-10 text-white px-4 pt-8 pb-6">
         <div className="absolute inset-0 overflow-hidden">
           <div
             className="absolute inset-0"
