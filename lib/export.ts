@@ -64,8 +64,16 @@ function icalEscape(text: string): string {
     .replace(/\n/g, '\\n')
 }
 
+function typeEmoji(type: string): string {
+  return type === 'restaurant' ? '🍽️'
+    : type === 'attraction' ? '📸'
+    : type === 'hotel' ? '🏨'
+    : type === 'transport' ? '🚗'
+    : '📌'
+}
+
 // ---------------------------------------------------------------------------
-// 1. Calendar (.ics) export
+// 1. Calendar (.ics) export — with LOCATION and GEO
 // ---------------------------------------------------------------------------
 
 export function generateICS(trip: Trip): string {
@@ -96,9 +104,10 @@ export function generateICS(trip: Trip): string {
 
       const descParts: string[] = []
       if (place.description) descParts.push(place.description)
-      if (place.tips) descParts.push(place.tips)
+      if (place.tips) descParts.push(`Tip: ${place.tips}`)
       if (place.googleRating) descParts.push(`Google: ${place.googleRating}⭐`)
       if (place.priceRange) descParts.push(`Price: ${place.priceRange}`)
+      if (place.duration) descParts.push(`Duration: ${place.duration}`)
       if (place.googleMapsUrl) descParts.push(`Maps: ${place.googleMapsUrl}`)
 
       const uid = `${trip.id}-d${day.dayNumber}-${place.name.replace(/\s+/g, '-').toLowerCase()}@lulgo.com`
@@ -108,6 +117,16 @@ export function generateICS(trip: Trip): string {
       lines.push(`DTSTART:${dtStart}`)
       lines.push(`DTEND:${dtEnd}`)
       lines.push(`SUMMARY:${icalEscape(place.nameLocal ? `${place.name} (${place.nameLocal})` : place.name)}`)
+
+      // LOCATION — shows the event on calendar map views
+      const location = place.address || (place.nameLocal ? `${place.nameLocal}, ${place.name}` : place.name)
+      lines.push(`LOCATION:${icalEscape(location)}`)
+
+      // GEO — lat/lng for map pin in Apple Calendar & others
+      if (place.lat != null && place.lng != null) {
+        lines.push(`GEO:${place.lat};${place.lng}`)
+      }
+
       if (descParts.length > 0) {
         lines.push(`DESCRIPTION:${icalEscape(descParts.join('\\n'))}`)
       }
@@ -136,7 +155,7 @@ export function downloadICS(trip: Trip): void {
 }
 
 // ---------------------------------------------------------------------------
-// 2. Clipboard (plain text) export
+// 2. Clipboard (plain text) export — with duration & price meta
 // ---------------------------------------------------------------------------
 
 export function generatePlainText(trip: Trip): string {
@@ -152,16 +171,17 @@ export function generatePlainText(trip: Trip): string {
 
     for (const place of day.places) {
       const timeStr = place.arrivalTime ?? ''
-      const typeEmoji = place.type === 'restaurant' ? '🍽️'
-        : place.type === 'attraction' ? '📸'
-        : place.type === 'hotel' ? '🏨'
-        : place.type === 'transport' ? '🚗'
-        : '📌'
-
       const name = place.nameLocal ? `${place.name}（${place.nameLocal}）` : place.name
       const rating = place.googleRating ? ` ⭐${place.googleRating}` : ''
 
-      lines.push(`${timeStr ? timeStr + ' ' : ''}${typeEmoji} ${name}${rating}`)
+      lines.push(`${timeStr ? timeStr + ' ' : ''}${typeEmoji(place.type)} ${name}${rating}`)
+
+      // Meta line: duration + price
+      const meta: string[] = []
+      if (place.duration) meta.push(`⏱ ${place.duration}`)
+      if (place.priceRange) meta.push(place.priceRange)
+      if (meta.length) lines.push(`   ${meta.join(' · ')}`)
+
       if (place.description) lines.push(`   ${place.description}`)
       if (place.tips) lines.push(`   💡 ${place.tips}`)
     }
@@ -176,7 +196,6 @@ export function generatePlainText(trip: Trip): string {
 /** Compact share text for messaging apps — one line per day with arrow-separated places */
 export function generateShareText(trip: Trip, tripUrl: string): string {
   const cn = isChinese(trip.language)
-  const totalDays = Math.max(...trip.days.map(d => d.dayNumber))
   const lines: string[] = []
 
   lines.push(`📍 ${trip.title}`)
@@ -218,156 +237,97 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 // ---------------------------------------------------------------------------
-// 3. Google Maps route URL (per day)
+// 3. Image export — card-based design with type-colored accents
 // ---------------------------------------------------------------------------
 
-// ---------------------------------------------------------------------------
-// 4. PDF export (browser print)
-// ---------------------------------------------------------------------------
-
-export function openPrintView(trip: Trip): void {
-  const cn = isChinese(trip.language)
-  const totalDays = Math.max(...trip.days.map(d => d.dayNumber))
-
-  const typeEmoji = (type: string) =>
-    type === 'restaurant' ? '🍽️'
-    : type === 'attraction' ? '📸'
-    : type === 'hotel' ? '🏨'
-    : type === 'transport' ? '🚗'
-    : '📌'
-
-  const daysHtml = trip.days.map(day => `
-    <div class="day-section">
-      <div class="day-header">
-        <span class="day-number">${cn ? `第${day.dayNumber}日` : `Day ${day.dayNumber}`}</span>
-        <span class="day-title">${day.title}</span>
-      </div>
-      ${day.places.map(place => `
-        <div class="place-row">
-          <div class="place-time">${place.arrivalTime ?? ''}</div>
-          <div class="place-content">
-            <div class="place-name">
-              ${typeEmoji(place.type)} ${place.nameLocal ? `${place.name}（${place.nameLocal}）` : place.name}
-              ${place.googleRating ? `<span class="rating">⭐${place.googleRating}</span>` : ''}
-              ${place.priceRange ? `<span class="price">${place.priceRange}</span>` : ''}
-            </div>
-            ${place.description ? `<div class="place-desc">${place.description}</div>` : ''}
-            ${place.tips ? `<div class="place-tips">💡 ${place.tips}</div>` : ''}
-            ${place.duration ? `<div class="place-duration">⏱ ${place.duration}</div>` : ''}
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  `).join('')
-
-  const html = `<!DOCTYPE html>
-<html><head>
-<meta charset="utf-8">
-<title>${trip.title}</title>
-<style>
-  @page { size: A4; margin: 20mm 15mm; }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Noto Sans SC", sans-serif; color: #1a1a2e; font-size: 11pt; line-height: 1.5; }
-  .header { background: #1a1a2e; color: white; padding: 24px 28px; margin: -20mm -15mm 0; }
-  .brand { color: #ff6b35; font-size: 10pt; font-weight: 700; margin-bottom: 4px; }
-  .title { font-size: 20pt; font-weight: 700; margin-bottom: 4px; }
-  .subtitle { opacity: 0.8; font-size: 10pt; }
-  .day-section { margin-top: 20px; page-break-inside: avoid; }
-  .day-header { background: #f8f8fc; border-left: 4px solid #ff6b35; padding: 8px 14px; margin-bottom: 10px; }
-  .day-number { font-weight: 700; color: #ff6b35; margin-right: 8px; }
-  .day-title { font-weight: 600; color: #1a1a2e; }
-  .place-row { display: flex; gap: 12px; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
-  .place-time { width: 70px; flex-shrink: 0; font-size: 9pt; color: #888; font-weight: 500; padding-top: 2px; }
-  .place-content { flex: 1; }
-  .place-name { font-weight: 600; font-size: 10.5pt; }
-  .rating { color: #ff6b35; font-weight: 400; font-size: 9pt; margin-left: 4px; }
-  .price { color: #888; font-size: 9pt; margin-left: 4px; }
-  .place-desc { font-size: 9pt; color: #555; margin-top: 2px; }
-  .place-tips { font-size: 9pt; color: #ff6b35; margin-top: 2px; }
-  .place-duration { font-size: 8.5pt; color: #aaa; margin-top: 2px; }
-  .footer { margin-top: 30px; text-align: center; font-size: 8pt; color: #ccc; border-top: 1px solid #eee; padding-top: 12px; }
-  @media print { .no-print { display: none; } }
-</style>
-</head><body>
-  <div class="header">
-    <div class="brand">Lulgo</div>
-    <div class="title">${trip.title}</div>
-    <div class="subtitle">${trip.destination} · ${totalDays} ${cn ? '日' : totalDays === 1 ? 'day' : 'days'}</div>
-  </div>
-  ${daysHtml}
-  <div class="footer">${cn ? '由 Lulgo 生成' : 'Generated by Lulgo'} — lulgo.com</div>
-  <script>window.onload=()=>{window.print()}</script>
-</body></html>`
-
-  const w = window.open('', '_blank')
-  if (w) {
-    w.document.write(html)
-    w.document.close()
-  }
+const IMG_TYPE_COLORS: Record<string, string> = {
+  attraction: '#60a5fa',
+  restaurant: '#fb923c',
+  hotel: '#a78bfa',
+  transport: '#9ca3af',
+  other: '#34d399',
 }
 
-// ---------------------------------------------------------------------------
-// 5. Image export (dynamic-height long image for offline / social sharing)
-// ---------------------------------------------------------------------------
+const FONT = '-apple-system, BlinkMacSystemFont, "Noto Sans TC", "Noto Sans SC", sans-serif'
 
 export function downloadTripImage(trip: Trip): void {
   const cn = isChinese(trip.language)
   const W = 1080
-  const PAD = 60
-  const CONTENT_W = W - PAD * 2
+  const PAD = 56
+  const CW = W - PAD * 2             // content width
+  const ACCENT_W = 5                  // left accent bar width
+  const CARD_PX = 24                  // card horizontal padding
+  const CARD_PY = 20                  // card vertical padding
+  const CARD_R = 14                   // card border radius
+  const TX = PAD + ACCENT_W + CARD_PX + 10  // text x inside card
+  const TW = CW - ACCENT_W - CARD_PX * 2 - 10  // text width inside card
 
-  // First pass: measure height with an offscreen canvas
-  const measure = document.createElement('canvas')
-  measure.width = W
-  measure.height = 100
-  const mCtx = measure.getContext('2d')
-  if (!mCtx) return
+  // Places to render (skip transport — it's noise for sharing)
+  const renderDays = trip.days.map(day => ({
+    ...day,
+    places: day.places.filter(p => p.type !== 'transport'),
+  }))
 
-  let y = 0
-  y += 8    // top accent bar
-  y += 80   // brand
-  // title
-  mCtx.font = 'bold 48px -apple-system, BlinkMacSystemFont, sans-serif'
-  y += wrapText(mCtx, trip.title, CONTENT_W).length * 58
-  y += 60   // subtitle
-  y += 50   // divider + gap
-
-  for (const day of trip.days) {
-    y += 52  // day header
-    for (const place of day.places) {
-      const name = place.nameLocal ? `${place.name}（${place.nameLocal}）` : place.name
-      const timeStr = place.arrivalTime ? `${place.arrivalTime}  ` : ''
-      mCtx.font = '24px -apple-system, BlinkMacSystemFont, sans-serif'
-      const lines = wrapText(mCtx, `${timeStr}· ${name}`, CONTENT_W - 20)
-      y += lines.length * 32
-      if (place.description) {
-        mCtx.font = '20px -apple-system, BlinkMacSystemFont, sans-serif'
-        y += wrapText(mCtx, place.description, CONTENT_W - 40).length * 26
-      }
-      if (place.tips) {
-        mCtx.font = '20px -apple-system, BlinkMacSystemFont, sans-serif'
-        y += wrapText(mCtx, `💡 ${place.tips}`, CONTENT_W - 40).length * 26
-      }
-      y += 14  // place gap
+  // Helper: compute card height for a place
+  function cardHeight(ctx: CanvasRenderingContext2D, p: typeof renderDays[0]['places'][0]): number {
+    let h = CARD_PY * 2
+    if (p.arrivalTime) h += 28
+    const name = p.nameLocal ? `${p.name}（${p.nameLocal}）` : p.name
+    ctx.font = `bold 26px ${FONT}`
+    h += wrapText(ctx, `${typeEmoji(p.type)} ${name}`, TW).length * 34
+    const meta = [
+      p.googleRating ? `⭐ ${p.googleRating}` : '',
+      p.duration || '',
+      p.priceRange || '',
+    ].filter(Boolean)
+    if (meta.length) h += 28
+    if (p.description) {
+      ctx.font = `20px ${FONT}`
+      h += 8 + wrapText(ctx, p.description, TW).length * 26
     }
-    y += 28  // day gap
+    if (p.tips) {
+      ctx.font = `20px ${FONT}`
+      h += 8 + wrapText(ctx, `💡 ${p.tips}`, TW).length * 26
+    }
+    return h
   }
-  y += 80   // footer
-  y += 8    // bottom accent bar
 
-  const H = Math.max(y, 800)
+  // ── Measure pass ──
+  const mc = document.createElement('canvas')
+  mc.width = W
+  mc.height = 100
+  const mx = mc.getContext('2d')
+  if (!mx) return
 
-  // Second pass: actual render
+  let totalH = 8 + 48  // top accent + brand area
+  mx.font = `bold 44px ${FONT}`
+  totalH += wrapText(mx, trip.title, CW).length * 54
+  totalH += 50  // subtitle + divider gap
+
+  for (const day of renderDays) {
+    totalH += 50 + 20  // day header + gap
+    for (let i = 0; i < day.places.length; i++) {
+      totalH += cardHeight(mx, day.places[i])
+      if (i < day.places.length - 1) totalH += 12  // card gap
+    }
+    totalH += 30  // day gap
+  }
+  totalH += 80 + 8  // footer + bottom accent
+
+  const H = Math.max(totalH, 600)
+
+  // ── Render pass ──
   const canvas = document.createElement('canvas')
   canvas.width = W
   canvas.height = H
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
-  // Background gradient (navy)
+  // Background gradient (deeper navy)
   const bg = ctx.createLinearGradient(0, 0, 0, H)
-  bg.addColorStop(0, '#1a1a2e')
-  bg.addColorStop(1, '#16213e')
+  bg.addColorStop(0, '#0f172a')
+  bg.addColorStop(0.5, '#1e293b')
+  bg.addColorStop(1, '#0f172a')
   ctx.fillStyle = bg
   ctx.fillRect(0, 0, W, H)
 
@@ -375,108 +335,165 @@ export function downloadTripImage(trip: Trip): void {
   ctx.fillStyle = '#ff6b35'
   ctx.fillRect(0, 0, W, 8)
 
+  let y = 8
+
   // Brand
+  y += 36
   ctx.fillStyle = '#ff6b35'
-  ctx.font = 'bold 28px -apple-system, BlinkMacSystemFont, sans-serif'
-  ctx.fillText('Lulgo', PAD, 60)
+  ctx.font = `bold 26px ${FONT}`
+  ctx.fillText('Lulgo', PAD, y)
+  y += 12
 
   // Title
   ctx.fillStyle = '#ffffff'
-  ctx.font = 'bold 48px -apple-system, BlinkMacSystemFont, sans-serif'
-  const titleLines = wrapText(ctx, trip.title, CONTENT_W)
-  let ry = 120
+  ctx.font = `bold 44px ${FONT}`
+  const titleLines = wrapText(ctx, trip.title, CW)
   for (const line of titleLines) {
-    ctx.fillText(line, PAD, ry)
-    ry += 58
+    y += 54
+    ctx.fillText(line, PAD, y)
   }
 
   // Subtitle
+  y += 36
   const totalDays = Math.max(...trip.days.map(d => d.dayNumber))
-  ctx.fillStyle = 'rgba(255,255,255,0.6)'
-  ctx.font = '28px -apple-system, BlinkMacSystemFont, sans-serif'
-  ctx.fillText(`${trip.destination} · ${totalDays} ${cn ? '日' : totalDays === 1 ? 'day' : 'days'}`, PAD, ry + 10)
-  ry += 50
+  ctx.fillStyle = 'rgba(255,255,255,0.5)'
+  ctx.font = `26px ${FONT}`
+  ctx.fillText(`${trip.destination} · ${totalDays} ${cn ? '日' : totalDays === 1 ? 'day' : 'days'}`, PAD, y)
 
   // Divider
+  y += 20
   ctx.fillStyle = '#ff6b35'
-  ctx.fillRect(PAD, ry, 120, 4)
-  ry += 40
+  ctx.fillRect(PAD, y, 80, 3)
+  y += 30
 
-  // Days
-  for (const day of trip.days) {
-    // Day header with subtle background
+  // ── Days ──
+  for (const day of renderDays) {
+    // Day header bar
     ctx.fillStyle = 'rgba(255,107,53,0.12)'
     ctx.beginPath()
-    ctx.roundRect(PAD - 10, ry - 28, CONTENT_W + 20, 42, 8)
+    ctx.roundRect(PAD, y, CW, 46, 10)
     ctx.fill()
 
-    ctx.fillStyle = '#ff6b35'
-    ctx.font = 'bold 26px -apple-system, BlinkMacSystemFont, sans-serif'
     const dayLabel = cn ? `第${day.dayNumber}日` : `Day ${day.dayNumber}`
-    ctx.fillText(`${dayLabel}  ${day.title}`, PAD, ry)
-    ry += 48
+    ctx.fillStyle = '#ff6b35'
+    ctx.font = `bold 22px ${FONT}`
+    const dlw = ctx.measureText(dayLabel).width
+    ctx.fillText(dayLabel, PAD + 16, y + 30)
 
-    for (const place of day.places) {
-      const typeIcon = place.type === 'restaurant' ? '🍽️'
-        : place.type === 'attraction' ? '📸'
-        : place.type === 'hotel' ? '🏨'
-        : place.type === 'transport' ? '🚗'
-        : '📌'
+    ctx.fillStyle = 'rgba(255,255,255,0.8)'
+    ctx.font = `22px ${FONT}`
+    ctx.fillText(day.title, PAD + 16 + dlw + 12, y + 30)
 
-      const name = place.nameLocal ? `${place.name}（${place.nameLocal}）` : place.name
-      const timeStr = place.arrivalTime ?? ''
-      const ratingStr = place.googleRating ? ` ⭐${place.googleRating}` : ''
+    y += 50 + 20
 
-      // Time on left
-      if (timeStr) {
-        ctx.fillStyle = 'rgba(255,255,255,0.4)'
-        ctx.font = '20px -apple-system, BlinkMacSystemFont, sans-serif'
-        ctx.fillText(timeStr, PAD + 4, ry)
+    // Place cards
+    for (let pi = 0; pi < day.places.length; pi++) {
+      const p = day.places[pi]
+      const tc = IMG_TYPE_COLORS[p.type] || IMG_TYPE_COLORS.other
+
+      // Pre-compute text lines
+      const name = p.nameLocal ? `${p.name}（${p.nameLocal}）` : p.name
+      ctx.font = `bold 26px ${FONT}`
+      const nameLines = wrapText(ctx, `${typeEmoji(p.type)} ${name}`, TW)
+      const meta = [
+        p.googleRating ? `⭐ ${p.googleRating}` : '',
+        p.duration || '',
+        p.priceRange || '',
+      ].filter(Boolean) as string[]
+      ctx.font = `20px ${FONT}`
+      const descLines = p.description ? wrapText(ctx, p.description, TW) : []
+      const tipLines = p.tips ? wrapText(ctx, `💡 ${p.tips}`, TW) : []
+
+      // Card height
+      let ch = CARD_PY * 2
+      if (p.arrivalTime) ch += 28
+      ch += nameLines.length * 34
+      if (meta.length) ch += 28
+      if (descLines.length) ch += 8 + descLines.length * 26
+      if (tipLines.length) ch += 8 + tipLines.length * 26
+
+      // Card background
+      ctx.fillStyle = 'rgba(255,255,255,0.06)'
+      ctx.beginPath()
+      ctx.roundRect(PAD, y, CW, ch, CARD_R)
+      ctx.fill()
+
+      // Card subtle border
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.roundRect(PAD, y, CW, ch, CARD_R)
+      ctx.stroke()
+
+      // Left accent bar (clipped to card shape)
+      ctx.save()
+      ctx.beginPath()
+      ctx.roundRect(PAD, y, CW, ch, CARD_R)
+      ctx.clip()
+      ctx.fillStyle = tc
+      ctx.fillRect(PAD, y, ACCENT_W, ch)
+      ctx.restore()
+
+      let cy = y + CARD_PY
+
+      // Time
+      if (p.arrivalTime) {
+        ctx.fillStyle = 'rgba(255,255,255,0.35)'
+        ctx.font = `20px ${FONT}`
+        ctx.fillText(p.arrivalTime, TX, cy + 16)
+        cy += 28
       }
 
       // Place name
-      ctx.fillStyle = 'rgba(255,255,255,0.9)'
-      ctx.font = '24px -apple-system, BlinkMacSystemFont, sans-serif'
-      const placeText = `${typeIcon} ${name}${ratingStr}`
-      const placeLines = wrapText(ctx, placeText, CONTENT_W - 20)
-      for (const line of placeLines) {
-        ctx.fillText(line, PAD + (timeStr ? 110 : 4), ry)
-        ry += 32
+      ctx.fillStyle = 'rgba(255,255,255,0.92)'
+      ctx.font = `bold 26px ${FONT}`
+      for (const line of nameLines) {
+        ctx.fillText(line, TX, cy + 24)
+        cy += 34
+      }
+
+      // Meta line (rating · duration · price)
+      if (meta.length) {
+        ctx.fillStyle = 'rgba(255,255,255,0.35)'
+        ctx.font = `20px ${FONT}`
+        ctx.fillText(meta.join('  ·  '), TX, cy + 18)
+        cy += 28
       }
 
       // Description
-      if (place.description) {
-        ctx.fillStyle = 'rgba(255,255,255,0.5)'
-        ctx.font = '20px -apple-system, BlinkMacSystemFont, sans-serif'
-        const descLines = wrapText(ctx, place.description, CONTENT_W - 40)
+      if (descLines.length) {
+        ctx.fillStyle = 'rgba(255,255,255,0.45)'
+        ctx.font = `20px ${FONT}`
+        cy += 8
         for (const line of descLines) {
-          ctx.fillText(line, PAD + (timeStr ? 110 : 24), ry)
-          ry += 26
+          ctx.fillText(line, TX, cy + 18)
+          cy += 26
         }
       }
 
       // Tips
-      if (place.tips) {
-        ctx.fillStyle = 'rgba(255,107,53,0.7)'
-        ctx.font = '20px -apple-system, BlinkMacSystemFont, sans-serif'
-        const tipLines = wrapText(ctx, `💡 ${place.tips}`, CONTENT_W - 40)
+      if (tipLines.length) {
+        ctx.fillStyle = 'rgba(255,107,53,0.6)'
+        ctx.font = `20px ${FONT}`
+        cy += 8
         for (const line of tipLines) {
-          ctx.fillText(line, PAD + (timeStr ? 110 : 24), ry)
-          ry += 26
+          ctx.fillText(line, TX, cy + 18)
+          cy += 26
         }
       }
 
-      ry += 14
+      y += ch
+      if (pi < day.places.length - 1) y += 12
     }
 
-    ry += 28
+    y += 30
   }
 
   // Footer
-  ctx.fillStyle = 'rgba(255,255,255,0.3)'
-  ctx.font = '22px -apple-system, BlinkMacSystemFont, sans-serif'
+  ctx.fillStyle = 'rgba(255,255,255,0.25)'
+  ctx.font = `22px ${FONT}`
   ctx.textAlign = 'center'
-  ctx.fillText(`${cn ? '由 Lulgo 生成' : 'Generated by Lulgo'} — lulgo.com`, W / 2, H - 40)
+  ctx.fillText(`${cn ? '由 Lulgo 生成' : 'Generated by Lulgo'} · lulgo.com`, W / 2, H - 40)
   ctx.textAlign = 'left'
 
   // Bottom accent bar
@@ -497,7 +514,7 @@ export function downloadTripImage(trip: Trip): void {
   }, 'image/png')
 }
 
-/** Simple text wrapping for canvas */
+/** Simple text wrapping for canvas — handles CJK characters correctly */
 function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
   const chars = [...text]
   const lines: string[] = []
@@ -516,7 +533,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
 }
 
 // ---------------------------------------------------------------------------
-// 6. Google Maps route URL (per day)
+// 4. Google Maps route URL (per day)
 // ---------------------------------------------------------------------------
 
 export function buildGoogleMapsRouteUrl(day: DayPlan): string {
