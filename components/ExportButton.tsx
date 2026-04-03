@@ -143,7 +143,7 @@ export function ExportButton({ trip }: Props) {
             <span className="text-lg">🖼️</span>
             <div>
               <div className="font-medium">{cn ? '下載圖片' : 'Download Image'}</div>
-              <div className="text-xs text-gray-400">{cn ? '適合 IG Story / 小紅書' : 'For IG Story / social media'}</div>
+              <div className="text-xs text-gray-400">{cn ? '長圖，離線睇 / 社交分享' : 'Full itinerary image for offline'}</div>
             </div>
           </button>
 

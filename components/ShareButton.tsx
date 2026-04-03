@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import type { Trip } from '@/lib/types'
-import { generatePlainText } from '@/lib/export'
+import { generateShareText } from '@/lib/export'
 
 function generateQrUrl(data: string, size: number): string {
   const encoded = encodeURIComponent(data)
@@ -41,10 +41,9 @@ export function ShareButton({ tripId, tripTitle, language, trip }: Props) {
     return () => document.removeEventListener('keydown', onKey)
   }, [showPanel])
 
-  // Build share text: formatted itinerary + trip link
+  // Build share text: compact route-style format for messaging apps
   function getShareText(): string {
-    const plain = generatePlainText(trip)
-    return `${plain}\n\n🔗 ${url}`
+    return generateShareText(trip, url)
   }
 
   async function handleShare() {

@@ -173,6 +173,29 @@ export function generatePlainText(trip: Trip): string {
   return lines.join('\n')
 }
 
+/** Compact share text for messaging apps — one line per day with arrow-separated places */
+export function generateShareText(trip: Trip, tripUrl: string): string {
+  const cn = isChinese(trip.language)
+  const totalDays = Math.max(...trip.days.map(d => d.dayNumber))
+  const lines: string[] = []
+
+  lines.push(`📍 ${trip.title}`)
+  lines.push('')
+
+  for (const day of trip.days) {
+    const places = day.places
+      .filter(p => p.type !== 'transport')
+      .map(p => p.nameLocal || p.name)
+    const dayLabel = cn ? `第${day.dayNumber}日` : `Day ${day.dayNumber}`
+    lines.push(`${dayLabel}: ${places.join(' → ')}`)
+  }
+
+  lines.push('')
+  lines.push(`🔗 ${tripUrl}`)
+  lines.push(`✨ ${cn ? '用 Lulgo 規劃行程' : 'Plan your trip on Lulgo'} → lulgo.com`)
+  return lines.join('\n')
+}
+
 export async function copyToClipboard(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text)
@@ -284,19 +307,62 @@ export function openPrintView(trip: Trip): void {
 }
 
 // ---------------------------------------------------------------------------
-// 5. Image export (IG Story 1080x1920)
+// 5. Image export (dynamic-height long image for offline / social sharing)
 // ---------------------------------------------------------------------------
 
 export function downloadTripImage(trip: Trip): void {
   const cn = isChinese(trip.language)
+  const W = 1080
+  const PAD = 60
+  const CONTENT_W = W - PAD * 2
+
+  // First pass: measure height with an offscreen canvas
+  const measure = document.createElement('canvas')
+  measure.width = W
+  measure.height = 100
+  const mCtx = measure.getContext('2d')
+  if (!mCtx) return
+
+  let y = 0
+  y += 8    // top accent bar
+  y += 80   // brand
+  // title
+  mCtx.font = 'bold 48px -apple-system, BlinkMacSystemFont, sans-serif'
+  y += wrapText(mCtx, trip.title, CONTENT_W).length * 58
+  y += 60   // subtitle
+  y += 50   // divider + gap
+
+  for (const day of trip.days) {
+    y += 52  // day header
+    for (const place of day.places) {
+      const name = place.nameLocal ? `${place.name}（${place.nameLocal}）` : place.name
+      const timeStr = place.arrivalTime ? `${place.arrivalTime}  ` : ''
+      mCtx.font = '24px -apple-system, BlinkMacSystemFont, sans-serif'
+      const lines = wrapText(mCtx, `${timeStr}· ${name}`, CONTENT_W - 20)
+      y += lines.length * 32
+      if (place.description) {
+        mCtx.font = '20px -apple-system, BlinkMacSystemFont, sans-serif'
+        y += wrapText(mCtx, place.description, CONTENT_W - 40).length * 26
+      }
+      if (place.tips) {
+        mCtx.font = '20px -apple-system, BlinkMacSystemFont, sans-serif'
+        y += wrapText(mCtx, `💡 ${place.tips}`, CONTENT_W - 40).length * 26
+      }
+      y += 14  // place gap
+    }
+    y += 28  // day gap
+  }
+  y += 80   // footer
+  y += 8    // bottom accent bar
+
+  const H = Math.max(y, 800)
+
+  // Second pass: actual render
   const canvas = document.createElement('canvas')
-  canvas.width = 1080
-  canvas.height = 1920
+  canvas.width = W
+  canvas.height = H
   const ctx = canvas.getContext('2d')
   if (!ctx) return
-
-  const W = 1080
-  const H = 1920
 
   // Background gradient (navy)
   const bg = ctx.createLinearGradient(0, 0, 0, H)
@@ -305,81 +371,115 @@ export function downloadTripImage(trip: Trip): void {
   ctx.fillStyle = bg
   ctx.fillRect(0, 0, W, H)
 
-  // Orange accent bar at top
+  // Top accent bar
   ctx.fillStyle = '#ff6b35'
   ctx.fillRect(0, 0, W, 8)
 
   // Brand
   ctx.fillStyle = '#ff6b35'
   ctx.font = 'bold 28px -apple-system, BlinkMacSystemFont, sans-serif'
-  ctx.fillText('Lulgo', 60, 80)
+  ctx.fillText('Lulgo', PAD, 60)
 
   // Title
   ctx.fillStyle = '#ffffff'
-  ctx.font = 'bold 52px -apple-system, BlinkMacSystemFont, sans-serif'
-  const titleLines = wrapText(ctx, trip.title, W - 120)
-  let y = 140
+  ctx.font = 'bold 48px -apple-system, BlinkMacSystemFont, sans-serif'
+  const titleLines = wrapText(ctx, trip.title, CONTENT_W)
+  let ry = 120
   for (const line of titleLines) {
-    ctx.fillText(line, 60, y)
-    y += 62
+    ctx.fillText(line, PAD, ry)
+    ry += 58
   }
 
   // Subtitle
   const totalDays = Math.max(...trip.days.map(d => d.dayNumber))
   ctx.fillStyle = 'rgba(255,255,255,0.6)'
   ctx.font = '28px -apple-system, BlinkMacSystemFont, sans-serif'
-  ctx.fillText(`${trip.destination} · ${totalDays} ${cn ? '日' : totalDays === 1 ? 'day' : 'days'}`, 60, y + 10)
-  y += 60
+  ctx.fillText(`${trip.destination} · ${totalDays} ${cn ? '日' : totalDays === 1 ? 'day' : 'days'}`, PAD, ry + 10)
+  ry += 50
 
   // Divider
   ctx.fillStyle = '#ff6b35'
-  ctx.fillRect(60, y, 120, 4)
-  y += 40
+  ctx.fillRect(PAD, ry, 120, 4)
+  ry += 40
 
-  // Day content
+  // Days
   for (const day of trip.days) {
-    if (y > H - 200) break
+    // Day header with subtle background
+    ctx.fillStyle = 'rgba(255,107,53,0.12)'
+    ctx.beginPath()
+    ctx.roundRect(PAD - 10, ry - 28, CONTENT_W + 20, 42, 8)
+    ctx.fill()
 
-    // Day header
     ctx.fillStyle = '#ff6b35'
     ctx.font = 'bold 26px -apple-system, BlinkMacSystemFont, sans-serif'
-    ctx.fillText(`${cn ? `第${day.dayNumber}日` : `Day ${day.dayNumber}`}  ${day.title}`, 60, y)
-    y += 42
+    const dayLabel = cn ? `第${day.dayNumber}日` : `Day ${day.dayNumber}`
+    ctx.fillText(`${dayLabel}  ${day.title}`, PAD, ry)
+    ry += 48
 
     for (const place of day.places) {
-      if (y > H - 200) break
-
-      const typeEmoji = place.type === 'restaurant' ? '🍽️'
+      const typeIcon = place.type === 'restaurant' ? '🍽️'
         : place.type === 'attraction' ? '📸'
         : place.type === 'hotel' ? '🏨'
         : place.type === 'transport' ? '🚗'
         : '📌'
 
       const name = place.nameLocal ? `${place.name}（${place.nameLocal}）` : place.name
-      const timeStr = place.arrivalTime ? `${place.arrivalTime}  ` : ''
+      const timeStr = place.arrivalTime ?? ''
+      const ratingStr = place.googleRating ? ` ⭐${place.googleRating}` : ''
 
-      ctx.fillStyle = 'rgba(255,255,255,0.85)'
-      ctx.font = '24px -apple-system, BlinkMacSystemFont, sans-serif'
-      const placeText = `${timeStr}${typeEmoji} ${name}`
-      const placeLines = wrapText(ctx, placeText, W - 140)
-      for (const line of placeLines) {
-        ctx.fillText(line, 80, y)
-        y += 32
+      // Time on left
+      if (timeStr) {
+        ctx.fillStyle = 'rgba(255,255,255,0.4)'
+        ctx.font = '20px -apple-system, BlinkMacSystemFont, sans-serif'
+        ctx.fillText(timeStr, PAD + 4, ry)
       }
-      y += 8
+
+      // Place name
+      ctx.fillStyle = 'rgba(255,255,255,0.9)'
+      ctx.font = '24px -apple-system, BlinkMacSystemFont, sans-serif'
+      const placeText = `${typeIcon} ${name}${ratingStr}`
+      const placeLines = wrapText(ctx, placeText, CONTENT_W - 20)
+      for (const line of placeLines) {
+        ctx.fillText(line, PAD + (timeStr ? 110 : 4), ry)
+        ry += 32
+      }
+
+      // Description
+      if (place.description) {
+        ctx.fillStyle = 'rgba(255,255,255,0.5)'
+        ctx.font = '20px -apple-system, BlinkMacSystemFont, sans-serif'
+        const descLines = wrapText(ctx, place.description, CONTENT_W - 40)
+        for (const line of descLines) {
+          ctx.fillText(line, PAD + (timeStr ? 110 : 24), ry)
+          ry += 26
+        }
+      }
+
+      // Tips
+      if (place.tips) {
+        ctx.fillStyle = 'rgba(255,107,53,0.7)'
+        ctx.font = '20px -apple-system, BlinkMacSystemFont, sans-serif'
+        const tipLines = wrapText(ctx, `💡 ${place.tips}`, CONTENT_W - 40)
+        for (const line of tipLines) {
+          ctx.fillText(line, PAD + (timeStr ? 110 : 24), ry)
+          ry += 26
+        }
+      }
+
+      ry += 14
     }
 
-    y += 20
+    ry += 28
   }
 
   // Footer
   ctx.fillStyle = 'rgba(255,255,255,0.3)'
   ctx.font = '22px -apple-system, BlinkMacSystemFont, sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillText(`${cn ? '由 Lulgo 生成' : 'Generated by Lulgo'} — lulgo.com`, W / 2, H - 50)
+  ctx.fillText(`${cn ? '由 Lulgo 生成' : 'Generated by Lulgo'} — lulgo.com`, W / 2, H - 40)
   ctx.textAlign = 'left'
 
-  // Orange accent bar at bottom
+  // Bottom accent bar
   ctx.fillStyle = '#ff6b35'
   ctx.fillRect(0, H - 8, W, 8)
 
