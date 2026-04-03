@@ -59,7 +59,7 @@ export default async function TripPage({ params }: Props) {
         createdAt={trip.createdAt}
       />
       {/* Header */}
-      <header className="relative text-white px-4 pt-8 pb-6">
+      <header className="relative z-10 text-white px-4 pt-8 pb-6">
         {/* Background: hero image or navy gradient (overflow-hidden only on bg to avoid clipping dropdown) */}
         <div className="absolute inset-0 overflow-hidden">
           {trip.heroImageUrl ? (
@@ -115,7 +115,7 @@ export default async function TripPage({ params }: Props) {
       </header>
 
       {/* Day content + edit bar */}
-      <main className="max-w-4xl mx-auto px-4 py-4">
+      <main className="relative z-0 max-w-4xl mx-auto px-4 py-4">
         <TripEditor tripId={id} trip={trip} />
 
         {/* Viral CTA — pre-fill destination */}
