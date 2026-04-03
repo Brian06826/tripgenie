@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import type { Trip } from '@/lib/types'
-import { downloadICS, generatePlainText, copyToClipboard, buildGoogleMapsRouteUrl, openPrintView, downloadTripImage } from '@/lib/export'
+import { downloadICS, generatePlainText, copyToClipboard, buildGoogleMapsRouteUrl, downloadTripImage } from '@/lib/export'
 
 interface Props {
   trip: Trip
@@ -57,11 +57,6 @@ export function ExportButton({ trip }: Props) {
     setOpen(false)
   }
 
-  function handlePDF() {
-    openPrintView(trip)
-    setOpen(false)
-  }
-
   function handleImage() {
     downloadTripImage(trip)
     setOpen(false)
@@ -99,19 +94,8 @@ export function ExportButton({ trip }: Props) {
       {open && (
         <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50 animate-fade-in">
           <button
-            onClick={handleCalendar}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            <span className="text-lg">📅</span>
-            <div>
-              <div className="font-medium">{cn ? '加入日曆' : 'Add to Calendar'}</div>
-              <div className="text-xs text-gray-400">{cn ? '下載 .ics 檔案' : 'Download .ics file'}</div>
-            </div>
-          </button>
-
-          <button
             onClick={handleCopyText}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
+            className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
           >
             <span className="text-lg">📋</span>
             <div>
@@ -121,18 +105,7 @@ export function ExportButton({ trip }: Props) {
                   : (cn ? '複製文字' : 'Copy as Text')
                 }
               </div>
-              <div className="text-xs text-gray-400">{cn ? '分享去 WhatsApp / LINE' : 'Share to WhatsApp / LINE'}</div>
-            </div>
-          </button>
-
-          <button
-            onClick={handlePDF}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
-          >
-            <span className="text-lg">📄</span>
-            <div>
-              <div className="font-medium">{cn ? '下載 PDF' : 'Download PDF'}</div>
-              <div className="text-xs text-gray-400">{cn ? '靚嘅 A4 行程表' : 'Styled A4 itinerary'}</div>
+              <div className="text-xs text-gray-400">{cn ? '詳細行程，貼去 WhatsApp / LINE' : 'Full itinerary for WhatsApp / LINE'}</div>
             </div>
           </button>
 
@@ -140,7 +113,7 @@ export function ExportButton({ trip }: Props) {
             onClick={handleImage}
             className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
           >
-            <span className="text-lg">🖼️</span>
+            <span className="text-lg">📸</span>
             <div>
               <div className="font-medium">{cn ? '下載圖片' : 'Download Image'}</div>
               <div className="text-xs text-gray-400">{cn ? '長圖，離線睇 / 社交分享' : 'Full itinerary image for offline'}</div>
@@ -155,6 +128,17 @@ export function ExportButton({ trip }: Props) {
             <div>
               <div className="font-medium">{cn ? 'Google Maps 路線' : 'Google Maps Route'}</div>
               <div className="text-xs text-gray-400">{cn ? '開 Google Maps 導航' : 'Open route in Maps'}</div>
+            </div>
+          </button>
+
+          <button
+            onClick={handleCalendar}
+            className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
+          >
+            <span className="text-lg">📅</span>
+            <div>
+              <div className="font-medium">{cn ? '加入日曆' : 'Add to Calendar'}</div>
+              <div className="text-xs text-gray-400">{cn ? '下載 .ics 檔案' : 'Download .ics file'}</div>
             </div>
           </button>
         </div>
