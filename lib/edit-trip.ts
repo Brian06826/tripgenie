@@ -26,7 +26,7 @@ CRITICAL TIMING RULES (NEVER VIOLATE — CHECK EVERY TIME BEFORE RETURNING):
 - Dinner: 6:00 PM - 8:00 PM ONLY. NEVER at 8:30 PM, 9:00 PM, 9:45 PM, or any time after 8:00 PM. If dinner is currently at 6:30 PM, keep it at 6:30 PM.
 - Evening activities (bars, nightlife): 8:00 PM - 9:30 PM maximum.
 - Parks, museums, temples, nature spots: ONLY between 8:00 AM and 5:30 PM. NEVER at night.
-- Hotels/check-in: 3:00 PM - 6:00 PM.
+- Hotels/check-in: after the last activity of the day (typically after dinner, around 8:30-9:30 PM). Place it as the ABSOLUTE LAST stop of the day.
 
 EDITING RULES:
 - When the user asks to change ONE place (e.g. "change dinner to Japanese"), ONLY replace that ONE place:
@@ -118,9 +118,11 @@ export function clampLateTimes(trip: TripGeneration): void {
       const mins = parseTime(place.arrivalTime)
       if (mins === null) continue
       if (mins > LIMIT) {
-        // Restaurants (dinner) → 7:00 PM, everything else → 5:00 PM
+        // Restaurants (dinner) → 7:00 PM, hotels → 9:00 PM, everything else → 5:00 PM
         if (place.type === 'restaurant') {
           place.arrivalTime = '7:00 PM'
+        } else if (place.type === 'hotel') {
+          place.arrivalTime = '9:00 PM'
         } else {
           place.arrivalTime = '5:00 PM'
         }

@@ -300,7 +300,7 @@ export function optimizeRoutes(
       pinned.add(places.length - 1)
     }
     for (let pi = 0; pi < places.length; pi++) {
-      if (places[pi].type === 'restaurant') pinned.add(pi)
+      if (places[pi].type === 'restaurant' || places[pi].type === 'hotel') pinned.add(pi)
     }
 
     // Build coords for nearest-neighbor: only non-pinned places (attractions/other)

@@ -202,7 +202,7 @@ STOP COUNT PER DAY (CRITICAL):
 - BEACH/RESORT destinations (Bali, Maldives, Hawaii, Phuket, Cancun, Koh Samui): default to relaxed pace (3-4 stops/day). Include free time for beach, pool, or spa — not every moment needs a scheduled activity.
 - ROAD TRIP destinations (Iceland, New Zealand, Scottish Highlands, Norway, Route 66): plan stops linearly along the driving route. 3-4 stops per day to account for long drives. Include driving time in tips. If no restaurants nearby, suggest packed lunch.
 
-ICONIC ATTRACTIONS (CRITICAL): Every destination has must-see landmarks. Include at least one iconic attraction per day as a MAIN STOP — never relegate icons to backup options. These are the places a first-time visitor would regret missing. Examples: San Diego → Zoo or Balboa Park, Tokyo → Shibuya Crossing or Senso-ji, NYC → Central Park or Times Square, Paris → Eiffel Tower or Louvre. If the trip is 3+ days, spread the top icons across different days rather than clustering them on Day 1.
+ICONIC ATTRACTIONS (CRITICAL — NEVER VIOLATE): Iconic attractions MUST be scheduled as MAIN STOPS, never as alternatives or backup options. If the destination's #1 most famous attraction (the one a first-time visitor would regret missing most) is missing from main stops, the itinerary is INVALID. Examples: Taipei → 故宮/National Palace Museum MUST be a main stop, Tokyo → Senso-ji or Shibuya Crossing, Paris → Eiffel Tower or Louvre, NYC → Central Park or Statue of Liberty. Spread top icons across different days for 3+ day trips — do not cluster them all on Day 1.
 
 DAILY SCHEDULE RULES (CRITICAL):
 1. DEFAULT full-day: 9:00 AM to 9:00 PM. Must include BOTH lunch AND dinner. NEVER end before 6:00 PM.
@@ -239,7 +239,7 @@ Before returning your JSON, verify EVERY full day has:
 5. No place appears as both a main stop AND a backup option anywhere
 6. No gap >90 min between consecutive stops (fill with nearby activity if needed)
 7. Sunset-worthy spots (beaches, cliffs, viewpoints, waterfronts, anything with "sunset" in its name) are scheduled for 5:00-7:00 PM to catch golden hour — NEVER before 4:30 PM
-8. At least one iconic/must-see attraction is included per day
+8. The destination's #1 most famous attraction appears as a main stop (not backup) somewhere in the trip
 9. Each day's title uses a generic theme (e.g. "Old Town & Local Eats", "Nature Day") — no specific place names or district names in day titles
 If any day fails these checks, fix it before responding. Add a missing meal, move a misplaced one, swap a duplicate, or fill a gap.
 
@@ -252,7 +252,7 @@ TRANSPORTATION & MEETING POINTS:
 - For transit cities (Tokyo, Osaka, Seoul, Hong Kong, Taipei, Singapore, London, Paris, Berlin, New York, San Francisco, Chicago, Boston), recommend specific transit lines/routes in tips (e.g. "Take the JR Yamanote Line to Shibuya Station"). Only mention a specific station name if you are CONFIDENT it is the correct nearest station — if unsure, say "nearest metro station" or "check Google Maps for directions" instead.
 - For taxi-dependent destinations (Bali, Phuket, Cancun, Dubai, Vietnam, Chiang Mai, Marrakech, Siem Reap), suggest Grab/taxi in tips and note approximate ride time between stops.
 - Group nearby stops together to minimize travel time.
-- RETURN TRIP (CRITICAL ORDERING RULE): If the user specifies a departure point or transport method, include a return trip as the ABSOLUTE LAST stop of the last day (type "transport"). Order: activities → dinner → return trip. NEVER place any activity after the return trip. Schedule departure AFTER dinner ends. Match the same transport mode they used to arrive.
+- RETURN TRIP (CRITICAL ORDERING RULE): If the user mentions ANY of these, include a return trip as the ABSOLUTE LAST stop of the last day (type "transport"): departure point, transport method, "back to airport", "return to airport", "flight at [time]", "fly back", "catch a flight", or a specific departure time on the last day (e.g. "6pm last day"). Order: activities → dinner → return trip. NEVER place any activity after the return trip. If the user specifies a departure time, work backward from that time to schedule the day. Match the same transport mode they used to arrive.
 
 TIME & ARRIVAL AWARENESS: Respect any user-specified start/end times exactly — never schedule stops outside them. If user mentions arriving late ("landing at 2pm") or leaving early ("flight at 8pm"), adjust that day's schedule with buffer time. "Start late" / "sleep in" / "晚啲出發" → begin at their requested time (or 10:00 AM default), fewer stops but still include lunch AND dinner. For multi-day trips: Day 1 can start later, last day can end earlier, middle days use full schedule.
 
