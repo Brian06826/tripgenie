@@ -1,13 +1,22 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import type { Trip } from '@/lib/types'
+import { generatePlainText } from '@/lib/export'
 
 function generateQrUrl(data: string, size: number): string {
   const encoded = encodeURIComponent(data)
   return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encoded}&margin=8`
 }
 
-export function ShareButton({ tripId, tripTitle, language }: { tripId: string; tripTitle?: string; language?: string }) {
+interface Props {
+  tripId: string
+  tripTitle?: string
+  language?: string
+  trip: Trip
+}
+
+export function ShareButton({ tripId, tripTitle, language, trip }: Props) {
   const [copied, setCopied] = useState(false)
   const [copyFailed, setCopyFailed] = useState(false)
   const [showPanel, setShowPanel] = useState(false)
@@ -32,9 +41,29 @@ export function ShareButton({ tripId, tripTitle, language }: { tripId: string; t
     return () => document.removeEventListener('keydown', onKey)
   }, [showPanel])
 
-  const shareMessage = isChinese
-    ? `睇吓我嘅行程！${destination} ${url}`
-    : `Check out my trip! ${destination} ${url}`
+  // Build share text: formatted itinerary + trip link
+  function getShareText(): string {
+    const plain = generatePlainText(trip)
+    return `${plain}\n\n🔗 ${url}`
+  }
+
+  async function handleShare() {
+    // Mobile: try native share with formatted text
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: destination,
+          text: getShareText(),
+        })
+        return
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') return
+        // Fall through to panel
+      }
+    }
+    // Desktop or native share failed: show panel
+    setShowPanel(true)
+  }
 
   async function handleCopy() {
     let success = false
@@ -42,7 +71,6 @@ export function ShareButton({ tripId, tripTitle, language }: { tripId: string; t
       await navigator.clipboard.writeText(url)
       success = true
     } catch {
-      // Fallback for non-HTTPS or permission denied
       try {
         const textarea = document.createElement('textarea')
         textarea.value = url
@@ -67,26 +95,7 @@ export function ShareButton({ tripId, tripTitle, language }: { tripId: string; t
     }
   }
 
-  async function handleNativeShare() {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: destination,
-          text: isChinese ? '睇吓我嘅行程！' : 'Check out my trip itinerary!',
-          url,
-        })
-        setShowPanel(false)
-        return
-      } catch (err) {
-        // AbortError = user cancelled the share sheet — do nothing, stay on panel
-        if (err instanceof Error && err.name === 'AbortError') return
-        // Any other error (NotAllowedError, TypeError) — fall through to copy
-      }
-    }
-    // Fallback: copy to clipboard
-    handleCopy()
-  }
-
+  const shareMessage = getShareText()
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`
   const lineUrl = `https://line.me/R/share?text=${encodeURIComponent(shareMessage)}`
   const smsUrl = `sms:?body=${encodeURIComponent(shareMessage)}`
@@ -94,7 +103,7 @@ export function ShareButton({ tripId, tripTitle, language }: { tripId: string; t
   return (
     <>
       <button
-        onClick={() => setShowPanel(true)}
+        onClick={handleShare}
         aria-label="Share trip"
         className="flex items-center gap-2 bg-orange px-4 min-h-[44px] rounded-lg text-white text-sm font-semibold transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
       >
@@ -164,26 +173,16 @@ export function ShareButton({ tripId, tripTitle, language }: { tripId: string; t
               <a
                 href={smsUrl}
                 className="flex flex-col items-center gap-1 group"
-                aria-label="Share via iMessage"
+                aria-label="Share via SMS"
               >
                 <span className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-50 text-xl group-hover:bg-blue-100 transition-colors">
                   💬
                 </span>
-                <span className="text-[10px] text-gray-500">iMessage</span>
+                <span className="text-[10px] text-gray-500">SMS</span>
               </a>
-              <button
-                onClick={handleNativeShare}
-                className="flex flex-col items-center gap-1 group"
-                aria-label="More share options"
-              >
-                <span className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 text-xl group-hover:bg-gray-200 transition-colors">
-                  📱
-                </span>
-                <span className="text-[10px] text-gray-500">{isChinese ? '更多' : 'More'}</span>
-              </button>
             </div>
 
-            {/* QR Code — especially useful for WeChat */}
+            {/* QR Code */}
             <div className="flex flex-col items-center mb-4">
               <p className="text-xs text-gray-500 mb-2 font-medium">
                 {isChinese ? '掃碼查看（微信適用）' : 'Scan to view (WeChat friendly)'}

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import type { Trip } from '@/lib/types'
-import { downloadICS, generatePlainText, copyToClipboard, buildGoogleMapsRouteUrl } from '@/lib/export'
+import { downloadICS, generatePlainText, copyToClipboard, buildGoogleMapsRouteUrl, openPrintView, downloadTripImage } from '@/lib/export'
 
 interface Props {
   trip: Trip
@@ -54,6 +54,16 @@ export function ExportButton({ trip }: Props) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
+    setOpen(false)
+  }
+
+  function handlePDF() {
+    openPrintView(trip)
+    setOpen(false)
+  }
+
+  function handleImage() {
+    downloadTripImage(trip)
     setOpen(false)
   }
 
@@ -112,6 +122,28 @@ export function ExportButton({ trip }: Props) {
                 }
               </div>
               <div className="text-xs text-gray-400">{cn ? '分享去 WhatsApp / LINE' : 'Share to WhatsApp / LINE'}</div>
+            </div>
+          </button>
+
+          <button
+            onClick={handlePDF}
+            className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
+          >
+            <span className="text-lg">📄</span>
+            <div>
+              <div className="font-medium">{cn ? '下載 PDF' : 'Download PDF'}</div>
+              <div className="text-xs text-gray-400">{cn ? '靚嘅 A4 行程表' : 'Styled A4 itinerary'}</div>
+            </div>
+          </button>
+
+          <button
+            onClick={handleImage}
+            className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
+          >
+            <span className="text-lg">🖼️</span>
+            <div>
+              <div className="font-medium">{cn ? '下載圖片' : 'Download Image'}</div>
+              <div className="text-xs text-gray-400">{cn ? '適合 IG Story / 小紅書' : 'For IG Story / social media'}</div>
             </div>
           </button>
 
