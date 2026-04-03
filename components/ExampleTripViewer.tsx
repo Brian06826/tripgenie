@@ -21,11 +21,13 @@ export function ExampleTripViewer({ trip }: { trip: Trip }) {
   return (
     <div className="min-h-screen bg-gray-50 animate-in fade-in duration-500">
       {/* Header */}
-      <header className="relative text-white px-4 pt-8 pb-6 overflow-hidden">
-        <div
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(180deg, var(--color-navy) 0%, var(--color-navy-mid) 100%)' }}
-        />
+      <header className="relative text-white px-4 pt-8 pb-6">
+        <div className="absolute inset-0 overflow-hidden">
+          <div
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(180deg, var(--color-navy) 0%, var(--color-navy-mid) 100%)' }}
+          />
+        </div>
         <div className="relative max-w-4xl mx-auto">
           <p className="text-xs text-orange font-semibold mb-1">Lulgo</p>
           <h1 className="text-2xl font-bold leading-tight mb-1">{trip.title}</h1>

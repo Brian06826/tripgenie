@@ -59,21 +59,23 @@ export default async function TripPage({ params }: Props) {
         createdAt={trip.createdAt}
       />
       {/* Header */}
-      <header className="relative text-white px-4 pt-8 pb-6 overflow-hidden">
-        {/* Background: hero image or navy gradient */}
-        {trip.heroImageUrl ? (
-          <>
-            <img
-              src={trip.heroImageUrl}
-              alt={trip.destination}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            {/* Dark overlay for text legibility */}
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.72) 100%)' }} />
-          </>
-        ) : (
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, var(--color-navy) 0%, var(--color-navy-mid) 100%)' }} />
-        )}
+      <header className="relative text-white px-4 pt-8 pb-6">
+        {/* Background: hero image or navy gradient (overflow-hidden only on bg to avoid clipping dropdown) */}
+        <div className="absolute inset-0 overflow-hidden">
+          {trip.heroImageUrl ? (
+            <>
+              <img
+                src={trip.heroImageUrl}
+                alt={trip.destination}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              {/* Dark overlay for text legibility */}
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.72) 100%)' }} />
+            </>
+          ) : (
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, var(--color-navy) 0%, var(--color-navy-mid) 100%)' }} />
+          )}
+        </div>
 
         {/* Content */}
         <div className="relative max-w-4xl mx-auto">
