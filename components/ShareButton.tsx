@@ -46,6 +46,8 @@ export function ShareButton({ tripId, tripTitle, language, trip }: Props) {
     return generateShareText(trip, url)
   }
 
+  const [shareSuccess, setShareSuccess] = useState(false)
+
   async function handleShare() {
     // Mobile: try native share with formatted text
     if (typeof navigator !== 'undefined' && navigator.share) {
@@ -54,6 +56,8 @@ export function ShareButton({ tripId, tripTitle, language, trip }: Props) {
           title: destination,
           text: getShareText(),
         })
+        setShareSuccess(true)
+        setTimeout(() => setShareSuccess(false), 2000)
         return
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') return
@@ -108,6 +112,13 @@ export function ShareButton({ tripId, tripTitle, language, trip }: Props) {
       >
         📤 {isChinese ? '分享' : 'Share'}
       </button>
+
+      {/* Share success toast (after native share) */}
+      {shareSuccess && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-800 text-white text-sm px-4 py-2.5 rounded-xl shadow-lg animate-fade-in">
+          {isChinese ? '✅ 已分享！' : '✅ Shared!'}
+        </div>
+      )}
 
       {showPanel && mounted && createPortal(
         <div

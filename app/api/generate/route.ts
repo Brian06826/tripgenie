@@ -80,11 +80,13 @@ export async function POST(request: Request) {
         const session = await getServerSession(authOptions).catch(() => null)
         const userId = (session?.user as any)?.id as string | undefined
 
+        const t0 = Date.now()
         const generation = await generateTrip(prompt, (event) => {
           if (event.type === 'day') {
             send({ type: 'progress', dayNumber: event.dayNumber, totalDays: event.totalDays })
           }
         })
+        console.log(`[Pipeline] generateTrip: ${Date.now() - t0}ms`)
 
         const tripId = nanoid(8)
 
@@ -119,12 +121,18 @@ export async function POST(request: Request) {
 
         // Validate restaurants against Google Places API
         send({ type: 'validating' })
+        const t1 = Date.now()
         const validated = deduplicatePlaces(await validateRestaurants(generation))
+        console.log(`[Pipeline] validateRestaurants + dedup: ${Date.now() - t1}ms`)
 
         // Geocode all places and optimize routes per day
         send({ type: 'optimizing' })
+        const t2 = Date.now()
         const geocoded = await geocodeAllPlaces(validated)
+        console.log(`[Pipeline] geocodeAllPlaces: ${Date.now() - t2}ms`)
+        const t3 = Date.now()
         const optimized = optimizeRoutes(validated, geocoded)
+        console.log(`[Pipeline] optimizeRoutes: ${Date.now() - t3}ms`)
 
         const days = optimized.days.map(day => ({
           ...day,
@@ -153,7 +161,10 @@ export async function POST(request: Request) {
         send({ type: 'saving' })
 
         // Save trip immediately so user can view it fast
+        const t4 = Date.now()
         await saveTrip(tripId, trip)
+        console.log(`[Pipeline] saveTrip (final): ${Date.now() - t4}ms`)
+        console.log(`[Pipeline] TOTAL (after generateTrip): ${Date.now() - t0}ms`)
         revalidatePath(`/trip/${tripId}`)
         send({ type: 'done', tripId })
 

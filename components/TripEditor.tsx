@@ -71,14 +71,31 @@ function adjustTimesAfterRemoval(places: Place[], removedIndex: number): Place[]
     if (newStart >= currentMins) continue
 
     // Meal-time guards: don't break meal windows
+    // Apply guard first, then check if the guarded time is still earlier
     const isLunchMeal = p.type === 'restaurant' && currentMins >= 660 && currentMins <= 840
     const isDinnerMeal = p.type === 'restaurant' && currentMins >= 1020 && currentMins <= 1260
 
     if (isLunchMeal && newStart < 660) newStart = 660     // Lunch no earlier than 11:00 AM
     if (isDinnerMeal && newStart < 1050) newStart = 1050  // Dinner no earlier than 5:30 PM
 
-    // Still only move earlier, never push later
-    if (newStart >= currentMins) continue
+    // After meal guard, still only move earlier
+    if (newStart >= currentMins) {
+      // Meal guard pushed past current time — cap at max allowed gap (90 min after prev ends)
+      const maxGap = 90
+      const prevEnd = prevStart + prevDur
+      const cappedStart = Math.min(currentMins, prevEnd + maxGap)
+      if (cappedStart < currentMins) {
+        // Apply meal floor again on the capped value
+        let finalStart = cappedStart
+        if (isLunchMeal && finalStart < 660) finalStart = 660
+        if (isDinnerMeal && finalStart < 1050) finalStart = 1050
+        if (finalStart < currentMins) {
+          const is12h = p.arrivalTime.includes('AM') || p.arrivalTime.includes('PM')
+          result[i] = { ...p, arrivalTime: minutesToTimeStr(finalStart, is12h) }
+        }
+      }
+      continue
+    }
 
     const is12h = p.arrivalTime.includes('AM') || p.arrivalTime.includes('PM')
     result[i] = { ...p, arrivalTime: minutesToTimeStr(newStart, is12h) }
