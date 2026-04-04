@@ -132,22 +132,87 @@ export function clampLateTimes(trip: TripGeneration): void {
   }
 }
 
+/** Detect which day numbers the instruction targets. Returns null if whole-trip edit. */
+function detectTargetDays(instruction: string, totalDays: number): number[] | null {
+  const lower = instruction.toLowerCase()
+
+  // Whole-trip keywords — send everything
+  if (/swap day|reorder|rearrange|all days|every day|整個|所有|每日|每天|交換|調換/.test(lower)) return null
+  if (/more relaxed|more packed|縮短|延長所有/.test(lower)) return null
+
+  // Detect specific day references: "day 3", "第3日", "day3", "第三天" etc
+  const dayRefs = new Set<number>()
+  const patterns = [
+    /day\s*(\d+)/gi,
+    /第\s*(\d+)\s*[日天]/g,
+    /第\s*([一二三四五六七八九十]+)\s*[日天]/g,
+  ]
+  const cnDigits: Record<string, number> = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10 }
+
+  for (const pat of patterns) {
+    let m
+    while ((m = pat.exec(lower)) !== null) {
+      const val = cnDigits[m[1]] ?? parseInt(m[1], 10)
+      if (val >= 1 && val <= totalDays) dayRefs.add(val)
+    }
+  }
+
+  if (dayRefs.size > 0) return [...dayRefs].sort((a, b) => a - b)
+
+  // Meal/time-of-day hints without day number — ambiguous, send all
+  // Simple edits like "change dinner to X" without day ref — send all (Claude needs context)
+  return null
+}
+
+/** Merge edited days back into the full trip generation. */
+function mergeDays(
+  original: TripGeneration,
+  editedDays: TripGeneration['days'],
+  targetDayNumbers: number[],
+): TripGeneration {
+  const dayMap = new Map<number, TripGeneration['days'][0]>()
+  for (const day of editedDays) dayMap.set(day.dayNumber, day)
+
+  return {
+    ...original,
+    title: original.title,
+    destination: original.destination,
+    language: original.language,
+    days: original.days.map(day => dayMap.get(day.dayNumber) ?? day),
+  }
+}
+
 export async function editTrip(
   currentTrip: TripGeneration,
   instruction: string,
   language: string,
 ): Promise<TripGeneration> {
-  const userMessage = `CURRENT TRIP:
-${JSON.stringify(currentTrip, null, 2)}
+  const totalDays = currentTrip.days.length
+  const targetDays = detectTargetDays(instruction, totalDays)
+  const isPartial = targetDays !== null && targetDays.length < totalDays
 
+  // Only send targeted days to reduce tokens
+  const tripToSend = isPartial
+    ? { ...currentTrip, days: currentTrip.days.filter(d => targetDays.includes(d.dayNumber)) }
+    : currentTrip
+
+  const partialNote = isPartial
+    ? `\nNOTE: You are only editing day${targetDays.length > 1 ? 's' : ''} ${targetDays.join(', ')} of a ${totalDays}-day trip. Return ONLY the modified day${targetDays.length > 1 ? 's' : ''} in the days array.`
+    : ''
+
+  const userMessage = `CURRENT TRIP:
+${JSON.stringify(tripToSend, null, 2)}
+${partialNote}
 EDIT INSTRUCTION: ${instruction}
 LANGUAGE: ${language}
 
-Return the complete updated trip JSON with modifications applied.`
+Return the ${isPartial ? 'modified days' : 'complete updated trip'} JSON with modifications applied.`
+
+  const maxTokens = isPartial ? Math.max(4000, targetDays.length * 3000) : 14000
 
   const message = await getClient().messages.create({
     model: 'claude-sonnet-4-5-20250929',
-    max_tokens: 14000,
+    max_tokens: maxTokens,
     system: EDIT_TRIP_SYSTEM_PROMPT,
     messages: [{ role: 'user', content: userMessage }],
   })
@@ -159,7 +224,18 @@ Return the complete updated trip JSON with modifications applied.`
   const result = TripGenerationSchema.safeParse(parsed)
   if (result.success) {
     clampLateTimes(result.data)
+    if (isPartial) return mergeDays(currentTrip, result.data.days, targetDays)
     return result.data
+  }
+
+  // If partial edit returned only days, try wrapping in full structure
+  if (isPartial && Array.isArray(parsed)) {
+    const wrapped = { ...currentTrip, days: parsed }
+    const wrappedResult = TripGenerationSchema.safeParse(wrapped)
+    if (wrappedResult.success) {
+      clampLateTimes(wrappedResult.data)
+      return mergeDays(currentTrip, wrappedResult.data.days, targetDays)
+    }
   }
 
   // One retry with validation errors
@@ -170,13 +246,13 @@ Return the complete updated trip JSON with modifications applied.`
 Fix the errors and return ONLY valid JSON matching the schema.
 
 CURRENT TRIP:
-${JSON.stringify(currentTrip, null, 2)}
-
+${JSON.stringify(tripToSend, null, 2)}
+${partialNote}
 EDIT INSTRUCTION: ${instruction}`
 
   const retryResponse = await getClient().messages.create({
     model: 'claude-sonnet-4-5-20250929',
-    max_tokens: 14000,
+    max_tokens: maxTokens,
     system: EDIT_TRIP_SYSTEM_PROMPT,
     messages: [{ role: 'user', content: retryMessage }],
   })
@@ -188,6 +264,7 @@ EDIT INSTRUCTION: ${instruction}`
   const retryResult = TripGenerationSchema.safeParse(retryParsed)
   if (retryResult.success) {
     clampLateTimes(retryResult.data)
+    if (isPartial) return mergeDays(currentTrip, retryResult.data.days, targetDays)
     return retryResult.data
   }
 

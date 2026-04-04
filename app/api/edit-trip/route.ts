@@ -7,7 +7,7 @@ import { geocodeAllPlaces } from '@/lib/google-places'
 import { optimizeRoutes } from '@/lib/route-optimizer'
 import type { Trip, TripGeneration } from '@/lib/types'
 
-export const maxDuration = 120
+export const maxDuration = 300
 
 // Rate limiter: 10 edits per tripId per hour
 const editRateMap = new Map<string, number[]>()
@@ -109,35 +109,53 @@ export async function POST(request: Request) {
     // 2. Call Claude to edit
     const edited = await editTrip(generationData, instruction.trim(), language)
 
-    // 3. Geocode all places & optimize routes
-    const geocoded = await geocodeAllPlaces(edited)
-    const optimized = optimizeRoutes(edited, geocoded)
-
-    // Build coord lookup from geocoded results
-    const coordMap = new Map<string, { lat: number; lng: number }>()
-    for (const g of geocoded) {
-      const place = optimized.days[g.dayIndex]?.places[g.placeIndex]
-      if (place) coordMap.set(`${g.dayIndex}:${place.name}`, { lat: g.lat, lng: g.lng })
-    }
-
-    // Also carry over coords from old trip for unchanged places
+    // 3. Build set of places that already have coords (skip re-geocoding)
+    const existingCoords = new Map<string, { lat: number; lng: number }>()
     for (const day of currentTrip.days) {
       for (const place of day.places) {
         if (place.lat != null && place.lng != null) {
-          // Only set if not already geocoded fresh
-          const key = `existing:${place.name}`
-          if (!coordMap.has(key)) coordMap.set(key, { lat: place.lat, lng: place.lng })
+          existingCoords.set(place.name.toLowerCase(), { lat: place.lat, lng: place.lng })
         }
       }
+    }
+
+    // Only geocode places that are new or changed (no existing coords)
+    const needsGeocode: typeof edited = {
+      ...edited,
+      days: edited.days.map(day => ({
+        ...day,
+        places: day.places.filter(p => !existingCoords.has(p.name.toLowerCase())),
+      })),
+    }
+
+    const freshGeocoded = await geocodeAllPlaces(needsGeocode)
+
+    // Merge fresh geocodes with existing coords into a unified list
+    const allGeocoded = [...freshGeocoded]
+    for (let di = 0; di < edited.days.length; di++) {
+      for (let pi = 0; pi < edited.days[di].places.length; pi++) {
+        const place = edited.days[di].places[pi]
+        const existing = existingCoords.get(place.name.toLowerCase())
+        if (existing && !freshGeocoded.some(g => g.dayIndex === di && g.placeIndex === pi)) {
+          allGeocoded.push({ dayIndex: di, placeIndex: pi, ...existing })
+        }
+      }
+    }
+
+    const optimized = optimizeRoutes(edited, allGeocoded)
+
+    // Build coord lookup from all geocoded results (fresh + existing)
+    const coordMap = new Map<string, { lat: number; lng: number }>()
+    for (const g of allGeocoded) {
+      const place = optimized.days[g.dayIndex]?.places[g.placeIndex]
+      if (place) coordMap.set(`${g.dayIndex}:${place.name}`, { lat: g.lat, lng: g.lng })
     }
 
     // 5. Build final Trip with URLs and coords
     const days = optimized.days.map((day, di) => ({
       ...day,
       places: day.places.map((place, pi) => {
-        const freshCoord = coordMap.get(`${di}:${place.name}`)
-        const existingCoord = coordMap.get(`existing:${place.name}`)
-        const coord = freshCoord ?? existingCoord
+        const coord = coordMap.get(`${di}:${place.name}`)
         return {
           ...place,
           googleMapsUrl: buildGoogleMapsUrl(place.name, optimized.destination),
