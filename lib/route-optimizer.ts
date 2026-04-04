@@ -407,5 +407,46 @@ export function optimizeRoutes(
     }
   }
 
+  // Final safety: sort places within each day by arrivalTime
+  // clampLateTimes() or the reordering above may have left places out of chronological order
+  for (const day of out.days) {
+    day.places.sort((a, b) => {
+      const aTime = a.arrivalTime ? parseTime(a.arrivalTime) : null
+      const bTime = b.arrivalTime ? parseTime(b.arrivalTime) : null
+      if (aTime === null && bTime === null) return 0
+      if (aTime === null) return 1
+      if (bTime === null) return -1
+      const aMin = aTime.hours * 60 + aTime.minutes
+      const bMin = bTime.hours * 60 + bTime.minutes
+      return aMin - bMin
+    })
+  }
+
+  // Recalculate travel times after sorting (order may have changed)
+  for (const day of out.days) {
+    for (let pi = 1; pi < day.places.length; pi++) {
+      const prev = day.places[pi - 1]
+      const curr = day.places[pi]
+      if (isValidCoord(prev.lat, prev.lng) && isValidCoord(curr.lat, curr.lng)) {
+        const dist = haversineKm(prev.lat!, prev.lng!, curr.lat!, curr.lng!)
+        if (!Number.isFinite(dist) || dist > 50) {
+          delete (curr as any).travelFromPrevious
+          continue
+        }
+        let minutes = estimateTravelMinutes(dist, transport)
+        if (minutes > 180) minutes = 180
+        curr.travelFromPrevious = {
+          duration: formatMinutes(minutes),
+          mode: transport.mode,
+          emoji: transport.emoji,
+        }
+      } else {
+        delete (curr as any).travelFromPrevious
+      }
+    }
+    // First place never has travel from previous
+    if (day.places[0]) delete (day.places[0] as any).travelFromPrevious
+  }
+
   return out
 }

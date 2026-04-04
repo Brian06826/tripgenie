@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
-import { editTrip, clampLateTimes } from '@/lib/edit-trip'
+import { editTrip, clampLateTimes, sortPlacesByTime } from '@/lib/edit-trip'
 import { saveTrip, getTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
 import { geocodeAllPlaces } from '@/lib/google-places'
@@ -183,8 +183,9 @@ export async function POST(request: Request) {
       days,
     }
 
-    // 6. Clamp late times as a safety net, then save
+    // 6. Clamp late times as a safety net, sort chronologically, then save
     clampLateTimes(updatedTrip)
+    sortPlacesByTime(updatedTrip)
     await saveTrip(tripId, updatedTrip)
     revalidatePath(`/trip/${tripId}`)
 

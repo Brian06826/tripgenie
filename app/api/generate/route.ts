@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid'
 import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
 import { generateTrip, validateTripRequest, deduplicatePlaces } from '@/lib/claude'
-import { clampLateTimes } from '@/lib/edit-trip'
+import { clampLateTimes, sortPlacesByTime } from '@/lib/edit-trip'
 import { saveTrip, getTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
 import { generateAndUploadOgImage } from '@/lib/og'
@@ -89,8 +89,9 @@ export async function POST(request: Request) {
         })
         console.log(`[Pipeline] generateTrip: ${Date.now() - t0}ms`)
 
-        // Clamp late times (>9:30 PM) and fix night markets before 5 PM
+        // Clamp late times (>9:30 PM) and fix night markets before 5 PM, then sort chronologically
         clampLateTimes(generation)
+        sortPlacesByTime(generation)
 
         const tripId = nanoid(8)
 

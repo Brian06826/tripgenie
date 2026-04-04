@@ -143,6 +143,20 @@ export function clampLateTimes(trip: TripGeneration): void {
   }
 }
 
+/** Sort places within each day by arrivalTime to ensure chronological display order. Mutates in place. */
+export function sortPlacesByTime(trip: TripGeneration): void {
+  for (const day of trip.days) {
+    day.places.sort((a, b) => {
+      const aMin = a.arrivalTime ? parseTime(a.arrivalTime) : null
+      const bMin = b.arrivalTime ? parseTime(b.arrivalTime) : null
+      if (aMin === null && bMin === null) return 0
+      if (aMin === null) return 1
+      if (bMin === null) return -1
+      return aMin - bMin
+    })
+  }
+}
+
 /** Detect which day numbers the instruction targets. Returns null if whole-trip edit. */
 function detectTargetDays(instruction: string, totalDays: number): number[] | null {
   const lower = instruction.toLowerCase()

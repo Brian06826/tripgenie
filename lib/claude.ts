@@ -189,7 +189,7 @@ JSON schema:
 PERSONALIZATION: Read the user's input carefully for signals and adapt:
 - "with kids" / "family" → family-friendly stops, skip bars/nightlife, add parks/playgrounds
 - "romantic" / "couple" / "date" → scenic spots, upscale dining, intimate venues
-- "budget" / "cheap" / "$" → affordable eats ($-$$), free attractions, street food
+- "budget" / "cheap" / "$" / "tight budget" → ONLY $ restaurants (street food, hawker stalls, food courts, local diners). NEVER recommend Michelin-starred, award-winning, or famous expensive restaurants (e.g. Jay Fai, Gaggan). Free attractions, street food markets, budget-friendly activities only.
 - "luxury" / "upscale" / "$$$$" → fine dining, premium experiences
 - "food-focused" / "foodie" → more restaurants, food markets, culinary experiences
 - "nightlife" → include evening bars, live music, late-night spots
