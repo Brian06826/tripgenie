@@ -425,16 +425,16 @@ export function deduplicatePlaces(trip: TripGeneration): TripGeneration {
   return { ...trip, days: updatedDays }
 }
 
-export async function generateTrip(userPrompt: string, onChunk?: () => void): Promise<TripGeneration> {
-  const validation = validateTripRequest(userPrompt)
-  if (!validation.valid) throw new Error(validation.message)
+// ---------------------------------------------------------------------------
+// Single-shot generation (1-4 day trips)
+// ---------------------------------------------------------------------------
 
+async function generateTripSingle(userPrompt: string, onChunk?: () => void): Promise<TripGeneration> {
   const days = detectTripDays(userPrompt)
   const tier = getTier(days)
   const systemPrompt = buildSystemPrompt(tier)
   const maxTokens = getMaxTokens(tier)
 
-  // Attempt 1 — use streaming if caller wants heartbeats, otherwise plain
   let firstParsed: unknown
   let truncated = false
   let wasRefusal = false
@@ -473,7 +473,6 @@ export async function generateTrip(userPrompt: string, onChunk?: () => void): Pr
   const firstResult = TripGenerationSchema.safeParse(firstParsed)
   if (firstResult.success) return deduplicatePlaces(firstResult.data)
 
-  // Attempt 2
   const retryPrompt = truncated
     ? buildConciseRetryPrompt(userPrompt)
     : buildRetryPrompt(userPrompt, JSON.stringify(firstResult.error.issues.map(e => ({
@@ -489,6 +488,126 @@ export async function generateTrip(userPrompt: string, onChunk?: () => void): Pr
   } catch {
     throw new Error(`Unable to generate itinerary. Please try again or rephrase your request.`)
   }
+}
+
+// ---------------------------------------------------------------------------
+// Parallel generation (5+ day trips) — splits into two concurrent Claude calls
+// ---------------------------------------------------------------------------
+
+function buildPartialPrompt(
+  userPrompt: string,
+  totalDays: number,
+  startDay: number,
+  endDay: number,
+  isSecondHalf: boolean,
+): string {
+  const partLabel = `days ${startDay}-${endDay} of a ${totalDays}-day trip`
+  const dedupNote = isSecondHalf
+    ? `\nIMPORTANT: This is the second half of the trip. Avoid repeating any popular/famous restaurants or attractions that would typically appear in the first ${startDay - 1} days. Choose DIFFERENT restaurants and attractions for variety.`
+    : ''
+
+  return `${userPrompt}
+
+PARTIAL GENERATION INSTRUCTION: Generate ONLY ${partLabel}. Start dayNumber at ${startDay} and end at ${endDay}. Include all required fields (title, destination, language, days). The trip title and destination should reflect the FULL trip, not just this part.${dedupNote}`
+}
+
+async function generateTripParallel(userPrompt: string, onChunk?: () => void): Promise<TripGeneration> {
+  const days = detectTripDays(userPrompt)
+  const systemPrompt = buildSystemPrompt(3) // Always tier 3 for 5+ days
+  const splitDay = Math.ceil(days / 2) // e.g. 7 days → split at 4 (days 1-4 + 5-7)
+
+  // Each half gets 8000 tokens (more than enough for 3-4 days)
+  const maxTokensPart = 8000
+
+  console.log(`[parallel] Splitting ${days}-day trip: days 1-${splitDay} + days ${splitDay + 1}-${days}`)
+
+  const prompt1 = buildPartialPrompt(userPrompt, days, 1, splitDay, false)
+  const prompt2 = buildPartialPrompt(userPrompt, days, splitDay + 1, days, true)
+
+  // Run both calls in parallel
+  const [result1, result2] = await Promise.all([
+    (async () => {
+      try {
+        const { parsed, wasTruncated, wasRefusal } = onChunk
+          ? await callClaudeStreaming(prompt1, systemPrompt, maxTokensPart, onChunk)
+          : await callClaude(prompt1, systemPrompt, maxTokensPart)
+        if (wasRefusal) throw new Error('Claude refused part 1')
+        if (wasTruncated) {
+          // Retry with concise prompt
+          const { parsed: retryParsed } = await callClaude(buildConciseRetryPrompt(prompt1), systemPrompt, maxTokensPart)
+          return retryParsed
+        }
+        return parsed
+      } catch (err) {
+        console.error('[parallel] Part 1 failed:', err)
+        throw err
+      }
+    })(),
+    (async () => {
+      try {
+        // Part 2 uses non-streaming (no need for double heartbeats)
+        const { parsed, wasTruncated, wasRefusal } = await callClaude(prompt2, systemPrompt, maxTokensPart)
+        if (wasRefusal) throw new Error('Claude refused part 2')
+        if (wasTruncated) {
+          const { parsed: retryParsed } = await callClaude(buildConciseRetryPrompt(prompt2), systemPrompt, maxTokensPart)
+          return retryParsed
+        }
+        return parsed
+      } catch (err) {
+        console.error('[parallel] Part 2 failed:', err)
+        throw err
+      }
+    })(),
+  ])
+
+  // Validate each part
+  const part1 = TripGenerationSchema.safeParse(result1)
+  const part2 = TripGenerationSchema.safeParse(result2)
+
+  if (!part1.success) {
+    console.error('[parallel] Part 1 validation failed:', part1.error.issues)
+    throw new Error('Unable to generate itinerary. Please try again.')
+  }
+  if (!part2.success) {
+    console.error('[parallel] Part 2 validation failed:', part2.error.issues)
+    throw new Error('Unable to generate itinerary. Please try again.')
+  }
+
+  // Merge: use part 1's metadata (title, destination, language) + combine days
+  const merged: TripGeneration = {
+    title: part1.data.title,
+    destination: part1.data.destination,
+    language: part1.data.language,
+    startDate: part1.data.startDate,
+    days: [...part1.data.days, ...part2.data.days],
+  }
+
+  console.log(`[parallel] Merged: ${merged.days.length} days (${part1.data.days.length} + ${part2.data.days.length})`)
+
+  return deduplicatePlaces(merged)
+}
+
+// ---------------------------------------------------------------------------
+// Public API — routes to single or parallel based on trip length
+// ---------------------------------------------------------------------------
+
+export async function generateTrip(userPrompt: string, onChunk?: () => void): Promise<TripGeneration> {
+  const validation = validateTripRequest(userPrompt)
+  if (!validation.valid) throw new Error(validation.message)
+
+  const days = detectTripDays(userPrompt)
+
+  // 5+ day trips: parallel generation for ~40-50% speedup
+  if (days >= 5) {
+    try {
+      return await generateTripParallel(userPrompt, onChunk)
+    } catch (err) {
+      console.warn('[parallel] Parallel generation failed, falling back to single:', err)
+      // Fall back to single-shot if parallel fails
+    }
+  }
+
+  return generateTripSingle(userPrompt, onChunk)
 }
 
 // ---------------------------------------------------------------------------
