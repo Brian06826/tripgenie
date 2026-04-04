@@ -34,7 +34,6 @@ function parseDurationMinutes(dur: string): number {
 /** Get the date for a specific day number, given trip startDate. Falls back to today. */
 function getDayDate(startDate: string | undefined, dayNumber: number): Date {
   const base = startDate ? new Date(startDate) : new Date()
-  // If invalid date, use today
   if (isNaN(base.getTime())) {
     const now = new Date()
     now.setDate(now.getDate() + dayNumber - 1)
@@ -70,6 +69,16 @@ function typeEmoji(type: string): string {
     : type === 'hotel' ? '🏨'
     : type === 'transport' ? '🚗'
     : '📌'
+}
+
+/** Format a date for display in image day headers */
+function formatDayDate(date: Date, cn: boolean): string {
+  const dow = cn
+    ? ['日', '一', '二', '三', '四', '五', '六'][date.getDay()]
+    : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()]
+  if (cn) return `${date.getMonth() + 1}月${date.getDate()}日（${dow}）`
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  return `${months[date.getMonth()]} ${date.getDate()} (${dow})`
 }
 
 // ---------------------------------------------------------------------------
@@ -118,11 +127,9 @@ export function generateICS(trip: Trip): string {
       lines.push(`DTEND:${dtEnd}`)
       lines.push(`SUMMARY:${icalEscape(place.nameLocal ? `${place.name} (${place.nameLocal})` : place.name)}`)
 
-      // LOCATION — shows the event on calendar map views
       const location = place.address || (place.nameLocal ? `${place.nameLocal}, ${place.name}` : place.name)
       lines.push(`LOCATION:${icalEscape(location)}`)
 
-      // GEO — lat/lng for map pin in Apple Calendar & others
       if (place.lat != null && place.lng != null) {
         lines.push(`GEO:${place.lat};${place.lng}`)
       }
@@ -176,7 +183,6 @@ export function generatePlainText(trip: Trip): string {
 
       lines.push(`${timeStr ? timeStr + ' ' : ''}${typeEmoji(place.type)} ${name}${rating}`)
 
-      // Meta line: duration + price
       const meta: string[] = []
       if (place.duration) meta.push(`⏱ ${place.duration}`)
       if (place.priceRange) meta.push(place.priceRange)
@@ -193,7 +199,7 @@ export function generatePlainText(trip: Trip): string {
   return lines.join('\n')
 }
 
-/** Compact share text for messaging apps — one line per day with arrow-separated places */
+/** Compact share text for messaging apps */
 export function generateShareText(trip: Trip, tripUrl: string): string {
   const cn = isChinese(trip.language)
   const lines: string[] = []
@@ -237,10 +243,12 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 // ---------------------------------------------------------------------------
-// 3. Image export — card-based design with type-colored accents
+// 3. Image export — card-based design with type-colored tints
 // ---------------------------------------------------------------------------
 
-const IMG_TYPE_COLORS: Record<string, string> = {
+const FONT = '-apple-system, BlinkMacSystemFont, "Noto Sans TC", "Noto Sans SC", sans-serif'
+
+const IMG_ACCENT: Record<string, string> = {
   attraction: '#60a5fa',
   restaurant: '#fb923c',
   hotel: '#a78bfa',
@@ -248,27 +256,41 @@ const IMG_TYPE_COLORS: Record<string, string> = {
   other: '#34d399',
 }
 
-const FONT = '-apple-system, BlinkMacSystemFont, "Noto Sans TC", "Noto Sans SC", sans-serif'
+// Type-specific card backgrounds — subtle tints that distinguish each type
+const CARD_BG: Record<string, string> = {
+  attraction: 'rgba(96, 165, 250, 0.07)',
+  restaurant: 'rgba(251, 146, 60, 0.08)',
+  hotel: 'rgba(167, 139, 250, 0.07)',
+  transport: 'rgba(156, 163, 175, 0.05)',
+  other: 'rgba(52, 211, 153, 0.06)',
+}
 
-export function downloadTripImage(trip: Trip): void {
+const CARD_BORDER: Record<string, string> = {
+  attraction: 'rgba(96, 165, 250, 0.15)',
+  restaurant: 'rgba(251, 146, 60, 0.15)',
+  hotel: 'rgba(167, 139, 250, 0.15)',
+  transport: 'rgba(156, 163, 175, 0.10)',
+  other: 'rgba(52, 211, 153, 0.12)',
+}
+
+export async function downloadTripImage(trip: Trip): Promise<void> {
   const cn = isChinese(trip.language)
   const W = 1080
   const PAD = 56
-  const CW = W - PAD * 2             // content width
-  const ACCENT_W = 5                  // left accent bar width
-  const CARD_PX = 24                  // card horizontal padding
-  const CARD_PY = 20                  // card vertical padding
-  const CARD_R = 14                   // card border radius
-  const TX = PAD + ACCENT_W + CARD_PX + 10  // text x inside card
-  const TW = CW - ACCENT_W - CARD_PX * 2 - 10  // text width inside card
+  const CW = W - PAD * 2
+  const ACCENT_W = 5
+  const CARD_PX = 24
+  const CARD_PY = 20
+  const CARD_R = 14
+  const TX = PAD + ACCENT_W + CARD_PX + 10
+  const TW = CW - ACCENT_W - CARD_PX * 2 - 10
 
-  // Places to render (skip transport — it's noise for sharing)
+  // Skip transport places (noise for social sharing)
   const renderDays = trip.days.map(day => ({
     ...day,
     places: day.places.filter(p => p.type !== 'transport'),
   }))
 
-  // Helper: compute card height for a place
   function cardHeight(ctx: CanvasRenderingContext2D, p: typeof renderDays[0]['places'][0]): number {
     let h = CARD_PY * 2
     if (p.arrivalTime) h += 28
@@ -299,20 +321,20 @@ export function downloadTripImage(trip: Trip): void {
   const mx = mc.getContext('2d')
   if (!mx) return
 
-  let totalH = 8 + 48  // top accent + brand area
+  let totalH = 56  // accent(8) + brand baseline(36) + gap(12)
   mx.font = `bold 44px ${FONT}`
   totalH += wrapText(mx, trip.title, CW).length * 54
-  totalH += 50  // subtitle + divider gap
+  totalH += 89  // subtitle(36) + to-divider(20) + divider(3) + after-divider(30)
 
   for (const day of renderDays) {
-    totalH += 50 + 20  // day header + gap
+    totalH += 70  // header(46+4) + gap(20)
     for (let i = 0; i < day.places.length; i++) {
       totalH += cardHeight(mx, day.places[i])
-      if (i < day.places.length - 1) totalH += 12  // card gap
+      if (i < day.places.length - 1) totalH += 12
     }
-    totalH += 30  // day gap
+    totalH += 30
   }
-  totalH += 80 + 8  // footer + bottom accent
+  totalH += 88  // footer space (gap + text + accent)
 
   const H = Math.max(totalH, 600)
 
@@ -323,13 +345,23 @@ export function downloadTripImage(trip: Trip): void {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
-  // Background gradient (deeper navy)
+  // Background gradient (deep navy)
   const bg = ctx.createLinearGradient(0, 0, 0, H)
   bg.addColorStop(0, '#0f172a')
-  bg.addColorStop(0.5, '#1e293b')
+  bg.addColorStop(0.4, '#162033')
   bg.addColorStop(1, '#0f172a')
   ctx.fillStyle = bg
   ctx.fillRect(0, 0, W, H)
+
+  // Subtle dot pattern for texture
+  ctx.fillStyle = 'rgba(255,255,255,0.015)'
+  for (let dx = 0; dx < W; dx += 40) {
+    for (let dy = 0; dy < H; dy += 40) {
+      ctx.beginPath()
+      ctx.arc(dx, dy, 1, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
 
   // Top accent bar
   ctx.fillStyle = '#ff6b35'
@@ -364,6 +396,7 @@ export function downloadTripImage(trip: Trip): void {
   y += 20
   ctx.fillStyle = '#ff6b35'
   ctx.fillRect(PAD, y, 80, 3)
+  y += 3
   y += 30
 
   // ── Days ──
@@ -374,27 +407,36 @@ export function downloadTripImage(trip: Trip): void {
     ctx.roundRect(PAD, y, CW, 46, 10)
     ctx.fill()
 
+    // Day label with optional date
     const dayLabel = cn ? `第${day.dayNumber}日` : `Day ${day.dayNumber}`
+    const dateStr = trip.startDate
+      ? ` · ${formatDayDate(getDayDate(trip.startDate, day.dayNumber), cn)}`
+      : ''
+    const fullDayLabel = dayLabel + dateStr
+
     ctx.fillStyle = '#ff6b35'
     ctx.font = `bold 22px ${FONT}`
-    const dlw = ctx.measureText(dayLabel).width
-    ctx.fillText(dayLabel, PAD + 16, y + 30)
+    const dlw = ctx.measureText(fullDayLabel).width
+    ctx.fillText(fullDayLabel, PAD + 16, y + 30)
 
     ctx.fillStyle = 'rgba(255,255,255,0.8)'
     ctx.font = `22px ${FONT}`
     ctx.fillText(day.title, PAD + 16 + dlw + 12, y + 30)
 
-    y += 50 + 20
+    y += 70 // 46 header + 4 spacing + 20 gap
 
     // Place cards
     for (let pi = 0; pi < day.places.length; pi++) {
       const p = day.places[pi]
-      const tc = IMG_TYPE_COLORS[p.type] || IMG_TYPE_COLORS.other
+      const pType = p.type || 'other'
+      const accentColor = IMG_ACCENT[pType] || IMG_ACCENT.other
+      const cardBg = CARD_BG[pType] || CARD_BG.other
+      const cardBorder = CARD_BORDER[pType] || CARD_BORDER.other
 
-      // Pre-compute text lines
+      // Pre-compute text
       const name = p.nameLocal ? `${p.name}（${p.nameLocal}）` : p.name
       ctx.font = `bold 26px ${FONT}`
-      const nameLines = wrapText(ctx, `${typeEmoji(p.type)} ${name}`, TW)
+      const nameLines = wrapText(ctx, `${typeEmoji(pType)} ${name}`, TW)
       const meta = [
         p.googleRating ? `⭐ ${p.googleRating}` : '',
         p.duration || '',
@@ -412,25 +454,25 @@ export function downloadTripImage(trip: Trip): void {
       if (descLines.length) ch += 8 + descLines.length * 26
       if (tipLines.length) ch += 8 + tipLines.length * 26
 
-      // Card background
-      ctx.fillStyle = 'rgba(255,255,255,0.06)'
+      // Card background — type-specific tint
+      ctx.fillStyle = cardBg
       ctx.beginPath()
       ctx.roundRect(PAD, y, CW, ch, CARD_R)
       ctx.fill()
 
-      // Card subtle border
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)'
+      // Card border — type-specific
+      ctx.strokeStyle = cardBorder
       ctx.lineWidth = 1
       ctx.beginPath()
       ctx.roundRect(PAD, y, CW, ch, CARD_R)
       ctx.stroke()
 
-      // Left accent bar (clipped to card shape)
+      // Left accent bar (clipped to card roundness)
       ctx.save()
       ctx.beginPath()
       ctx.roundRect(PAD, y, CW, ch, CARD_R)
       ctx.clip()
-      ctx.fillStyle = tc
+      ctx.fillStyle = accentColor
       ctx.fillRect(PAD, y, ACCENT_W, ch)
       ctx.restore()
 
@@ -500,18 +542,56 @@ export function downloadTripImage(trip: Trip): void {
   ctx.fillStyle = '#ff6b35'
   ctx.fillRect(0, H - 8, W, 8)
 
-  // Download
-  canvas.toBlob((blob) => {
-    if (!blob) return
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${trip.destination.replace(/\s+/g, '-')}-itinerary.png`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }, 'image/png')
+  // ── Download / Share (iOS-aware) ──
+  const blob = await new Promise<Blob | null>(resolve =>
+    canvas.toBlob(resolve, 'image/png')
+  )
+  if (!blob) return
+
+  const fileName = `${trip.destination.replace(/\s+/g, '-')}-itinerary.png`
+
+  // Try Web Share API with file (iOS 15+, Android Chrome)
+  if (navigator.share) {
+    try {
+      const file = new File([blob], fileName, { type: 'image/png' })
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file] })
+        return
+      }
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return
+      // Fall through to other methods
+    }
+  }
+
+  // iOS fallback: open in new tab for long-press save
+  // (<a download> doesn't work on iOS Safari)
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  if (isIOS) {
+    const dataUrl = canvas.toDataURL('image/png')
+    const w = window.open('', '_blank')
+    if (w) {
+      w.document.write(
+        `<html><head><meta name="viewport" content="width=device-width,initial-scale=1">` +
+        `<title>${trip.title}</title></head>` +
+        `<body style="margin:0;display:flex;justify-content:center;background:#111">` +
+        `<img src="${dataUrl}" style="max-width:100%;height:auto">` +
+        `</body></html>`
+      )
+      w.document.close()
+    }
+    return
+  }
+
+  // Desktop: standard <a download>
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = fileName
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 /** Simple text wrapping for canvas — handles CJK characters correctly */
@@ -537,11 +617,10 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
 // ---------------------------------------------------------------------------
 
 export function buildGoogleMapsRouteUrl(day: DayPlan): string {
-  // Use lat/lng if available, otherwise use place names
   const waypoints: string[] = []
 
   for (const place of day.places) {
-    if (place.type === 'transport') continue // Skip transport stops
+    if (place.type === 'transport') continue
     if (place.lat != null && place.lng != null) {
       waypoints.push(`${place.lat},${place.lng}`)
     } else {
@@ -554,7 +633,6 @@ export function buildGoogleMapsRouteUrl(day: DayPlan): string {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(waypoints[0])}`
   }
 
-  // Google Maps directions: origin → waypoints → destination
   const origin = encodeURIComponent(waypoints[0])
   const destination = encodeURIComponent(waypoints[waypoints.length - 1])
   const middle = waypoints.slice(1, -1).map(w => encodeURIComponent(w)).join('|')

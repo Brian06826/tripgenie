@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import type { Trip } from '@/lib/types'
 import { downloadICS, generatePlainText, copyToClipboard, buildGoogleMapsRouteUrl, downloadTripImage } from '@/lib/export'
 
@@ -12,9 +13,15 @@ export function ExportButton({ trip }: Props) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [mapsOpen, setMapsOpen] = useState(false)
+  const [datePickerOpen, setDatePickerOpen] = useState(false)
+  const [pendingAction, setPendingAction] = useState<'calendar' | 'image' | null>(null)
+  const [selectedDate, setSelectedDate] = useState('')
+  const [mounted, setMounted] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   const cn = trip.language === 'zh-TW' || trip.language === 'zh-HK' || trip.language === 'zh-CN'
+
+  useEffect(() => { setMounted(true) }, [])
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -31,20 +38,39 @@ export function ExportButton({ trip }: Props) {
 
   // Close on Escape
   useEffect(() => {
-    if (!open && !mapsOpen) return
+    if (!open && !mapsOpen && !datePickerOpen) return
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         setOpen(false)
         setMapsOpen(false)
+        setDatePickerOpen(false)
+        setPendingAction(null)
       }
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [open, mapsOpen])
+  }, [open, mapsOpen, datePickerOpen])
+
+  function runExport(action: 'calendar' | 'image', startDate?: string) {
+    const tripWithDate: Trip = startDate
+      ? { ...trip, startDate }
+      : trip
+    if (action === 'calendar') {
+      downloadICS(tripWithDate)
+    } else {
+      downloadTripImage(tripWithDate)
+    }
+  }
 
   function handleCalendar() {
-    downloadICS(trip)
     setOpen(false)
+    if (trip.startDate) {
+      downloadICS(trip)
+    } else {
+      setPendingAction('calendar')
+      setSelectedDate(new Date().toISOString().slice(0, 10))
+      setDatePickerOpen(true)
+    }
   }
 
   async function handleCopyText() {
@@ -58,18 +84,38 @@ export function ExportButton({ trip }: Props) {
   }
 
   function handleImage() {
-    downloadTripImage(trip)
     setOpen(false)
+    if (trip.startDate) {
+      downloadTripImage(trip)
+    } else {
+      setPendingAction('image')
+      setSelectedDate(new Date().toISOString().slice(0, 10))
+      setDatePickerOpen(true)
+    }
+  }
+
+  function handleDateConfirm() {
+    if (pendingAction) {
+      runExport(pendingAction, selectedDate || undefined)
+    }
+    setDatePickerOpen(false)
+    setPendingAction(null)
+  }
+
+  function handleDateSkip() {
+    if (pendingAction) {
+      runExport(pendingAction)
+    }
+    setDatePickerOpen(false)
+    setPendingAction(null)
   }
 
   function handleMaps() {
     setOpen(false)
     if (trip.days.length === 1) {
-      // Single day — open directly
       const url = buildGoogleMapsRouteUrl(trip.days[0])
       if (url) window.open(url, '_blank')
     } else {
-      // Multiple days — show day picker
       setMapsOpen(true)
     }
   }
@@ -166,6 +212,55 @@ export function ExportButton({ trip }: Props) {
             </button>
           ))}
         </div>
+      )}
+
+      {/* Date picker modal — portaled to body to avoid z-index/overflow issues */}
+      {mounted && datePickerOpen && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) { setDatePickerOpen(false); setPendingAction(null) } }}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl w-[320px] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 pt-5 pb-3">
+              <h3 className="text-base font-bold text-gray-800">
+                {cn ? '選擇出發日期' : 'Select start date'}
+              </h3>
+              <p className="text-xs text-gray-400 mt-1">
+                {cn
+                  ? pendingAction === 'calendar'
+                    ? '日曆事件將會根據呢個日期排列'
+                    : '圖片上會顯示每日對應嘅日期'
+                  : pendingAction === 'calendar'
+                    ? 'Calendar events will be scheduled from this date'
+                    : 'Dates will appear on each day header in the image'
+                }
+              </p>
+            </div>
+            <div className="px-6 py-3">
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent"
+              />
+            </div>
+            <div className="px-6 pb-5 pt-2 flex gap-3">
+              <button
+                onClick={handleDateSkip}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors min-h-[44px]"
+              >
+                {cn ? '跳過' : 'Skip'}
+              </button>
+              <button
+                onClick={handleDateConfirm}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-orange hover:opacity-90 transition-opacity min-h-[44px]"
+              >
+                {cn ? '確認' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   )
