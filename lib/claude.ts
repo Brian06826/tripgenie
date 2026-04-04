@@ -402,17 +402,29 @@ export function deduplicatePlaces(trip: TripGeneration): TripGeneration {
     seenKeys.push(normalize(name))
   }
 
-  const updatedDays = trip.days.map(day => ({
-    ...day,
-    places: day.places.filter(place => {
+  const updatedDays = trip.days.map(day => {
+    // Phase 1: filter duplicates, promoting a backup option as replacement when possible
+    const dedupedPlaces = day.places.reduce<typeof day.places>((acc, place) => {
       if (isDuplicate(place.name)) {
-        console.warn(`[dedup] Removed duplicate place: ${place.name} on day ${day.dayNumber}`)
-        return false
+        // Try to replace with a non-duplicate backup option
+        const replacement = place.backupOptions?.find(b => !isDuplicate(b.name))
+        if (replacement) {
+          console.warn(`[dedup] Replaced duplicate "${place.name}" with backup "${replacement.name}" on day ${day.dayNumber}`)
+          addSeen(replacement.name)
+          const remainingBackups = place.backupOptions!.filter(b => b !== replacement)
+          acc.push({ ...place, name: replacement.name, nameLocal: undefined, description: replacement.description, backupOptions: remainingBackups.length ? remainingBackups : undefined })
+        } else {
+          console.warn(`[dedup] Removed duplicate place: ${place.name} on day ${day.dayNumber}`)
+        }
+      } else {
+        addSeen(place.name)
+        acc.push(place)
       }
-      addSeen(place.name)
-      return true
-    }).map(place => {
-      // Also dedup backup options against all seen names (main stops + earlier backups)
+      return acc
+    }, [])
+
+    // Phase 2: dedup backup options against all seen names
+    const places = dedupedPlaces.map(place => {
       if (!place.backupOptions?.length) return place
       const filtered = place.backupOptions.filter(backup => {
         if (isDuplicate(backup.name)) {
@@ -424,9 +436,11 @@ export function deduplicatePlaces(trip: TripGeneration): TripGeneration {
       })
       return filtered.length === place.backupOptions.length
         ? place
-        : { ...place, backupOptions: filtered }
-    }),
-  }))
+        : { ...place, backupOptions: filtered.length ? filtered : undefined }
+    })
+
+    return { ...day, places }
+  })
   return { ...trip, days: updatedDays }
 }
 
