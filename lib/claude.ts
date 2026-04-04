@@ -205,7 +205,7 @@ STOP COUNT PER DAY (CRITICAL):
 - Transport stops (departure/return) do NOT count toward the stop count above.
 - COMPACT CITIES (Tokyo, Taipei, Hong Kong, Singapore, Manhattan, London, Paris, Barcelona, Amsterdam): add 1 extra stop per day. For spread-out cities (LA, Houston, Dallas), keep standard count.
 - BEACH/RESORT destinations (Bali, Maldives, Hawaii, Phuket, Cancun, Koh Samui): default to relaxed pace (3-4 stops/day). Include free time for beach, pool, or spa — not every moment needs a scheduled activity.
-- ROAD TRIP destinations (Iceland, New Zealand, Scottish Highlands, Norway, Route 66): plan stops linearly along the driving route. 3-4 stops per day to account for long drives. Include driving time in tips. If no restaurants nearby, suggest packed lunch.
+- ROAD TRIP destinations (Iceland, New Zealand, Scottish Highlands, Norway, Route 66): plan stops linearly along the driving route. 3-4 stops per day to account for long drives. Include driving time in tips. If no restaurants nearby, suggest packed lunch. RETURN JOURNEY: if the trip must end where it started (e.g. returning a rental car), the return drive MUST be realistic. If the return drive exceeds 4 hours, dedicate the last day primarily to driving back with at most 1-2 brief stops along the route. NEVER schedule a full day of sightseeing 8+ hours from the starting city on the last day.
 
 ICONIC ATTRACTIONS (CRITICAL — NEVER VIOLATE): Iconic attractions MUST be scheduled as MAIN STOPS, never as alternatives or backup options. If the destination's #1 most famous attraction (the one a first-time visitor would regret missing most) is missing from main stops, the itinerary is INVALID. Examples: Taipei → 故宮/National Palace Museum MUST be a main stop, Tokyo → Senso-ji or Shibuya Crossing, Paris → Eiffel Tower or Louvre, NYC → Central Park or Statue of Liberty. Spread top icons across different days for 3+ day trips — do not cluster them all on Day 1.
 
@@ -217,7 +217,7 @@ DAILY SCHEDULE RULES (CRITICAL):
 
 GEOGRAPHIC FLOW: Plan each day's stops in a logical geographic route — move through the city in one direction, grouping nearby stops together. NEVER backtrack to an earlier area for a later stop. Dinner MUST be reachable within 30 min transit from the last afternoon stop — NEVER schedule dinner in a completely different district requiring >30 min transit. If the last stop is remote (e.g. Tai O in Hong Kong, Kamakura from Tokyo, outer islands), eat dinner IN that area or along the return route. When recommending chain restaurants, choose the branch closest to that day's activity cluster.
 
-OPENING HOURS AWARENESS: Schedule attractions during their likely open hours. Museums and galleries: usually 10:00 AM - 5:00 PM (skip Monday — many are closed). Night markets and night-scene spots: 5:00 PM onward. Temples and parks: early morning OK. Shopping malls: 10:00 AM - 10:00 PM. Fixed-time events (light shows, fireworks, performances): arrive 15 min before start time and include "confirm exact timing before visiting" in tips. If unsure about opening hours, schedule for 10:00 AM - 6:00 PM as a safe window.
+OPENING HOURS AWARENESS: Schedule attractions during their likely open hours. Museums and galleries: usually 10:00 AM - 5:00 PM (skip Monday — many are closed). Night markets (夜市) NEVER before 5:00 PM — they open at 5-6 PM. Scheduling a night market at 3:00 PM or 4:00 PM is WRONG. Temples and parks: early morning OK. Shopping malls: 10:00 AM - 10:00 PM. Fixed-time events (light shows, fireworks, performances): arrive 15 min before start time and include "confirm exact timing before visiting" in tips. If unsure about opening hours, schedule for 10:00 AM - 6:00 PM as a safe window.
 
 STRICT MEAL TIMING (CRITICAL — NEVER VIOLATE — MEALS ARE HIGHER PRIORITY THAN ATTRACTIONS):
 - Breakfast/Brunch: 8:00-10:00 AM. Include ONLY when: (1) user explicitly asks for breakfast, (2) the destination is famous for breakfast culture (e.g. dim sum in Hong Kong, morning market in Taipei), or (3) a multi-day trip where starting with breakfast makes the day flow better. Do NOT add breakfast by default for 1-day trips.
@@ -246,6 +246,9 @@ Before returning your JSON, verify EVERY full day has:
 7. Sunset-worthy spots (beaches, cliffs, viewpoints, waterfronts, anything with "sunset" in its name) are scheduled for 5:00-7:00 PM to catch golden hour — NEVER before 4:30 PM
 8. The destination's #1 most famous attraction appears as a main stop (not backup) somewhere in the trip
 9. Each day's title uses a generic theme (e.g. "Old Town & Local Eats", "Nature Day") — no specific place names or district names in day titles
+10. No arrivalTime is after 9:30 PM. If any is, clamp it: restaurants → 7:00 PM, hotels → 9:00 PM, others → 5:00 PM
+11. Night markets are scheduled at 5:00 PM or later — NEVER before 5:00 PM
+12. Road trip last day: if return drive >4 hours, last day is primarily a travel day
 If any day fails these checks, fix it before responding. Add a missing meal, move a misplaced one, swap a duplicate, or fill a gap.
 
 TRANSPORTATION & MEETING POINTS:
@@ -389,6 +392,15 @@ export function deduplicatePlaces(trip: TripGeneration): TripGeneration {
     if (a === b) return true
     if (a.length >= 6 && b.startsWith(a)) return true
     if (b.length >= 6 && a.startsWith(b)) return true
+    // Chain restaurant detection: "ichiran shibuya" vs "ichiran dotonbori"
+    // If both have 2+ words and share the same base (all words except last), it's a chain branch
+    const aWords = a.split(/\s+/)
+    const bWords = b.split(/\s+/)
+    if (aWords.length >= 2 && bWords.length >= 2) {
+      const aBase = aWords.slice(0, -1).join(' ')
+      const bBase = bWords.slice(0, -1).join(' ')
+      if (aBase === bBase && aBase.length >= 5) return true
+    }
     return false
   }
 

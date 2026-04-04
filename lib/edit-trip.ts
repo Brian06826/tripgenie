@@ -109,14 +109,25 @@ function parseTime(t: string): number | null {
   return h * 60 + min
 }
 
-/** Clamp any arrivalTime after 9:30 PM to a sane value. Mutates in place. */
+/** Clamp any arrivalTime after 9:30 PM to a sane value, and fix night markets before 5 PM. Mutates in place. */
 export function clampLateTimes(trip: TripGeneration): void {
   const LIMIT = 21 * 60 + 30 // 9:30 PM
+  const NIGHT_MARKET_EARLIEST = 17 * 60 // 5:00 PM
   for (const day of trip.days) {
     for (const place of day.places) {
       if (!place.arrivalTime) continue
       const mins = parseTime(place.arrivalTime)
       if (mins === null) continue
+
+      // Night market scheduled before 5 PM → move to 5:00 PM
+      const nameStr = `${place.name} ${(place as any).nameLocal || ''} ${place.description || ''}`
+      const isNightMarket = /night\s*market|夜市/i.test(nameStr)
+      if (isNightMarket && mins < NIGHT_MARKET_EARLIEST) {
+        place.arrivalTime = '5:00 PM'
+        console.log(`[clamp] Fixed early night market "${place.name}": was ${mins} mins → 5:00 PM`)
+        continue
+      }
+
       if (mins > LIMIT) {
         // Restaurants (dinner) → 7:00 PM, hotels → 9:00 PM, everything else → 5:00 PM
         if (place.type === 'restaurant') {
