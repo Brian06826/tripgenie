@@ -31,17 +31,23 @@ function parseDurationMinutes(dur: string): number {
   return 60
 }
 
-/** Get the date for a specific day number, given trip startDate. Falls back to today. */
+/** Get the date for a specific day number, given trip startDate. Falls back to today.
+ *  Parses YYYY-MM-DD as LOCAL date to avoid timezone shift
+ *  (new Date("2026-04-15") = UTC midnight → getDate() returns 14 west of UTC). */
 function getDayDate(startDate: string | undefined, dayNumber: number): Date {
-  const base = startDate ? new Date(startDate) : new Date()
-  if (isNaN(base.getTime())) {
-    const now = new Date()
-    now.setDate(now.getDate() + dayNumber - 1)
-    return now
+  let base: Date
+  if (startDate) {
+    const [y, m, d] = startDate.split('-').map(Number)
+    if (y && m && d) {
+      base = new Date(y, m - 1, d) // local midnight
+    } else {
+      base = new Date()
+    }
+  } else {
+    base = new Date()
   }
-  const result = new Date(base)
-  result.setDate(result.getDate() + dayNumber - 1)
-  return result
+  base.setDate(base.getDate() + dayNumber - 1)
+  return base
 }
 
 /** Format date as YYYYMMDD for iCal */
