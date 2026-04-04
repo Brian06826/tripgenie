@@ -599,16 +599,29 @@ const STARS: [number, number, number][] = [
 // Overtime threshold multiplier — after this, show "almost there" messaging
 const OVERTIME_MULTIPLIER = 1.3
 
+// Fuzzy time estimate — deliberately overestimate ("underpromise, overdeliver")
+function getFuzzyEstimate(days: number, lang: Lang): string {
+  if (days <= 3) {
+    return lang === 'zh-CN' ? '⏱️ 通常少于 1 分钟' : lang === 'zh-TW' ? '⏱️ 通常少於 1 分鐘' : '⏱️ Usually < 1 min'
+  }
+  if (days <= 7) {
+    return lang === 'zh-CN' ? '⏱️ 通常少于 2 分钟' : lang === 'zh-TW' ? '⏱️ 通常少於 2 分鐘' : '⏱️ Usually < 2 min'
+  }
+  return lang === 'zh-CN' ? '⏱️ 通常少于 3 分钟' : lang === 'zh-TW' ? '⏱️ 通常少於 3 分鐘' : '⏱️ Usually < 3 min'
+}
+
 interface Props {
   lang: Lang
   phase: 'generating' | 'validating' | 'optimizing' | 'saving'
   estimatedSeconds: number
   vibe?: LoadingVibe
   prompt?: string
+  dayProgress?: { current: number; total: number } | null
+  totalDays?: number
   onCancel?: () => void
 }
 
-export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'default', prompt, onCancel }: Props) {
+export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'default', prompt, dayProgress, totalDays, onCancel }: Props) {
   const isChinese = lang !== 'en'
   const vibeSet = MSGS[vibe] ?? MSGS.default
   const msgs = vibeSet[lang]
@@ -689,8 +702,15 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
   const timePhase = phaseSteps.find(p => elapsed < p.maxSec)
   const timePhaseMsg = timePhase ? timePhase.msg : null
 
-  const displayMsg = serverPhaseMsg ?? timePhaseMsg ?? msgs[idx]
-  const msgKey = serverPhaseMsg ? phase : timePhaseMsg ? `time-${elapsed < 5 ? 0 : elapsed < 12 ? 1 : elapsed < 20 ? 2 : elapsed < 30 ? 3 : elapsed < 42 ? 4 : elapsed < 55 ? 5 : 6}` : idx
+  // Day-level progress message (replaces time-based steps when available)
+  const dayProgressMsg = dayProgress && phase === 'generating'
+    ? (lang === 'zh-CN' ? `📋 正在规划第 ${dayProgress.current} 天（共 ${dayProgress.total} 天）...`
+       : lang === 'zh-TW' ? `📋 正在規劃第 ${dayProgress.current} 日（共 ${dayProgress.total} 日）...`
+       : `📋 Planning Day ${dayProgress.current} of ${dayProgress.total}...`)
+    : null
+
+  const displayMsg = serverPhaseMsg ?? dayProgressMsg ?? timePhaseMsg ?? msgs[idx]
+  const msgKey = serverPhaseMsg ? phase : dayProgressMsg ? `day-${dayProgress!.current}` : timePhaseMsg ? `time-${elapsed < 5 ? 0 : elapsed < 12 ? 1 : elapsed < 20 ? 2 : elapsed < 30 ? 3 : elapsed < 42 ? 4 : elapsed < 55 ? 5 : 6}` : idx
 
   // Overtime detection — when elapsed exceeds estimate, show reassuring message
   const isOvertime = elapsed > estimatedSeconds * OVERTIME_MULTIPLIER
@@ -805,7 +825,9 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
             <span className="text-white/40 text-xs">
               {isOvertime
                 ? (lang === 'zh-CN' ? '✨ 快好了...' : lang === 'zh-TW' ? '✨ 快好了...' : '✨ Almost there...')
-                : (lang === 'zh-CN' ? '✨ 正在生成中' : lang === 'zh-TW' ? '✨ 正在生成中' : '✨ Working on it')}
+                : phase === 'generating'
+                  ? getFuzzyEstimate(totalDays ?? 2, lang)
+                  : (lang === 'zh-CN' ? '✨ 正在生成中' : lang === 'zh-TW' ? '✨ 正在生成中' : '✨ Working on it')}
             </span>
           </div>
         </div>

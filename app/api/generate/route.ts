@@ -80,7 +80,11 @@ export async function POST(request: Request) {
         const session = await getServerSession(authOptions).catch(() => null)
         const userId = (session?.user as any)?.id as string | undefined
 
-        const generation = await generateTrip(prompt)
+        const generation = await generateTrip(prompt, (event) => {
+          if (event.type === 'day') {
+            send({ type: 'progress', dayNumber: event.dayNumber, totalDays: event.totalDays })
+          }
+        })
 
         const tripId = nanoid(8)
 

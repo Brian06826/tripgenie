@@ -100,6 +100,7 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
   const [loadingPhase, setLoadingPhase] = useState<'generating' | 'validating' | 'optimizing' | 'saving'>('generating')
   const [estimatedSeconds, setEstimatedSeconds] = useState(120)
   const [loadingVibe, setLoadingVibe] = useState<LoadingVibe>('default')
+  const [dayProgress, setDayProgress] = useState<{ current: number; total: number } | null>(null)
   const [error, setError] = useState('')
   const [placeholderIdx, setPlaceholderIdx] = useState(0)
   const [placeholderVisible, setPlaceholderVisible] = useState(true)
@@ -232,6 +233,7 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
     setLoadingPhase('generating')
     setEstimatedSeconds(getEstimatedSeconds(detectTripDays(prompt)))
     setLoadingVibe(detectVibe(prompt, activeChips))
+    setDayProgress(null)
     setError('')
 
     const abortController = new AbortController()
@@ -278,7 +280,7 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
         for (const raw of events) {
           const line = raw.trim()
           if (!line.startsWith('data: ')) continue
-          let event: { type: string; tripId?: string; message?: string }
+          let event: { type: string; tripId?: string; message?: string; dayNumber?: number; totalDays?: number }
           try { event = JSON.parse(line.slice(6)) } catch { continue }
 
           if (event.type === 'preview' && event.tripId) {
@@ -308,6 +310,9 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
           if (event.type === 'saving') {
             setLoadingPhase('saving')
           }
+          if (event.type === 'progress' && event.dayNumber && event.totalDays) {
+            setDayProgress({ current: event.dayNumber, total: event.totalDays })
+          }
           // 'chunk' and 'heartbeat' events: no-op — just keepalives
         }
       }
@@ -336,7 +341,7 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
 
   return (
     <div className="w-full">
-      {loading && <TripLoadingOverlay lang={lang} phase={loadingPhase} estimatedSeconds={estimatedSeconds} vibe={loadingVibe} prompt={prompt} onCancel={() => abortRef.current?.abort()} />}
+      {loading && <TripLoadingOverlay lang={lang} phase={loadingPhase} estimatedSeconds={estimatedSeconds} vibe={loadingVibe} prompt={prompt} dayProgress={dayProgress} totalDays={detectTripDays(prompt)} onCancel={() => abortRef.current?.abort()} />}
       <form onSubmit={handleSubmit} className="space-y-2.5">
         {/* Textarea with rotating placeholder overlay */}
         <div className="relative">

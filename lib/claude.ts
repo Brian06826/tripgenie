@@ -1,6 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { TripGenerationSchema, type TripGeneration } from './types'
 
+// Progress events emitted during trip generation
+export type GenerationProgress =
+  | { type: 'chunk' }
+  | { type: 'day'; dayNumber: number; totalDays: number }
+
 // Lazy client — avoids module-level crash if ANTHROPIC_API_KEY is missing
 let _client: Anthropic | null = null
 function getClient(): Anthropic {
@@ -429,7 +434,7 @@ export function deduplicatePlaces(trip: TripGeneration): TripGeneration {
 // Single-shot generation (1-4 day trips)
 // ---------------------------------------------------------------------------
 
-async function generateTripSingle(userPrompt: string, onChunk?: () => void): Promise<TripGeneration> {
+async function generateTripSingle(userPrompt: string, onProgress?: (event: GenerationProgress) => void): Promise<TripGeneration> {
   const days = detectTripDays(userPrompt)
   const tier = getTier(days)
   const systemPrompt = buildSystemPrompt(tier)
@@ -440,8 +445,8 @@ async function generateTripSingle(userPrompt: string, onChunk?: () => void): Pro
   let wasRefusal = false
 
   try {
-    const { parsed, wasTruncated, wasRefusal: refusal } = onChunk
-      ? await callClaudeStreaming(userPrompt, systemPrompt, maxTokens, onChunk)
+    const { parsed, wasTruncated, wasRefusal: refusal } = onProgress
+      ? await callClaudeStreaming(userPrompt, systemPrompt, maxTokens, onProgress, days)
       : await callClaude(userPrompt, systemPrompt, maxTokens)
     firstParsed = parsed
     truncated = wasTruncated
@@ -511,7 +516,7 @@ function buildPartialPrompt(
 PARTIAL GENERATION INSTRUCTION: Generate ONLY ${partLabel}. Start dayNumber at ${startDay} and end at ${endDay}. Include all required fields (title, destination, language, days). The trip title and destination should reflect the FULL trip, not just this part.${dedupNote}`
 }
 
-async function generateTripParallel(userPrompt: string, onChunk?: () => void): Promise<TripGeneration> {
+async function generateTripParallel(userPrompt: string, onProgress?: (event: GenerationProgress) => void): Promise<TripGeneration> {
   const days = detectTripDays(userPrompt)
   const systemPrompt = buildSystemPrompt(3) // Always tier 3 for 5+ days
   const splitDay = Math.ceil(days / 2) // e.g. 7 days → split at 4 (days 1-4 + 5-7)
@@ -528,8 +533,8 @@ async function generateTripParallel(userPrompt: string, onChunk?: () => void): P
   const [result1, result2] = await Promise.all([
     (async () => {
       try {
-        const { parsed, wasTruncated, wasRefusal } = onChunk
-          ? await callClaudeStreaming(prompt1, systemPrompt, maxTokensPart, onChunk)
+        const { parsed, wasTruncated, wasRefusal } = onProgress
+          ? await callClaudeStreaming(prompt1, systemPrompt, maxTokensPart, onProgress, days)
           : await callClaude(prompt1, systemPrompt, maxTokensPart)
         if (wasRefusal) throw new Error('Claude refused part 1')
         if (wasTruncated) {
@@ -591,7 +596,7 @@ async function generateTripParallel(userPrompt: string, onChunk?: () => void): P
 // Public API — routes to single or parallel based on trip length
 // ---------------------------------------------------------------------------
 
-export async function generateTrip(userPrompt: string, onChunk?: () => void): Promise<TripGeneration> {
+export async function generateTrip(userPrompt: string, onProgress?: (event: GenerationProgress) => void): Promise<TripGeneration> {
   const validation = validateTripRequest(userPrompt)
   if (!validation.valid) throw new Error(validation.message)
 
@@ -600,14 +605,14 @@ export async function generateTrip(userPrompt: string, onChunk?: () => void): Pr
   // 5+ day trips: parallel generation for ~40-50% speedup
   if (days >= 5) {
     try {
-      return await generateTripParallel(userPrompt, onChunk)
+      return await generateTripParallel(userPrompt, onProgress)
     } catch (err) {
       console.warn('[parallel] Parallel generation failed, falling back to single:', err)
       // Fall back to single-shot if parallel fails
     }
   }
 
-  return generateTripSingle(userPrompt, onChunk)
+  return generateTripSingle(userPrompt, onProgress)
 }
 
 // ---------------------------------------------------------------------------
@@ -618,7 +623,8 @@ async function callClaudeStreaming(
   prompt: string,
   systemPrompt: string,
   maxTokens: number,
-  onChunk: () => void,
+  onProgress: (event: GenerationProgress) => void,
+  totalDays?: number,
 ): Promise<{ parsed: unknown; wasTruncated: boolean; wasRefusal: boolean }> {
   const stream = getClient().messages.stream({
     model: 'claude-sonnet-4-5-20250929',
@@ -629,10 +635,22 @@ async function callClaudeStreaming(
 
   let fullText = ''
   let tokenCount = 0
+  let lastDetectedDay = 0
   stream.on('text', (text: string) => {
     fullText += text
     // Emit heartbeat every 20 tokens — enough to keep the SSE connection alive
-    if (++tokenCount % 20 === 0) onChunk()
+    if (++tokenCount % 20 === 0) onProgress({ type: 'chunk' })
+
+    // Detect "dayNumber": N in streaming JSON to report day-level progress
+    if (totalDays) {
+      const re = /"dayNumber"\s*:\s*(\d+)/g
+      let m, latestDay = 0
+      while ((m = re.exec(fullText)) !== null) latestDay = parseInt(m[1])
+      if (latestDay > lastDetectedDay && latestDay <= totalDays) {
+        lastDetectedDay = latestDay
+        onProgress({ type: 'day', dayNumber: latestDay, totalDays })
+      }
+    }
   })
 
   const finalMessage = await stream.finalMessage()
