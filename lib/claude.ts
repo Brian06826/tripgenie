@@ -271,7 +271,8 @@ RULES:
 - Descriptions: 1 sentence max. Name a signature dish, landmark feature, or unique highlight.
 - Ratings: conservative estimates only. Assign 4.5+ only for widely acclaimed spots. Never 4.8+ unless world-famous.
 - For non-US destinations: omit yelpRating and yelpReviewCount entirely.
-- Full-day theme parks (Disneyland, Universal Studios, Six Flags, Legoland) should be the ONLY major activity for that day. Half-day attractions (zoos, aquariums, SeaWorld, botanical gardens) take 3-4 hours — schedule other stops around them normally.`
+- Full-day theme parks (Disneyland, Universal Studios, Six Flags, Legoland) should be the ONLY major activity for that day.
+- REALISTIC DURATIONS by venue size: Large zoos/aquariums (San Diego Zoo, Singapore Zoo, Osaka Aquarium, etc.): 4-5 hours. Major museums (Louvre, British Museum, National Palace Museum, Met, etc.): 3-4 hours. National/state parks with trails: 3-4 hours. Small museums/temples: 1-1.5 hours. Street markets/shopping areas: 1.5-2 hours. Beaches: 2-3 hours. NEVER allocate less than 3 hours for a world-class zoo, aquarium, or major museum.`
 
 function buildSystemPrompt(_tier: Tier): string {
   return SYSTEM_PROMPT
