@@ -82,7 +82,11 @@ export default async function TripPage({ params }: Props) {
           <p className="text-xs text-orange font-semibold mb-1">Lulgo</p>
           <h1 className="text-2xl font-bold leading-tight mb-1">{trip.title}</h1>
           <p className="text-sm opacity-80 mb-4">
-            {trip.destination} · {Math.max(...trip.days.map(d => d.dayNumber))} day{Math.max(...trip.days.map(d => d.dayNumber)) !== 1 ? 's' : ''}
+            {trip.destination} · {(() => {
+              const cn = trip.language === 'zh-TW' || trip.language === 'zh-HK' || trip.language === 'zh-CN'
+              const numDays = Math.max(...trip.days.map(d => d.dayNumber))
+              return cn ? `${numDays}日` : `${numDays} day${numDays !== 1 ? 's' : ''}`
+            })()}
           </p>
 
           {/* Share bar */}

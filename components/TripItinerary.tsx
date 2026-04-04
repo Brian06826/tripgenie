@@ -383,7 +383,7 @@ export function TripItinerary({
                   : 'bg-white text-gray-500 border border-gray-200 hover:border-orange hover:text-orange'
               }`}
             >
-              Day {day.dayNumber}{startDate ? ` · ${formatDayDate(startDate, i, language) ?? ''}` : ''}
+              {isChinese ? `第${day.dayNumber}日` : `Day ${day.dayNumber}`}{startDate ? ` · ${formatDayDate(startDate, i, language) ?? ''}` : ''}
             </button>
           ))}
         </div>
@@ -397,7 +397,7 @@ export function TripItinerary({
         >
           <div className="sticky top-[52px] bg-navy text-white px-4 py-2.5 rounded-lg mb-3 z-10">
             <h2 className="font-bold text-lg">
-              Day {day.dayNumber}
+              {isChinese ? `第${day.dayNumber}日` : `Day ${day.dayNumber}`}
               {startDate && formatDayDate(startDate, dayIndex, language) && (
                 <span className="font-normal text-sm opacity-70 ml-2">
                   {formatDayDate(startDate, dayIndex, language)}
@@ -436,12 +436,14 @@ export function TripItinerary({
                       onTimeChange={tripId ? (newTime) => handleTimeChange(dayIndex, placeIndex, newTime) : undefined}
                       editLoading={isEditing}
                       removeLoading={removingKey === key}
+                      language={language}
                     />
                   </div>
                   {hasAlternatives && (
                     <AlternativesPanel
                       backups={place.backupOptions!}
                       onSwap={(backupIndex) => handleSwap(dayIndex, placeIndex, backupIndex)}
+                      language={language}
                     />
                   )}
                 </div>

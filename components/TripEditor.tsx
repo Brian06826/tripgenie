@@ -280,7 +280,7 @@ export function TripEditor({ tripId, trip }: Props) {
 
   return (
     <>
-      <TripMap key={`map-${editVersion}`} days={currentTrip.days} />
+      <TripMap key={`map-${editVersion}`} days={currentTrip.days} language={currentTrip.language} />
       <TripItinerary
         key={`itin-${editVersion}`}
         initialDays={currentTrip.days}

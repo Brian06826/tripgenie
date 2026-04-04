@@ -160,14 +160,26 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
     setAiLoading(true)
     setError(null)
     try {
-      const instruction = `Add a highly-rated hotel recommendation near the main itinerary area in ${dayCity}. Add it as the LAST place of Day ${dayNumber} with type "hotel". Set arrivalTime to 30 minutes after the last activity ends. Duration should be "${isChinese ? '入住' : 'Check-in'}". Description should be "${isChinese ? '回酒店休息' : 'Return to hotel'}". Include Google rating, price range, and a brief description. The hotel should be well-located for the planned activities.`
-      const res = await fetch('/api/edit-trip', {
+      // Step 1: Get hotel name from lightweight AI endpoint (no heavy pipeline)
+      const recRes = await fetch('/api/recommend-hotel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tripId, instruction, language: language ?? 'en' }),
+        body: JSON.stringify({ dayCity, destination, language: language ?? 'en' }),
       })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
+      if (!recRes.ok) {
+        const data = await recRes.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed')
+      }
+      const { hotelName: recommendedName } = await recRes.json()
+
+      // Step 2: Insert via existing add-hotel endpoint (geocode + instant insert)
+      const addRes = await fetch('/api/add-hotel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tripId, hotelName: recommendedName, dayNumber, language: language ?? 'en' }),
+      })
+      if (!addRes.ok) {
+        const data = await addRes.json().catch(() => ({}))
         throw new Error(data.error || 'Failed')
       }
       window.location.reload()
@@ -205,7 +217,7 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-4 mb-4">
       <p className="text-sm font-semibold text-gray-700 mb-3">
-        🏨 {isChinese ? `Day ${dayNumber} 需要酒店？` : `Need a hotel for Day ${dayNumber}?`}
+        🏨 {isChinese ? `第${dayNumber}日需要酒店？` : `Need a hotel for Day ${dayNumber}?`}
       </p>
 
       {/* Booking links + AI recommend */}

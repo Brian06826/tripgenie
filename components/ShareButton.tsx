@@ -106,7 +106,7 @@ export function ShareButton({ tripId, tripTitle, language, trip }: Props) {
         aria-label="Share trip"
         className="flex items-center gap-2 bg-orange px-4 min-h-[44px] rounded-lg text-white text-sm font-semibold transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
       >
-        📤 Share
+        📤 {isChinese ? '分享' : 'Share'}
       </button>
 
       {showPanel && mounted && createPortal(
@@ -210,7 +210,7 @@ export function ShareButton({ tripId, tripTitle, language, trip }: Props) {
               }`}
             >
               {copied
-                ? '✅ Copied!'
+                ? (isChinese ? '✅ 已複製！' : '✅ Copied!')
                 : copyFailed
                   ? (isChinese ? '⚠️ 複製失敗' : '⚠️ Copy failed — try long-press the link above')
                   : (isChinese ? '📋 複製連結' : '📋 Copy Link')

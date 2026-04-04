@@ -45,7 +45,7 @@ export function ExampleTripViewer({ trip }: { trip: Trip }) {
 
       {/* Day content */}
       <main className="relative z-0 max-w-4xl mx-auto px-4 py-4">
-        <TripMap days={trip.days} />
+        <TripMap days={trip.days} language={trip.language} />
         <TripItinerary initialDays={trip.days} validated={false} destination={trip.destination} language={trip.language} />
         <div className="mt-6 mb-4">
           <a

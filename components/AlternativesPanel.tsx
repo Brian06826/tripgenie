@@ -3,9 +3,10 @@ import type { BackupOption } from '@/lib/types'
 type Props = {
   backups: BackupOption[]
   onSwap: (backupIndex: number) => void
+  language?: string
 }
 
-function BackupList({ backups, onSwap }: { backups: BackupOption[]; onSwap: (i: number) => void }) {
+function BackupList({ backups, onSwap, cn }: { backups: BackupOption[]; onSwap: (i: number) => void; cn: boolean }) {
   return (
     <div className="space-y-2">
       {backups.map((backup, i) => (
@@ -22,7 +23,7 @@ function BackupList({ backups, onSwap }: { backups: BackupOption[]; onSwap: (i: 
               aria-label={`Swap with ${backup.name}`}
               className="shrink-0 text-xs font-semibold bg-orange text-white px-3 py-2 min-h-[44px] rounded-md hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-1"
             >
-              Swap
+              {cn ? '替換' : 'Swap'}
             </button>
           </div>
           <p className="text-xs text-gray-500 mt-1 leading-snug line-clamp-2">
@@ -48,16 +49,17 @@ function BackupList({ backups, onSwap }: { backups: BackupOption[]; onSwap: (i: 
   )
 }
 
-export function AlternativesPanel({ backups, onSwap }: Props) {
+export function AlternativesPanel({ backups, onSwap, language }: Props) {
+  const cn = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
   return (
     <>
       {/* Mobile: collapsible below the place card */}
       <details className="lg:hidden -mt-1 mb-3">
         <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700 font-medium px-1 py-1.5 select-none">
-          🔄 Alternative Suggestions ({backups.length})
+          🔄 {cn ? `替代建議 (${backups.length})` : `Alternative Suggestions (${backups.length})`}
         </summary>
         <div className="mt-2 px-1">
-          <BackupList backups={backups} onSwap={onSwap} />
+          <BackupList backups={backups} onSwap={onSwap} cn={cn} />
         </div>
       </details>
 
@@ -65,9 +67,9 @@ export function AlternativesPanel({ backups, onSwap }: Props) {
       <div className="hidden lg:flex lg:flex-col lg:justify-start">
         <div className="bg-gray-50 border border-gray-100 rounded-xl p-3">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2.5">
-            Alternatives
+            {cn ? '替代選項' : 'Alternatives'}
           </p>
-          <BackupList backups={backups} onSwap={onSwap} />
+          <BackupList backups={backups} onSwap={onSwap} cn={cn} />
         </div>
       </div>
     </>
