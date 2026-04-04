@@ -392,14 +392,21 @@ export function deduplicatePlaces(trip: TripGeneration): TripGeneration {
     if (a === b) return true
     if (a.length >= 6 && b.startsWith(a)) return true
     if (b.length >= 6 && a.startsWith(b)) return true
-    // Chain restaurant detection: "ichiran shibuya" vs "ichiran dotonbori"
-    // If both have 2+ words and share the same base (all words except last), it's a chain branch
+    // Chain restaurant detection: same brand, different branch/location
+    // "ichiran shibuya" vs "ichiran ramen dotonbori" — both start with "ichiran"
+    // Compare first word (brand) when it's long enough to be meaningful
     const aWords = a.split(/\s+/)
     const bWords = b.split(/\s+/)
     if (aWords.length >= 2 && bWords.length >= 2) {
+      // Check if dropping the last word from each yields matching or prefix-matching bases
       const aBase = aWords.slice(0, -1).join(' ')
       const bBase = bWords.slice(0, -1).join(' ')
-      if (aBase === bBase && aBase.length >= 5) return true
+      if (aBase.length >= 5 && bBase.length >= 5) {
+        if (aBase === bBase) return true
+        if (aBase.startsWith(bBase) || bBase.startsWith(aBase)) return true
+      }
+      // Also check: same first word when it's a known brand name (≥5 chars)
+      if (aWords[0] === bWords[0] && aWords[0].length >= 5) return true
     }
     return false
   }
