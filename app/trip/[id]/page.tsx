@@ -146,10 +146,17 @@ export default async function TripPage({ params }: Props) {
         {/* Content */}
         <div className="relative max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs text-orange font-semibold">Lulgo</p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-orange font-semibold">Lulgo</p>
+              <span className="text-[10px] text-white/40">
+                {isChinese(trip.language)
+                  ? (trip.language === 'zh-CN' ? 'AI 生成行程 · 60 秒规划你的旅程' : 'AI 生成行程 · 60 秒規劃你嘅旅程')
+                  : 'AI-generated itinerary · Make your own in 60 seconds'}
+              </span>
+            </div>
             <a
               href="/"
-              className="text-xs text-white/60 hover:text-white transition-colors"
+              className="text-xs text-white/60 hover:text-white transition-colors shrink-0"
             >
               {isChinese(trip.language)
                 ? (trip.language === 'zh-CN' ? '✨ 规划你自己的行程' : '✨ 規劃你自己嘅行程')
