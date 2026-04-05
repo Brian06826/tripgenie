@@ -145,7 +145,17 @@ export default async function TripPage({ params }: Props) {
 
         {/* Content */}
         <div className="relative max-w-4xl mx-auto">
-          <p className="text-xs text-orange font-semibold mb-1">Lulgo</p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-orange font-semibold">Lulgo</p>
+            <a
+              href="/"
+              className="text-xs text-white/60 hover:text-white transition-colors"
+            >
+              {isChinese(trip.language)
+                ? (trip.language === 'zh-CN' ? '✨ 规划你自己的行程' : '✨ 規劃你自己嘅行程')
+                : '✨ Plan your own trip'}
+            </a>
+          </div>
           <h1 className="text-2xl font-bold leading-tight mb-1">{trip.title}</h1>
           <p className="text-sm opacity-80 mb-4">
             {trip.destination} · {(() => {
