@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid'
 import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
-import { generateTrip, validateTripRequest, deduplicatePlaces } from '@/lib/claude'
+import { generateTrip, validateTripRequest, deduplicatePlaces, backfillSpareDays } from '@/lib/claude'
 import { clampLateTimes, sortPlacesByTime } from '@/lib/edit-trip'
 import { saveTrip, getTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
@@ -127,8 +127,15 @@ export async function POST(request: Request) {
         // Validate restaurants against Google Places API
         send({ type: 'validating' })
         const t1 = Date.now()
-        const validated = deduplicatePlaces(await validateRestaurants(generation))
+        let validated = deduplicatePlaces(await validateRestaurants(generation))
         console.log(`[Pipeline] validateRestaurants + dedup: ${Date.now() - t1}ms`)
+
+        // Backfill any days that ended up with too few places after validation + dedup
+        const t1b = Date.now()
+        validated = await backfillSpareDays(validated)
+        clampLateTimes(validated)
+        sortPlacesByTime(validated)
+        console.log(`[Pipeline] backfillSpareDays: ${Date.now() - t1b}ms`)
 
         // Geocode all places and optimize routes per day
         send({ type: 'optimizing' })

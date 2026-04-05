@@ -198,6 +198,7 @@ PERSONALIZATION: Read the user's input carefully for signals and adapt:
 STOP COUNT PER DAY (CRITICAL):
 - 1-day trip: 5 stops (6 in compact cities). Structure: morning attraction → lunch → 2 afternoon attractions → dinner.
 - 2+ day trips: 4-5 stops per day. Structure: morning attraction → lunch → 1-2 afternoon attractions → dinner.
+- ABSOLUTE MINIMUM: Every full day MUST have at least 4 places (including meals). A day with fewer than 4 places is INVALID — add more local attractions, cafes, markets, or parks to fill it. If you cannot think of famous spots, include well-rated local favorites or hidden gems.
 - "relaxed" / "chill": reduce by 1 stop, longer durations. Still include lunch AND dinner.
 - "packed" / "maximize": add 1-2 extra stops. Include lunch AND dinner.
 - "morning only" / "半日" / "half day": plan until ~1:00 PM. 2-3 stops + lunch. No dinner.
@@ -422,8 +423,11 @@ export function deduplicatePlaces(trip: TripGeneration): TripGeneration {
     seenKeys.push(normalize(name))
   }
 
+  const MIN_PLACES_PER_DAY = 3
+
   const updatedDays = trip.days.map(day => {
     // Phase 1: filter duplicates, promoting a backup option as replacement when possible
+    let nonDupCount = 0
     const dedupedPlaces = day.places.reduce<typeof day.places>((acc, place) => {
       if (isDuplicate(place.name)) {
         // Try to replace with a non-duplicate backup option
@@ -431,13 +435,21 @@ export function deduplicatePlaces(trip: TripGeneration): TripGeneration {
         if (replacement) {
           console.warn(`[dedup] Replaced duplicate "${place.name}" with backup "${replacement.name}" on day ${day.dayNumber}`)
           addSeen(replacement.name)
+          nonDupCount++
           const remainingBackups = place.backupOptions!.filter(b => b !== replacement)
           acc.push({ ...place, name: replacement.name, nameLocal: undefined, description: replacement.description, backupOptions: remainingBackups.length ? remainingBackups : undefined })
+        } else if (nonDupCount + (day.places.length - acc.length - 1) < MIN_PLACES_PER_DAY) {
+          // Keep the duplicate rather than leaving the day with too few places
+          console.warn(`[dedup] Keeping duplicate "${place.name}" on day ${day.dayNumber} to maintain minimum places`)
+          addSeen(place.name)
+          nonDupCount++
+          acc.push(place)
         } else {
           console.warn(`[dedup] Removed duplicate place: ${place.name} on day ${day.dayNumber}`)
         }
       } else {
         addSeen(place.name)
+        nonDupCount++
         acc.push(place)
       }
       return acc
@@ -624,6 +636,69 @@ async function generateTripParallel(userPrompt: string, onProgress?: (event: Gen
   console.log(`[parallel] Merged: ${merged.days.length} days (${part1.data.days.length} + ${part2.data.days.length})`)
 
   return deduplicatePlaces(merged)
+}
+
+// ---------------------------------------------------------------------------
+// Post-generation safety net: backfill days with too few places
+// ---------------------------------------------------------------------------
+
+const MIN_PLACES_BACKFILL = 4
+
+/**
+ * Check each day for minimum places. If any day is under the threshold,
+ * call Claude to generate additional places for just that day.
+ */
+export async function backfillSpareDays(trip: TripGeneration): Promise<TripGeneration> {
+  const spareDays = trip.days.filter(d => d.places.length < MIN_PLACES_BACKFILL)
+  if (spareDays.length === 0) return trip
+
+  console.log(`[backfill] ${spareDays.length} day(s) under ${MIN_PLACES_BACKFILL} places: ${spareDays.map(d => `Day ${d.dayNumber} (${d.places.length})`).join(', ')}`)
+
+  const systemPrompt = buildSystemPrompt(1)
+
+  // Collect all existing place names across the trip to avoid duplicates
+  const allNames = trip.days.flatMap(d => d.places.map(p => p.name)).join(', ')
+
+  const out: TripGeneration = JSON.parse(JSON.stringify(trip))
+
+  for (const day of spareDays) {
+    const needed = MIN_PLACES_BACKFILL - day.places.length
+    const existingNames = day.places.map(p => p.name).join(', ')
+    const existingTimes = day.places.map(p => `${p.name} at ${p.arrivalTime || 'unknown'}`).join(', ')
+
+    const prompt = `Generate EXACTLY ${needed} additional place(s) for Day ${day.dayNumber} of a trip to ${trip.destination}.
+
+EXISTING places for this day: ${existingTimes}
+ALL places already in the full trip (DO NOT repeat ANY): ${allNames}
+
+Requirements:
+- Add ${needed} new place(s) that fit naturally into Day ${day.dayNumber} "${day.title}"
+- Fill time gaps in the existing schedule (look at existing arrivalTimes)
+- Ensure the day has both lunch (11:30 AM - 1:00 PM) and dinner (5:30 - 8:00 PM) if missing
+- Include: name, nameLocal (if applicable), type, description (1 sentence), arrivalTime, duration, googleRating, tips, priceRange (restaurants only), backupOptions (1 per restaurant/attraction)
+- Places must be real, well-known, and physically located in ${trip.destination}
+- Language: ${trip.language}
+
+Return ONLY a JSON array of the new place objects. Example: [{"name": "...", "type": "attraction", ...}]`
+
+    try {
+      const { parsed } = await callClaude(prompt, systemPrompt, 4000)
+      const newPlaces = Array.isArray(parsed) ? parsed : []
+      if (newPlaces.length > 0) {
+        const targetDay = out.days.find(d => d.dayNumber === day.dayNumber)
+        if (targetDay) {
+          targetDay.places.push(...newPlaces)
+          console.log(`[backfill] Added ${newPlaces.length} place(s) to Day ${day.dayNumber}: ${newPlaces.map((p: any) => p.name).join(', ')}`)
+        }
+      } else {
+        console.warn(`[backfill] No valid places returned for Day ${day.dayNumber}`)
+      }
+    } catch (err) {
+      console.error(`[backfill] Failed to backfill Day ${day.dayNumber}:`, err)
+    }
+  }
+
+  return out
 }
 
 // ---------------------------------------------------------------------------
