@@ -20,6 +20,8 @@ export function PlaceCard({
   onEdit,
   onRemove,
   onTimeChange,
+  onMoveUp,
+  onMoveDown,
   editLoading = false,
   removeLoading = false,
   language,
@@ -30,6 +32,8 @@ export function PlaceCard({
   onEdit?: (instruction: string) => void
   onRemove?: () => void
   onTimeChange?: (newTime: string) => void
+  onMoveUp?: () => void
+  onMoveDown?: () => void
   editLoading?: boolean
   removeLoading?: boolean
   language?: string
@@ -130,8 +134,26 @@ export function PlaceCard({
             ✓ {cn ? '已驗證' : 'Verified'}
           </span>
         )}
-        {(onEdit || onRemove) && !editLoading && !removeLoading && (
-          <div className="ml-auto flex items-center gap-1">
+        {(onEdit || onRemove || onMoveUp || onMoveDown) && !editLoading && !removeLoading && (
+          <div className="ml-auto flex items-center gap-0.5">
+            {onMoveUp && (
+              <button
+                onClick={onMoveUp}
+                className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-gray-300 hover:bg-gray-100 hover:text-gray-500 transition-colors text-xs"
+                aria-label={cn ? `上移 ${place.name}` : `Move ${place.name} up`}
+              >
+                ▲
+              </button>
+            )}
+            {onMoveDown && (
+              <button
+                onClick={onMoveDown}
+                className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-gray-300 hover:bg-gray-100 hover:text-gray-500 transition-colors text-xs"
+                aria-label={cn ? `下移 ${place.name}` : `Move ${place.name} down`}
+              >
+                ▼
+              </button>
+            )}
             {onEdit && (
               <button
                 onClick={() => {

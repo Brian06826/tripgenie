@@ -124,6 +124,27 @@ function cascadeTimes(places: DayPlan['places'], changedIndex: number, newTime: 
   return { updatedPlaces, adjustedCount }
 }
 
+const ADD_CATEGORIES = [
+  { type: 'attraction', emoji: '🎡', label: 'Attraction', labelCN: '景點' },
+  { type: 'restaurant', emoji: '🍽️', label: 'Restaurant', labelCN: '餐廳' },
+  { type: 'cafe', emoji: '☕', label: 'Café', labelCN: '咖啡店' },
+  { type: 'shopping', emoji: '🛍️', label: 'Shopping', labelCN: '購物' },
+  { type: 'park', emoji: '🌳', label: 'Park', labelCN: '公園' },
+] as const
+
+function parseDurationMinutes(dur: string): number {
+  // "1-2 hours" → 90, "30-45 min" → 37, "2 hours" → 120
+  const hourMatch = dur.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)\s*hour/i)
+  if (hourMatch) return Math.round(((parseFloat(hourMatch[1]) + parseFloat(hourMatch[2])) / 2) * 60)
+  const singleHour = dur.match(/(\d+(?:\.\d+)?)\s*hour/i)
+  if (singleHour) return Math.round(parseFloat(singleHour[1]) * 60)
+  const minMatch = dur.match(/(\d+)\s*-\s*(\d+)\s*min/i)
+  if (minMatch) return Math.round((parseInt(minMatch[1]) + parseInt(minMatch[2])) / 2)
+  const singleMin = dur.match(/(\d+)\s*min/i)
+  if (singleMin) return parseInt(singleMin[1])
+  return 60 // default 1 hour
+}
+
 export function TripItinerary({
   initialDays,
   validated = true,
@@ -154,6 +175,8 @@ export function TripItinerary({
   const [removingKey, setRemovingKey] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [activeDay, setActiveDay] = useState(0)
+  const [addingAt, setAddingAt] = useState<string | null>(null) // "dayIndex-placeIndex" for expanded picker
+  const [addingPosition, setAddingPosition] = useState<string | null>(null) // loading state for add
   const sectionRefs = useRef<(HTMLElement | null)[]>([])
   const tabBarRef = useRef<HTMLDivElement>(null)
   const isScrollingRef = useRef(false)
@@ -338,6 +361,85 @@ export function TripItinerary({
 
   const isChinese = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
 
+  const handleMovePlace = useCallback((dayIndex: number, placeIndex: number, direction: 'up' | 'down') => {
+    setDays(prev => {
+      const day = prev[dayIndex]
+      if (!day) return prev
+      const targetIndex = direction === 'up' ? placeIndex - 1 : placeIndex + 1
+      if (targetIndex < 0 || targetIndex >= day.places.length) return prev
+
+      // Swap places but keep arrivalTimes in their original slot positions
+      const newPlaces = [...day.places]
+      const placeA = newPlaces[placeIndex]
+      const placeB = newPlaces[targetIndex]
+      const timeA = placeA.arrivalTime
+      const timeB = placeB.arrivalTime
+      newPlaces[placeIndex] = { ...placeB, arrivalTime: timeA }
+      newPlaces[targetIndex] = { ...placeA, arrivalTime: timeB }
+
+      const updatedDays = prev.map((d, di) => di === dayIndex ? { ...d, places: newPlaces } : d)
+
+      // Save to Redis without undo (user can swap back)
+      if (onTimeCascade) onTimeCascade(updatedDays, 0)
+
+      return updatedDays
+    })
+  }, [onTimeCascade])
+
+  const handleAddPlace = useCallback(async (dayIndex: number, afterPlaceIndex: number, categoryType: string) => {
+    if (!tripId || !destination) return
+    const key = `${dayIndex}-${afterPlaceIndex}`
+    setAddingPosition(key)
+    setAddingAt(null)
+
+    try {
+      const day = days[dayIndex]
+      const afterPlace = day.places[afterPlaceIndex]
+      const nextPlace = day.places[afterPlaceIndex + 1]
+
+      // Calculate time for the new place: between afterPlace end and nextPlace start
+      let suggestedTime = ''
+      if (afterPlace?.arrivalTime) {
+        const afterMins = parseTimeToMinutes(afterPlace.arrivalTime)
+        if (afterMins !== null) {
+          const duration = afterPlace.duration ? parseDurationMinutes(afterPlace.duration) : 60
+          suggestedTime = minutesToTimeStr(afterMins + duration + 15, true) // 15 min gap
+        }
+      }
+
+      // Build instruction for AI
+      const categoryLabel = ADD_CATEGORIES.find(c => c.type === categoryType)
+      const categoryName = isChinese ? (categoryLabel?.labelCN ?? categoryType) : (categoryLabel?.label ?? categoryType)
+      const instruction = isChinese
+        ? `喺 Day ${day.dayNumber} 嘅 "${afterPlace.name}" 之後加一個${categoryName}，大約${suggestedTime ? ` ${suggestedTime}` : ''}。`
+        : `Add a ${categoryName} after "${afterPlace.name}" on Day ${day.dayNumber}${suggestedTime ? ` around ${suggestedTime}` : ''}.`
+
+      const res = await fetch('/api/edit-trip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tripId,
+          instruction,
+          language: language ?? 'en',
+        }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Add place failed')
+      }
+
+      // Reload page to show updated trip
+      window.location.reload()
+    } catch (err) {
+      console.error('[add-place] Failed:', err)
+      setToast(isChinese ? '新增失敗' : 'Failed to add')
+      setTimeout(() => setToast(null), 3000)
+    } finally {
+      setAddingPosition(null)
+    }
+  }, [days, tripId, destination, language, isChinese])
+
   const handleRemove = useCallback(async (dayIndex: number, placeIndex: number) => {
     if (!onRemovePlace) return
     const key = `${dayIndex}-${placeIndex}`
@@ -434,6 +536,8 @@ export function TripItinerary({
                       onEdit={destination ? (instruction) => handleEdit(dayIndex, placeIndex, instruction) : undefined}
                       onRemove={onRemovePlace ? () => handleRemove(dayIndex, placeIndex) : undefined}
                       onTimeChange={tripId ? (newTime) => handleTimeChange(dayIndex, placeIndex, newTime) : undefined}
+                      onMoveUp={tripId && placeIndex > 0 ? () => handleMovePlace(dayIndex, placeIndex, 'up') : undefined}
+                      onMoveDown={tripId && placeIndex < day.places.length - 1 ? () => handleMovePlace(dayIndex, placeIndex, 'down') : undefined}
                       editLoading={isEditing}
                       removeLoading={removingKey === key}
                       language={language}
@@ -447,6 +551,44 @@ export function TripItinerary({
                     />
                   )}
                 </div>
+
+                {/* "+" add place button */}
+                {tripId && destination && (
+                  <div className="flex justify-center py-1">
+                    {addingPosition === `${dayIndex}-${placeIndex}` ? (
+                      <span className="text-[10px] text-orange bg-orange/10 px-3 py-1.5 rounded-full animate-pulse">
+                        {isChinese ? '新增中...' : 'Adding...'}
+                      </span>
+                    ) : addingAt === `${dayIndex}-${placeIndex}` ? (
+                      <div className="flex flex-wrap justify-center gap-1.5 animate-fade-in">
+                        {ADD_CATEGORIES.map(cat => (
+                          <button
+                            key={cat.type}
+                            onClick={() => handleAddPlace(dayIndex, placeIndex, cat.type)}
+                            className="flex items-center gap-1 text-[11px] bg-white border border-gray-200 text-gray-600 px-2.5 py-1.5 rounded-full hover:border-orange hover:text-orange transition-colors"
+                          >
+                            <span>{cat.emoji}</span>
+                            <span>{isChinese ? cat.labelCN : cat.label}</span>
+                          </button>
+                        ))}
+                        <button
+                          onClick={() => setAddingAt(null)}
+                          className="text-[11px] text-gray-400 px-1.5 py-1.5 rounded-full hover:text-gray-600 transition-colors"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setAddingAt(`${dayIndex}-${placeIndex}`)}
+                        className="w-6 h-6 flex items-center justify-center rounded-full text-gray-300 hover:bg-orange/10 hover:text-orange transition-colors text-sm font-bold"
+                        aria-label={isChinese ? '新增景點' : 'Add place'}
+                      >
+                        +
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             )
           })}
