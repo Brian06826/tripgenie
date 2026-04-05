@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import type { Trip } from '@/lib/types'
 import { downloadICS, generatePlainText, copyToClipboard, buildGoogleMapsRouteUrl, downloadTripImage } from '@/lib/export'
+import { useUILocale } from '@/lib/i18n-context'
+import { t } from '@/lib/i18n'
 
 interface Props {
   trip: Trip
@@ -18,8 +20,7 @@ export function ExportButton({ trip }: Props) {
   const [selectedDate, setSelectedDate] = useState('')
   const [mounted, setMounted] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-
-  const cn = trip.language === 'zh-TW' || trip.language === 'zh-HK' || trip.language === 'zh-CN'
+  const { locale } = useUILocale()
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -131,9 +132,9 @@ export function ExportButton({ trip }: Props) {
       <button
         onClick={() => { setOpen(!open); setMapsOpen(false) }}
         className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 min-h-[44px] rounded-lg text-white text-sm font-semibold transition-opacity hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
-        aria-label={cn ? '匯出行程' : 'Export trip'}
+        aria-label={t(locale, 'export.ariaLabel')}
       >
-        📥 {cn ? '匯出' : 'Export'}
+        📥 {t(locale, 'export.button')}
       </button>
 
       {/* Export format dropdown */}
@@ -146,12 +147,9 @@ export function ExportButton({ trip }: Props) {
             <span className="text-lg">📋</span>
             <div>
               <div className="font-medium">
-                {copied
-                  ? (cn ? '✅ 已複製！' : '✅ Copied!')
-                  : (cn ? '複製文字' : 'Copy as Text')
-                }
+                {copied ? t(locale, 'export.copied') : t(locale, 'export.copyText')}
               </div>
-              <div className="text-xs text-gray-400">{cn ? '詳細行程，貼去 WhatsApp / LINE' : 'Full itinerary for WhatsApp / LINE'}</div>
+              <div className="text-xs text-gray-400">{t(locale, 'export.copyDesc')}</div>
             </div>
           </button>
 
@@ -161,8 +159,8 @@ export function ExportButton({ trip }: Props) {
           >
             <span className="text-lg">📸</span>
             <div>
-              <div className="font-medium">{cn ? '下載圖片' : 'Download Image'}</div>
-              <div className="text-xs text-gray-400">{cn ? '長圖，離線睇 / 社交分享' : 'Full itinerary image for offline'}</div>
+              <div className="font-medium">{t(locale, 'export.downloadImage')}</div>
+              <div className="text-xs text-gray-400">{t(locale, 'export.imageDesc')}</div>
             </div>
           </button>
 
@@ -172,8 +170,8 @@ export function ExportButton({ trip }: Props) {
           >
             <span className="text-lg">🗺️</span>
             <div>
-              <div className="font-medium">{cn ? 'Google Maps 路線' : 'Google Maps Route'}</div>
-              <div className="text-xs text-gray-400">{cn ? '開 Google Maps 導航' : 'Open route in Maps'}</div>
+              <div className="font-medium">{t(locale, 'export.mapsRoute')}</div>
+              <div className="text-xs text-gray-400">{t(locale, 'export.mapsDesc')}</div>
             </div>
           </button>
 
@@ -183,8 +181,8 @@ export function ExportButton({ trip }: Props) {
           >
             <span className="text-lg">📅</span>
             <div>
-              <div className="font-medium">{cn ? '加入日曆' : 'Add to Calendar'}</div>
-              <div className="text-xs text-gray-400">{cn ? '下載 .ics 檔案' : 'Download .ics file'}</div>
+              <div className="font-medium">{t(locale, 'export.calendar')}</div>
+              <div className="text-xs text-gray-400">{t(locale, 'export.calendarDesc')}</div>
             </div>
           </button>
         </div>
@@ -194,7 +192,7 @@ export function ExportButton({ trip }: Props) {
       {mapsOpen && (
         <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50 animate-fade-in">
           <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-100">
-            {cn ? '選擇日期' : 'Select Day'}
+            {t(locale, 'export.selectDay')}
           </div>
           {trip.days.map((day, i) => (
             <button
@@ -205,7 +203,7 @@ export function ExportButton({ trip }: Props) {
               <span className="text-lg">📍</span>
               <div>
                 <div className="font-medium">
-                  {cn ? `第${day.dayNumber}日` : `Day ${day.dayNumber}`}
+                  {t(locale, 'export.dayN', { n: day.dayNumber })}
                 </div>
                 <div className="text-xs text-gray-400 truncate">{day.title}</div>
               </div>
@@ -223,16 +221,12 @@ export function ExportButton({ trip }: Props) {
           <div className="bg-white rounded-2xl shadow-2xl w-[320px] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="px-6 pt-5 pb-3">
               <h3 className="text-base font-bold text-gray-800">
-                {cn ? '選擇出發日期' : 'Select start date'}
+                {t(locale, 'export.selectDate')}
               </h3>
               <p className="text-xs text-gray-400 mt-1">
-                {cn
-                  ? pendingAction === 'calendar'
-                    ? '日曆事件將會根據呢個日期排列'
-                    : '圖片上會顯示每日對應嘅日期'
-                  : pendingAction === 'calendar'
-                    ? 'Calendar events will be scheduled from this date'
-                    : 'Dates will appear on each day header in the image'
+                {pendingAction === 'calendar'
+                  ? t(locale, 'export.calendarDateHint')
+                  : t(locale, 'export.imageDateHint')
                 }
               </p>
             </div>
@@ -249,13 +243,13 @@ export function ExportButton({ trip }: Props) {
                 onClick={handleDateSkip}
                 className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors min-h-[44px]"
               >
-                {cn ? '跳過' : 'Skip'}
+                {t(locale, 'export.skip')}
               </button>
               <button
                 onClick={handleDateConfirm}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-orange hover:opacity-90 transition-opacity min-h-[44px]"
               >
-                {cn ? '確認' : 'Confirm'}
+                {t(locale, 'export.confirm')}
               </button>
             </div>
           </div>

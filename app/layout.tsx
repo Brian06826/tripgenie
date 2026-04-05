@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
 import { AuthProvider } from '@/components/AuthProvider'
+import { I18nProvider } from '@/lib/i18n-context'
+import { detectLocaleFromHeader } from '@/lib/i18n'
+import { headers } from 'next/headers'
 import './globals.css'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
@@ -16,11 +19,17 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const headersList = await headers()
+  const acceptLang = headersList.get('accept-language') ?? ''
+  const detected = detectLocaleFromHeader(acceptLang)
+
   return (
     <html lang="zh-HK" className={`${geist.variable} h-full`}>
       <body className="min-h-full antialiased">
-        <AuthProvider>{children}</AuthProvider>
+        <I18nProvider detected={detected}>
+          <AuthProvider>{children}</AuthProvider>
+        </I18nProvider>
       </body>
     </html>
   )

@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import type { Trip } from '@/lib/types'
 import { generateShareText } from '@/lib/export'
+import { useUILocale } from '@/lib/i18n-context'
+import { t } from '@/lib/i18n'
 
 function generateQrUrl(data: string, size: number): string {
   const encoded = encodeURIComponent(data)
@@ -12,18 +14,16 @@ function generateQrUrl(data: string, size: number): string {
 interface Props {
   tripId: string
   tripTitle?: string
-  language?: string
   trip: Trip
 }
 
-export function ShareButton({ tripId, tripTitle, language, trip }: Props) {
+export function ShareButton({ tripId, tripTitle, trip }: Props) {
   const [copied, setCopied] = useState(false)
   const [copyFailed, setCopyFailed] = useState(false)
   const [showPanel, setShowPanel] = useState(false)
   const [url, setUrl] = useState(`/trip/${tripId}`)
   const [mounted, setMounted] = useState(false)
-
-  const isChinese = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
+  const { locale } = useUILocale()
   const destination = tripTitle ?? 'My Trip'
 
   useEffect(() => {
@@ -110,13 +110,13 @@ export function ShareButton({ tripId, tripTitle, language, trip }: Props) {
         aria-label="Share trip"
         className="flex items-center gap-2 bg-orange px-4 min-h-[44px] rounded-lg text-white text-sm font-semibold transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
       >
-        📤 {isChinese ? '分享' : 'Share'}
+        📤 {t(locale, 'share.button')}
       </button>
 
       {/* Share success toast (after native share) */}
       {shareSuccess && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-800 text-white text-sm px-4 py-2.5 rounded-xl shadow-lg animate-fade-in">
-          {isChinese ? '✅ 已分享！' : '✅ Shared!'}
+          {t(locale, 'share.shared')}
         </div>
       )}
 
@@ -143,7 +143,7 @@ export function ShareButton({ tripId, tripTitle, language, trip }: Props) {
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-gray-900">
-                {isChinese ? '分享行程' : 'Share Trip'}
+                {t(locale, 'share.title')}
               </h3>
               <button
                 onClick={() => setShowPanel(false)}
@@ -195,7 +195,7 @@ export function ShareButton({ tripId, tripTitle, language, trip }: Props) {
             {/* QR Code */}
             <div className="flex flex-col items-center mb-4">
               <p className="text-xs text-gray-500 mb-2 font-medium">
-                {isChinese ? '掃碼查看（微信適用）' : 'Scan to view (WeChat friendly)'}
+                {t(locale, 'share.qr')}
               </p>
               <img
                 src={generateQrUrl(url, 140)}
@@ -221,10 +221,10 @@ export function ShareButton({ tripId, tripTitle, language, trip }: Props) {
               }`}
             >
               {copied
-                ? (isChinese ? '✅ 已複製！' : '✅ Copied!')
+                ? t(locale, 'share.linkCopied')
                 : copyFailed
-                  ? (isChinese ? '⚠️ 複製失敗' : '⚠️ Copy failed — try long-press the link above')
-                  : (isChinese ? '📋 複製連結' : '📋 Copy Link')
+                  ? t(locale, 'share.copyFailed')
+                  : t(locale, 'share.copyLink')
               }
             </button>
           </div>

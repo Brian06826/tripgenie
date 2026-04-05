@@ -5,6 +5,8 @@ import type { DayPlan } from '@/lib/types'
 import { PlaceCard } from './PlaceCard'
 import { AlternativesPanel } from './AlternativesPanel'
 import { HotelSuggestion, getDayCity } from './HotelSuggestion'
+import { useUILocale } from '@/lib/i18n-context'
+import { t } from '@/lib/i18n'
 
 // Yelp is useful for US destinations only
 const US_SIGNALS = [
@@ -125,11 +127,11 @@ function cascadeTimes(places: DayPlan['places'], changedIndex: number, newTime: 
 }
 
 const ADD_CATEGORIES = [
-  { type: 'attraction', emoji: '🎡', label: 'Attraction', labelCN: '景點' },
-  { type: 'restaurant', emoji: '🍽️', label: 'Restaurant', labelCN: '餐廳' },
-  { type: 'cafe', emoji: '☕', label: 'Café', labelCN: '咖啡店' },
-  { type: 'shopping', emoji: '🛍️', label: 'Shopping', labelCN: '購物' },
-  { type: 'park', emoji: '🌳', label: 'Park', labelCN: '公園' },
+  { type: 'attraction', emoji: '🎡', i18nKey: 'itin.attraction' },
+  { type: 'restaurant', emoji: '🍽️', i18nKey: 'itin.restaurant' },
+  { type: 'cafe', emoji: '☕', i18nKey: 'itin.cafe' },
+  { type: 'shopping', emoji: '🛍️', i18nKey: 'itin.shopping' },
+  { type: 'park', emoji: '🌳', i18nKey: 'itin.park' },
 ] as const
 
 function parseDurationMinutes(dur: string): number {
@@ -169,6 +171,7 @@ export function TripItinerary({
   tripId?: string
 }) {
   const showYelp = isUSDestination(destination)
+  const { locale } = useUILocale()
   const [days, setDays] = useState(initialDays)
   const [swappedKey, setSwappedKey] = useState<string | null>(null)
   const [editingKey, setEditingKey] = useState<string | null>(null)
@@ -329,8 +332,6 @@ export function TripItinerary({
   }, [days, destination, language, onSaveDays])
 
   const handleTimeChange = useCallback(async (dayIndex: number, placeIndex: number, newTime: string) => {
-    const isCN = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
-
     // Apply cascade: adjust subsequent places by delta with meal-time guards
     setDays(prev => {
       const day = prev[dayIndex]
@@ -353,16 +354,14 @@ export function TripItinerary({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tripId, dayNumber, placeIndex, newTime }),
         }).catch(() => {
-          setToast(isCN ? '儲存失敗' : 'Save failed')
+          setToast(t(locale, 'itin.saveFailed'))
           setTimeout(() => setToast(null), 3000)
         })
       }
 
       return updatedDays
     })
-  }, [tripId, language, onTimeCascade])
-
-  const isChinese = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
+  }, [tripId, locale, onTimeCascade])
 
   const handleMovePlace = useCallback((dayIndex: number, placeIndex: number, direction: 'up' | 'down') => {
     setDays(prev => {
@@ -416,15 +415,16 @@ export function TripItinerary({
       }
 
       // Build instruction for AI
+      const isCN = locale === 'zh-TW' || locale === 'zh-CN'
       let instruction: string
       if (customText) {
-        instruction = isChinese
+        instruction = isCN
           ? `喺 Day ${day.dayNumber} 嘅 "${afterPlace.name}" 之後加：${customText}${suggestedTime ? `，大約 ${suggestedTime}` : ''}。`
           : `Add after "${afterPlace.name}" on Day ${day.dayNumber}: ${customText}${suggestedTime ? ` around ${suggestedTime}` : ''}.`
       } else {
         const categoryLabel = ADD_CATEGORIES.find(c => c.type === categoryType)
-        const categoryName = isChinese ? (categoryLabel?.labelCN ?? categoryType) : (categoryLabel?.label ?? categoryType)
-        instruction = isChinese
+        const categoryName = categoryLabel ? t(locale, categoryLabel.i18nKey as any) : categoryType
+        instruction = isCN
           ? `喺 Day ${day.dayNumber} 嘅 "${afterPlace.name}" 之後加一個${categoryName}，大約${suggestedTime ? ` ${suggestedTime}` : ''}。`
           : `Add a ${categoryName} after "${afterPlace.name}" on Day ${day.dayNumber}${suggestedTime ? ` around ${suggestedTime}` : ''}.`
       }
@@ -450,17 +450,17 @@ export function TripItinerary({
         setDays(result.trip.days)
         // Sync parent TripEditor state (also saves to Redis, but edit-trip already saved — harmless)
         if (onTimeCascade) onTimeCascade(result.trip.days, 0)
-        setToast(isChinese ? '已新增' : 'Added')
+        setToast(t(locale, 'itin.added'))
         setTimeout(() => setToast(null), 3000)
       }
     } catch (err) {
       console.error('[add-place] Failed:', err)
-      setToast(isChinese ? '新增失敗' : 'Failed to add')
+      setToast(t(locale, 'itin.addFailed'))
       setTimeout(() => setToast(null), 3000)
     } finally {
       setAddingPosition(null)
     }
-  }, [days, tripId, destination, language, isChinese, onTimeCascade])
+  }, [days, tripId, destination, language, locale, onTimeCascade])
 
   const handleRemove = useCallback(async (dayIndex: number, placeIndex: number) => {
     if (!onRemovePlace) return
@@ -476,18 +476,17 @@ export function TripItinerary({
           if (di !== dayIndex) return d
           return { ...d, places: d.places.filter((_, pi) => pi !== placeIndex) }
         }))
-        const msg = isChinese ? `已移除 ${placeName}` : `Removed ${placeName}`
-        setToast(msg)
+        setToast(t(locale, 'itin.removed', { name: placeName }))
         setTimeout(() => setToast(null), 3000)
       }
     } catch (err) {
       console.error('[remove] Failed:', err)
-      setToast(isChinese ? '移除失敗' : 'Remove failed')
+      setToast(t(locale, 'itin.removeFailed'))
       setTimeout(() => setToast(null), 3000)
     } finally {
       setRemovingKey(null)
     }
-  }, [days, onRemovePlace, isChinese])
+  }, [days, onRemovePlace, locale])
 
   return (
     <>
@@ -507,7 +506,7 @@ export function TripItinerary({
                   : 'bg-white text-gray-500 border border-gray-200 hover:border-orange hover:text-orange'
               }`}
             >
-              {isChinese ? `第${day.dayNumber}日` : `Day ${day.dayNumber}`}{startDate ? ` · ${formatDayDate(startDate, i, language) ?? ''}` : ''}
+              {t(locale, 'itin.dayN', { n: day.dayNumber })}{startDate ? ` · ${formatDayDate(startDate, i, language) ?? ''}` : ''}
             </button>
           ))}
         </div>
@@ -521,7 +520,7 @@ export function TripItinerary({
         >
           <div className="sticky top-[52px] bg-navy text-white px-4 py-2.5 rounded-lg mb-3 z-10">
             <h2 className="font-bold text-lg">
-              {isChinese ? `第${day.dayNumber}日` : `Day ${day.dayNumber}`}
+              {t(locale, 'itin.dayN', { n: day.dayNumber })}
               {startDate && formatDayDate(startDate, dayIndex, language) && (
                 <span className="font-normal text-sm opacity-70 ml-2">
                   {formatDayDate(startDate, dayIndex, language)}
@@ -562,14 +561,12 @@ export function TripItinerary({
                       onMoveDown={tripId && placeIndex < day.places.length - 1 ? () => handleMovePlace(dayIndex, placeIndex, 'down') : undefined}
                       editLoading={isEditing}
                       removeLoading={removingKey === key}
-                      language={language}
                     />
                   </div>
                   {hasAlternatives && (
                     <AlternativesPanel
                       backups={place.backupOptions!}
                       onSwap={(backupIndex) => handleSwap(dayIndex, placeIndex, backupIndex)}
-                      language={language}
                     />
                   )}
                 </div>
@@ -579,7 +576,7 @@ export function TripItinerary({
                   <div className="flex justify-center py-1">
                     {addingPosition === `${dayIndex}-${placeIndex}` ? (
                       <span className="text-[10px] text-orange bg-orange/10 px-3 py-1.5 rounded-full animate-pulse">
-                        {isChinese ? '新增中...' : 'Adding...'}
+                        {t(locale, 'itin.adding')}
                       </span>
                     ) : addingAt === `${dayIndex}-${placeIndex}` ? (
                       <div className="flex flex-col items-center gap-1.5 animate-fade-in">
@@ -591,7 +588,7 @@ export function TripItinerary({
                               className="flex items-center gap-1 text-[11px] bg-white border border-gray-200 text-gray-600 px-2.5 py-1.5 rounded-full hover:border-orange hover:text-orange transition-colors"
                             >
                               <span>{cat.emoji}</span>
-                              <span>{isChinese ? cat.labelCN : cat.label}</span>
+                              <span>{t(locale, cat.i18nKey as any)}</span>
                             </button>
                           ))}
                           {customAddKey !== `${dayIndex}-${placeIndex}` && (
@@ -603,7 +600,7 @@ export function TripItinerary({
                               className="flex items-center gap-1 text-[11px] bg-white border border-dashed border-gray-300 text-gray-500 px-2.5 py-1.5 rounded-full hover:border-orange hover:text-orange transition-colors"
                             >
                               <span>✍️</span>
-                              <span>{isChinese ? '自訂' : 'Custom'}</span>
+                              <span>{t(locale, 'itin.custom')}</span>
                             </button>
                           )}
                           <button
@@ -624,7 +621,7 @@ export function TripItinerary({
                                 if (e.key === 'Enter' && customAddText.trim()) handleAddPlace(dayIndex, placeIndex, 'custom', customAddText.trim())
                                 if (e.key === 'Escape') { setCustomAddKey(null); setCustomAddText('') }
                               }}
-                              placeholder={isChinese ? '例如：拉麵店、書店...' : 'e.g. ramen shop, bookstore...'}
+                              placeholder={t(locale, 'itin.customPlaceholder')}
                               autoComplete="off"
                               className="flex-1 text-xs border border-gray-200 rounded-full px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-orange focus:border-transparent"
                             />
@@ -633,7 +630,7 @@ export function TripItinerary({
                               disabled={!customAddText.trim()}
                               className="shrink-0 text-xs bg-orange text-white px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-40 transition-opacity font-semibold"
                             >
-                              {isChinese ? '加' : 'Add'}
+                              {t(locale, 'itin.add')}
                             </button>
                           </div>
                         )}
@@ -642,7 +639,7 @@ export function TripItinerary({
                       <button
                         onClick={() => setAddingAt(`${dayIndex}-${placeIndex}`)}
                         className="w-6 h-6 flex items-center justify-center rounded-full text-gray-300 hover:bg-orange/10 hover:text-orange transition-colors text-sm font-bold"
-                        aria-label={isChinese ? '新增景點' : 'Add place'}
+                        aria-label={t(locale, 'itin.addPlace')}
                       >
                         +
                       </button>

@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { getRecentTrips, removeRecentTrip, clearRecentTrips, type RecentTrip } from '@/lib/recent-trips'
+import { useUILocale } from '@/lib/i18n-context'
+import { t } from '@/lib/i18n'
 
 function timeAgo(dateStr: string): string {
   const now = Date.now()
@@ -20,14 +22,14 @@ function timeAgo(dateStr: string): string {
 
 export function RecentTrips() {
   const [trips, setTrips] = useState<RecentTrip[]>([])
+  const { locale } = useUILocale()
 
   const reload = useCallback(() => setTrips(getRecentTrips()), [])
 
   // Load on mount
   useEffect(() => { reload() }, [reload])
 
-  // Re-load when page becomes visible again (browser back button uses bfcache,
-  // which restores the page without re-running useEffect — so we need this)
+  // Re-load when page becomes visible again
   useEffect(() => {
     function onPageShow(e: PageTransitionEvent) {
       if (e.persisted) reload()
@@ -59,13 +61,13 @@ export function RecentTrips() {
     <section className="max-w-xl mx-auto px-4 pb-6">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-          Your Recent Trips / 你最近嘅行程
+          {t(locale, 'recent.title')}
         </h2>
         <button
           onClick={handleClearAll}
           className="text-xs text-gray-400 hover:text-red-500 transition-colors"
         >
-          Clear All
+          {t(locale, 'recent.clearAll')}
         </button>
       </div>
       <div className="space-y-2">

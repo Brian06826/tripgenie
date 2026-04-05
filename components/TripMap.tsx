@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { DayPlan } from '@/lib/types'
+import { useUILocale } from '@/lib/i18n-context'
+import { t } from '@/lib/i18n'
 
 const TYPE_COLORS: Record<string, string> = {
   attraction: '#3b82f6',  // blue
@@ -19,10 +21,9 @@ const DAY_COLORS = [
 interface Props {
   days: DayPlan[]
   onSelectPlace?: (dayIndex: number, placeIndex: number) => void
-  language?: string
 }
 
-export function TripMap({ days, onSelectPlace, language }: Props) {
+export function TripMap({ days, onSelectPlace }: Props) {
   const mapRef = useRef<HTMLDivElement>(null)
   const leafletMap = useRef<any>(null)
   // Default open on desktop (>=768px), closed on mobile
@@ -180,7 +181,7 @@ export function TripMap({ days, onSelectPlace, language }: Props) {
     }
   }
 
-  const cn = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
+  const { locale } = useUILocale()
 
   if (!hasCoords) return null
 
@@ -192,8 +193,8 @@ export function TripMap({ days, onSelectPlace, language }: Props) {
         className="w-full flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-semibold hover:border-orange hover:text-orange transition-colors mb-4 min-h-[44px]"
       >
         {isOpen
-          ? (cn ? '📋 隱藏地圖' : '📋 Hide Map')
-          : (cn ? '🗺️ 顯示地圖' : '🗺️ Show Map')
+          ? t(locale, 'map.hide')
+          : t(locale, 'map.show')
         }
       </button>
 
@@ -210,7 +211,7 @@ export function TripMap({ days, onSelectPlace, language }: Props) {
                     : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                 }`}
               >
-                {cn ? '全部' : 'All'}
+                {t(locale, 'map.all')}
               </button>
               {days.map((day, i) => (
                 <button
@@ -223,7 +224,7 @@ export function TripMap({ days, onSelectPlace, language }: Props) {
                   }`}
                   style={activeDay === i ? { background: DAY_COLORS[i % DAY_COLORS.length] } : undefined}
                 >
-                  {cn ? `第${day.dayNumber}日` : `Day ${day.dayNumber}`}
+                  {t(locale, 'itin.dayN', { n: day.dayNumber })}
                 </button>
               ))}
             </div>

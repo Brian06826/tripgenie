@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useUILocale } from '@/lib/i18n-context'
+import { t } from '@/lib/i18n'
 
 interface Props {
   onSubmit: (instruction: string, language: string) => void
@@ -15,7 +17,7 @@ interface Props {
 export function TripEditBar({ onSubmit, onUndo, onCancel, canUndo, isLoading, error, language }: Props) {
   const [input, setInput] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-  const isChinese = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
+  const { locale } = useUILocale()
 
   // Auto-dismiss error after 5 seconds
   const [showError, setShowError] = useState(false)
@@ -50,9 +52,7 @@ export function TripEditBar({ onSubmit, onUndo, onCancel, canUndo, isLoading, er
           </div>
         )}
         <p className="text-[11px] text-gray-400 mb-1.5 px-1">
-          {isChinese
-            ? '💡 你可以加景點、換餐廳、加酒店、調整時間... 用自然語言描述就得！'
-            : '💡 Add places, swap restaurants, add hotels, adjust times... just describe what you want!'}
+          {t(locale, 'edit.hint')}
         </p>
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
           {canUndo && !isLoading && (
@@ -61,7 +61,7 @@ export function TripEditBar({ onSubmit, onUndo, onCancel, canUndo, isLoading, er
               onClick={onUndo}
               className="shrink-0 px-3 py-2.5 text-xs font-medium text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors min-h-[44px]"
             >
-              ↩ {isChinese ? '復原' : 'Undo'}
+              ↩ {t(locale, 'edit.undo')}
             </button>
           )}
           <input
@@ -69,10 +69,7 @@ export function TripEditBar({ onSubmit, onUndo, onCancel, canUndo, isLoading, er
             type="text"
             value={input}
             onChange={e => setInput(e.target.value)}
-            placeholder={isChinese
-              ? "修改行程... 例如 '晚餐改成日本料理'"
-              : "Modify your trip... e.g. 'change dinner to sushi'"
-            }
+            placeholder={t(locale, 'edit.placeholder')}
             disabled={isLoading}
             className="flex-1 min-w-0 px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:border-orange focus:ring-1 focus:ring-orange disabled:bg-gray-50 disabled:text-gray-400 min-h-[44px]"
           />
@@ -82,7 +79,7 @@ export function TripEditBar({ onSubmit, onUndo, onCancel, canUndo, isLoading, er
               onClick={onCancel}
               className="shrink-0 px-4 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors min-h-[44px]"
             >
-              {isChinese ? '取消' : 'Cancel'}
+              {t(locale, 'edit.cancel')}
             </button>
           ) : (
             <button
@@ -103,7 +100,7 @@ export function TripEditBar({ onSubmit, onUndo, onCancel, canUndo, isLoading, er
               <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
             </svg>
             <p className="text-xs text-gray-400">
-              {isChinese ? '更新中...' : 'Updating...'}
+              {t(locale, 'edit.updating')}
             </p>
           </div>
         )}

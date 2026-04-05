@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { useUILocale } from '@/lib/i18n-context'
+import { t } from '@/lib/i18n'
 
 const ASIA_SIGNALS = [
   'japan', 'tokyo', 'osaka', 'kyoto', 'fukuoka', 'sapporo', 'okinawa', 'nagoya', 'hiroshima', 'nara',
@@ -146,9 +148,9 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
   const [bookingLink, setBookingLink] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-  if (days < 2) return null
+  const { locale } = useUILocale()
 
-  const isChinese = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
+  if (days < 2) return null
   const showAgoda = isAsianDestination(dayCity) || isAsianDestination(destination)
 
   // Use per-day city for booking links so multi-city trips search the right city
@@ -184,7 +186,7 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
       }
       window.location.reload()
     } catch {
-      setError(isChinese ? '推薦失敗，請重試' : 'Failed, please try again')
+      setError(t(locale, 'hotel.recommendFailed'))
       setAiLoading(false)
     }
   }
@@ -207,7 +209,7 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
       }
       window.location.reload()
     } catch {
-      setError(isChinese ? '加入失敗，請重試' : 'Failed to add, please try again')
+      setError(t(locale, 'hotel.addFailed'))
       setAddLoading(false)
     }
   }
@@ -217,7 +219,7 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-4 mb-4">
       <p className="text-sm font-semibold text-gray-700 mb-3">
-        🏨 {isChinese ? `第${dayNumber}日需要酒店？` : `Need a hotel for Day ${dayNumber}?`}
+        🏨 {t(locale, 'hotel.needHotel', { n: dayNumber })}
       </p>
 
       {/* Booking links + AI recommend */}
@@ -256,10 +258,10 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
           {aiLoading ? (
             <>
               <span className="inline-block w-3 h-3 border-2 border-orange/30 border-t-orange rounded-full animate-spin" />
-              {isChinese ? '推薦中...' : 'Finding...'}
+              {t(locale, 'hotel.finding')}
             </>
           ) : (
-            <>✨ {isChinese ? 'AI 推薦' : 'AI Recommend'}</>
+            <>✨ {t(locale, 'hotel.aiRecommend')}</>
           )}
         </button>
       </div>
@@ -271,7 +273,7 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
           value={hotelName}
           onChange={(e) => setHotelName(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleAddHotel() }}
-          placeholder={isChinese ? '輸入酒店名稱...' : 'Enter your hotel name...'}
+          placeholder={t(locale, 'hotel.hotelPlaceholder')}
           disabled={isLoading}
           autoComplete="off"
           autoCorrect="off"
@@ -286,7 +288,7 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
           {addLoading ? (
             <span className="inline-block w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
-            <>➕ {isChinese ? '加入行程' : 'Add to Trip'}</>
+            <>➕ {t(locale, 'hotel.addToTrip')}</>
           )}
         </button>
       </div>
@@ -297,7 +299,7 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
           type="url"
           value={bookingLink}
           onChange={(e) => setBookingLink(e.target.value)}
-          placeholder={isChinese ? '貼上訂房連結（選填）' : 'Paste booking link (optional)'}
+          placeholder={t(locale, 'hotel.bookingLink')}
           disabled={isLoading}
           autoComplete="off"
           className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 mt-2 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent disabled:opacity-50"
@@ -306,7 +308,7 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
 
       {/* Hint: nightlife activities */}
       <p className="text-xs text-gray-400 mt-2">
-        {isChinese ? '💡 想加夜間活動？用下面嘅編輯框告訴 AI！' : '💡 Want to add nightlife? Use the edit box below!'}
+        {t(locale, 'hotel.nightlifeHint')}
       </p>
 
       {/* Error message */}

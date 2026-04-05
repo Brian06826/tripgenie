@@ -2,6 +2,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { TripLoadingOverlay } from '@/components/TripLoadingOverlay'
+import { useUILocale } from '@/lib/i18n-context'
+import { t, isChinese as isChineseLocale } from '@/lib/i18n'
 
 const ROTATING_PLACEHOLDERS = [
   '"3 days Tokyo food trip"',
@@ -13,17 +15,17 @@ const ROTATING_PLACEHOLDERS = [
 ]
 
 type ChipGroup = 'who' | 'style'
-const PREFERENCE_CHIPS: { emoji: string; label: string; labelZh: string; keyword: string; group: ChipGroup }[] = [
+const PREFERENCE_CHIPS: { emoji: string; i18nKey: string; keyword: string; group: ChipGroup }[] = [
   // Who (exclusive — pick one)
-  { emoji: '👫', label: 'With Partner', labelZh: '情侶', keyword: 'romantic couple', group: 'who' },
-  { emoji: '👨‍👩‍👧', label: 'With Kids', labelZh: '親子', keyword: 'family-friendly', group: 'who' },
-  { emoji: '👨‍👩‍👦‍👦', label: 'With Friends', labelZh: '朋友', keyword: 'group of friends', group: 'who' },
-  { emoji: '🧍', label: 'Solo', labelZh: '一個人', keyword: 'solo traveler', group: 'who' },
+  { emoji: '👫', i18nKey: 'chip.partner', keyword: 'romantic couple', group: 'who' },
+  { emoji: '👨‍👩‍👧', i18nKey: 'chip.kids', keyword: 'family-friendly', group: 'who' },
+  { emoji: '👨‍👩‍👦‍👦', i18nKey: 'chip.friends', keyword: 'group of friends', group: 'who' },
+  { emoji: '🧍', i18nKey: 'chip.solo', keyword: 'solo traveler', group: 'who' },
   // Style (multi-select)
-  { emoji: '🍜', label: 'Foodie', labelZh: '美食', keyword: 'food-focused', group: 'style' },
-  { emoji: '💰', label: 'Budget', labelZh: '平價', keyword: 'budget', group: 'style' },
-  { emoji: '🌿', label: 'Relaxed', labelZh: '悠閒', keyword: 'relaxed', group: 'style' },
-  { emoji: '🎉', label: 'Nightlife', labelZh: '夜生活', keyword: 'nightlife', group: 'style' },
+  { emoji: '🍜', i18nKey: 'chip.foodie', keyword: 'food-focused', group: 'style' },
+  { emoji: '💰', i18nKey: 'chip.budget', keyword: 'budget', group: 'style' },
+  { emoji: '🌿', i18nKey: 'chip.relaxed', keyword: 'relaxed', group: 'style' },
+  { emoji: '🎉', i18nKey: 'chip.nightlife', keyword: 'nightlife', group: 'style' },
 ]
 
 // Client-side trip length detection for time estimates
@@ -92,7 +94,7 @@ function detectVibe(prompt: string, chips: Set<string>): LoadingVibe {
   return 'default'
 }
 
-export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
+export function ChatInput() {
   const [prompt, setPrompt] = useState('')
   const [activeChips, setActiveChips] = useState<Set<string>>(new Set())
   const [showPreferences, setShowPreferences] = useState(false)
@@ -109,8 +111,7 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
-
-  const isZh = browserLang === 'zh'
+  const { locale } = useUILocale()
 
   // Pre-fill from ?dest= query param (viral CTA from shared trips)
   useEffect(() => {
@@ -225,7 +226,7 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
     if (!prompt.trim() || loading) return
 
     if (!isValidTripRequest(prompt)) {
-      setError(TRIP_VALIDATION_MSG)
+      setError(t(locale, 'chat.validation'))
       return
     }
 
@@ -348,7 +349,7 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
           <textarea
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
-            aria-label={isZh ? '描述你的旅行計劃' : 'Describe your trip'}
+            aria-label={t(locale, 'chat.ariaLabel')}
             rows={2}
             maxLength={500}
             disabled={loading}
@@ -374,7 +375,7 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
           <div className="space-y-2 pt-0.5 pb-1">
             {/* Who (exclusive) */}
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">{isZh ? '同邊個去？' : "Who's going?"}</p>
+              <p className="text-xs text-gray-400 mb-1.5">{t(locale, 'chat.whoGoing')}</p>
               <div className="flex flex-wrap gap-1.5">
                 {PREFERENCE_CHIPS.filter(c => c.group === 'who').map(chip => {
                   const active = activeChips.has(chip.keyword)
@@ -390,7 +391,7 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
                           : 'border border-gray-200 hover:border-orange hover:text-orange'
                       }`}
                     >
-                      {chip.emoji} {isZh ? chip.labelZh : chip.label}
+                      {chip.emoji} {t(locale, chip.i18nKey as any)}
                     </button>
                   )
                 })}
@@ -398,7 +399,7 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
             </div>
             {/* Style (multi-select) */}
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">{isZh ? '旅行風格' : 'Trip style'}</p>
+              <p className="text-xs text-gray-400 mb-1.5">{t(locale, 'chat.tripStyle')}</p>
               <div className="flex flex-wrap gap-1.5">
                 {PREFERENCE_CHIPS.filter(c => c.group === 'style').map(chip => {
                   const active = activeChips.has(chip.keyword)
@@ -414,7 +415,7 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
                           : 'border border-gray-200 hover:border-orange hover:text-orange'
                       }`}
                     >
-                      {chip.emoji} {isZh ? chip.labelZh : chip.label}
+                      {chip.emoji} {t(locale, chip.i18nKey as any)}
                     </button>
                   )
                 })}
@@ -429,10 +430,7 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
           disabled={!prompt.trim() || loading}
           className="w-full bg-orange text-white py-2.5 lg:py-3 rounded-xl font-semibold text-sm lg:text-base disabled:opacity-50 hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
         >
-          {loading
-            ? (isZh ? '⏳ 生成中...' : '⏳ Generating...')
-            : (isZh ? '✨ 免費規劃行程' : '✨ Plan My Trip — Free')
-          }
+          {loading ? t(locale, 'chat.generating') : t(locale, 'chat.cta')}
         </button>
 
         {/* Add preferences toggle */}
@@ -442,7 +440,7 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
             onClick={() => setShowPreferences(true)}
             className="w-full text-xs text-gray-400 hover:text-orange transition-colors py-0.5"
           >
-            {isZh ? '+ 添加偏好' : '+ Add preferences'}
+            {t(locale, 'chat.addPrefs')}
           </button>
         )}
       </form>
@@ -456,7 +454,7 @@ export function ChatInput({ browserLang = 'en' }: { browserLang?: string }) {
             onClick={() => { setError(''); handleSubmit({ preventDefault: () => {} } as React.FormEvent) }}
             className="w-full bg-red-600 text-white py-2 rounded-lg font-semibold text-sm hover:bg-red-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
           >
-            {isZh ? '重試' : 'Try Again'}
+            {t(locale, 'chat.tryAgain')}
           </button>
         </div>
       )}

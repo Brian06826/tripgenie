@@ -2,6 +2,8 @@
 
 import { useState, useRef } from 'react'
 import type { Place } from '@/lib/types'
+import { useUILocale } from '@/lib/i18n-context'
+import { t } from '@/lib/i18n'
 
 const TYPE_ICONS: Record<Place['type'], string> = {
   attraction: '🎡',
@@ -24,7 +26,6 @@ export function PlaceCard({
   onMoveDown,
   editLoading = false,
   removeLoading = false,
-  language,
 }: {
   place: Place
   verifyStatus?: VerifyStatus
@@ -36,14 +37,13 @@ export function PlaceCard({
   onMoveDown?: () => void
   editLoading?: boolean
   removeLoading?: boolean
-  language?: string
 }) {
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState('')
   const [editingTime, setEditingTime] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const timeInputRef = useRef<HTMLInputElement>(null)
-  const cn = language === 'zh-TW' || language === 'zh-HK' || language === 'zh-CN'
+  const { locale } = useUILocale()
 
   function handleSubmitEdit() {
     const instruction = editText.trim()
@@ -126,12 +126,12 @@ export function PlaceCard({
         <h3 className="font-bold text-gray-900 text-base">{place.name}</h3>
         {verifyStatus === 'pending' && (
           <span className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-full animate-pulse">
-            ⏳ {cn ? '驗證中...' : 'Verifying...'}
+            ⏳ {t(locale, 'place.verifying')}
           </span>
         )}
         {verifyStatus === 'verified' && (
           <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">
-            ✓ {cn ? '已驗證' : 'Verified'}
+            ✓ {t(locale, 'place.verified')}
           </span>
         )}
         {(onEdit || onRemove || onMoveUp || onMoveDown) && !editLoading && !removeLoading && (
@@ -140,7 +140,7 @@ export function PlaceCard({
               <button
                 onClick={onMoveUp}
                 className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-gray-300 hover:bg-gray-100 hover:text-gray-500 transition-colors text-xs"
-                aria-label={cn ? `上移 ${place.name}` : `Move ${place.name} up`}
+                aria-label={t(locale, 'place.moveUp', { name: place.name })}
               >
                 ▲
               </button>
@@ -149,7 +149,7 @@ export function PlaceCard({
               <button
                 onClick={onMoveDown}
                 className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-gray-300 hover:bg-gray-100 hover:text-gray-500 transition-colors text-xs"
-                aria-label={cn ? `下移 ${place.name}` : `Move ${place.name} down`}
+                aria-label={t(locale, 'place.moveDown', { name: place.name })}
               >
                 ▼
               </button>
@@ -179,7 +179,7 @@ export function PlaceCard({
         )}
         {(editLoading || removeLoading) && (
           <span className="ml-auto text-[10px] text-orange bg-orange/10 px-2 py-1 rounded-full animate-pulse">
-            {removeLoading ? (cn ? '移除中...' : 'Removing...') : (cn ? '更新中...' : 'Updating...')}
+            {removeLoading ? t(locale, 'place.removing') : t(locale, 'place.updating')}
           </span>
         )}
       </div>
@@ -196,7 +196,7 @@ export function PlaceCard({
             value={editText}
             onChange={(e) => setEditText(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleSubmitEdit(); if (e.key === 'Escape') setEditing(false) }}
-            placeholder={cn ? '例如：換日式餐廳、平啲、刪除...' : 'e.g. change to Japanese, make cheaper, remove...'}
+            placeholder={t(locale, 'place.editPlaceholder')}
             autoComplete="off"
             className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent"
           />
@@ -205,7 +205,7 @@ export function PlaceCard({
             disabled={!editText.trim()}
             className="shrink-0 px-3 py-2 bg-orange text-white text-sm font-semibold rounded-lg hover:opacity-90 disabled:opacity-40 transition-opacity"
           >
-            {cn ? '確認' : 'Go'}
+            {t(locale, 'place.editConfirm')}
           </button>
         </div>
       )}
@@ -234,7 +234,7 @@ export function PlaceCard({
       {/* Parking */}
       {place.parking && (
         <div className="text-xs text-gray-500 bg-gray-50 px-2 py-1.5 rounded-md mb-3">
-          <span className="font-semibold text-gray-600">{cn ? '泊車' : 'Parking'}</span> {place.parking.details}
+          <span className="font-semibold text-gray-600">{t(locale, 'place.parking')}</span> {place.parking.details}
           {place.parking.tips && ` · ${place.parking.tips}`}
         </div>
       )}
@@ -242,7 +242,7 @@ export function PlaceCard({
       {/* Tips */}
       {place.tips && (
         <p className="text-xs text-amber-700 bg-amber-50 px-2 py-1.5 rounded-md mb-3">
-          <span className="font-semibold">{cn ? '貼士' : 'Tip'}</span> {place.tips}
+          <span className="font-semibold">{t(locale, 'place.tip')}</span> {place.tips}
         </p>
       )}
 
@@ -255,7 +255,7 @@ export function PlaceCard({
           aria-label={`Open ${place.name} on Google Maps`}
           className="flex-1 flex items-center justify-center text-xs font-semibold bg-blue-50 text-blue-600 min-h-[44px] rounded-lg hover:bg-blue-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         >
-          {cn ? '地圖' : 'Maps'}
+          {t(locale, 'place.maps')}
         </a>
         <a
           href={place.googleReviewsUrl}
@@ -264,7 +264,7 @@ export function PlaceCard({
           aria-label={`Search Google Reviews for ${place.name}`}
           className="flex-1 flex items-center justify-center text-xs font-semibold bg-blue-50 text-blue-600 min-h-[44px] rounded-lg hover:bg-blue-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         >
-          {cn ? '評價' : 'Reviews'}
+          {t(locale, 'place.reviews')}
         </a>
         {showYelp && (
           <a
@@ -285,7 +285,7 @@ export function PlaceCard({
             aria-label={`Open booking for ${place.name}`}
             className="flex-1 flex items-center justify-center gap-1 text-xs font-semibold bg-orange/10 text-orange min-h-[44px] rounded-lg hover:bg-orange/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange"
           >
-            {cn ? '訂房' : 'Book'}
+            {t(locale, 'place.book')}
           </a>
         )}
       </div>

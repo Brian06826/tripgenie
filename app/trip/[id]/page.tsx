@@ -96,7 +96,7 @@ export default async function TripPage({ params }: Props) {
             </span>
             <div className="flex items-center gap-2">
               <ExportButton trip={trip} />
-              <ShareButton tripId={id} tripTitle={trip.title} language={trip.language} trip={trip} />
+              <ShareButton tripId={id} tripTitle={trip.title} trip={trip} />
             </div>
           </div>
 

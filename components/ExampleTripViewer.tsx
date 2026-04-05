@@ -5,9 +5,12 @@ import type { Trip } from '@/lib/types'
 import { TripItinerary } from '@/components/TripItinerary'
 import { TripMap } from '@/components/TripMap'
 import { ShareButton } from '@/components/ShareButton'
+import { useUILocale } from '@/lib/i18n-context'
+import { t } from '@/lib/i18n'
 
 export function ExampleTripViewer({ trip }: { trip: Trip }) {
   const [ready, setReady] = useState(false)
+  const { locale } = useUILocale()
 
   useEffect(() => {
     const t = setTimeout(() => setReady(true), 1500)
@@ -38,24 +41,21 @@ export function ExampleTripViewer({ trip }: { trip: Trip }) {
             <span className="text-xs opacity-90 truncate font-mono">
               lulgo.com{tripUrl}
             </span>
-            <ShareButton tripId={trip.id} tripTitle={trip.title} language={trip.language} trip={trip} />
+            <ShareButton tripId={trip.id} tripTitle={trip.title} trip={trip} />
           </div>
         </div>
       </header>
 
       {/* Day content */}
       <main className="relative z-0 max-w-4xl mx-auto px-4 py-4">
-        <TripMap days={trip.days} language={trip.language} />
+        <TripMap days={trip.days} />
         <TripItinerary initialDays={trip.days} validated={false} destination={trip.destination} language={trip.language} />
         <div className="mt-6 mb-4">
           <a
             href={`/?dest=${encodeURIComponent(trip.destination)}&days=${trip.days.length}`}
             className="flex items-center justify-center w-full bg-orange text-white py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
           >
-            {trip.language === 'zh-TW' || trip.language === 'zh-HK' || trip.language === 'zh-CN'
-              ? `✨ 規劃類似行程 → ${trip.destination}`
-              : `✨ Plan a trip like this → ${trip.destination}`
-            }
+            {t(locale, 'trip.planSimilar', { dest: trip.destination })}
           </a>
         </div>
         <footer className="text-center text-xs text-gray-400 py-8">

@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useUILocale } from '@/lib/i18n-context'
+import { t } from '@/lib/i18n'
 
 interface Props {
   href: string
@@ -12,12 +14,12 @@ interface Props {
   imageUrl?: string
   stops?: number
   avgRating?: number
-  isZh?: boolean
 }
 
-export function ExampleTripLink({ href, title, subtitle, flag, gradient, imageUrl, stops, avgRating, isZh }: Props) {
+export function ExampleTripLink({ href, title, subtitle, flag, gradient, imageUrl, stops, avgRating }: Props) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { locale } = useUILocale()
 
   function handleClick(e: React.MouseEvent) {
     e.preventDefault()
@@ -58,12 +60,12 @@ export function ExampleTripLink({ href, title, subtitle, flag, gradient, imageUr
               <div className="flex items-center gap-2 mt-1">
                 {stops && (
                   <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full">
-                    📍 {stops} {isZh ? '個景點' : 'stops'}
+                    {t(locale, 'example.stops', { n: stops })}
                   </span>
                 )}
                 {avgRating && (
                   <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full">
-                    ⭐ {avgRating.toFixed(1)} avg
+                    {avgRating.toFixed(1)} avg
                   </span>
                 )}
               </div>
