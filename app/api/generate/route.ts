@@ -10,36 +10,16 @@ import { fetchHeroImage } from '@/lib/unsplash'
 import { validateRestaurants, geocodeAllPlaces } from '@/lib/google-places'
 import { optimizeRoutes } from '@/lib/route-optimizer'
 import { authOptions } from '@/lib/auth'
+import { isRateLimited } from '@/lib/rate-limit'
 import type { Trip } from '@/lib/types'
 
 export const maxDuration = 300
 
-// Simple in-memory rate limiter: 5 requests per minute per IP
-const rateLimitMap = new Map<string, number[]>()
-const RATE_LIMIT = 5
-const RATE_WINDOW_MS = 60_000
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now()
-  const timestamps = rateLimitMap.get(ip) ?? []
-  const recent = timestamps.filter(t => now - t < RATE_WINDOW_MS)
-  if (recent.length >= RATE_LIMIT) return true
-  recent.push(now)
-  rateLimitMap.set(ip, recent)
-  // Prevent memory leak: purge stale entries every 100 checks
-  if (rateLimitMap.size > 1000) {
-    for (const [key, ts] of rateLimitMap) {
-      if (ts.every(t => now - t > RATE_WINDOW_MS)) rateLimitMap.delete(key)
-    }
-  }
-  return false
-}
-
 export async function POST(request: Request) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
-  if (isRateLimited(ip)) {
+  if (await isRateLimited(`gen:${ip}`, 15, 3600)) {
     return Response.json(
-      { error: 'Too many requests. Please wait a minute before trying again.' },
+      { error: 'Too many requests. Please wait before trying again.' },
       { status: 429 }
     )
   }

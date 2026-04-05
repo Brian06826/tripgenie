@@ -5,30 +5,10 @@ import { saveTrip, getTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
 import { geocodeAllPlaces } from '@/lib/google-places'
 import { optimizeRoutes } from '@/lib/route-optimizer'
+import { isRateLimited } from '@/lib/rate-limit'
 import type { Trip, TripGeneration } from '@/lib/types'
 
 export const maxDuration = 300
-
-// Rate limiter: 10 edits per tripId per hour
-const editRateMap = new Map<string, number[]>()
-const EDIT_LIMIT = 10
-const EDIT_WINDOW_MS = 3_600_000
-
-function isEditRateLimited(tripId: string): boolean {
-  const now = Date.now()
-  const timestamps = editRateMap.get(tripId) ?? []
-  const recent = timestamps.filter(t => now - t < EDIT_WINDOW_MS)
-  if (recent.length >= EDIT_LIMIT) return true
-  recent.push(now)
-  editRateMap.set(tripId, recent)
-  // Prevent memory leak
-  if (editRateMap.size > 500) {
-    for (const [key, ts] of editRateMap) {
-      if (ts.every(t => now - t > EDIT_WINDOW_MS)) editRateMap.delete(key)
-    }
-  }
-  return false
-}
 
 /** Strip a stored Trip down to the generation schema Claude expects (no URLs, coords, travel info). */
 function stripToGeneration(trip: Trip): TripGeneration {
@@ -90,7 +70,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing instruction' }, { status: 400 })
     }
 
-    if (isEditRateLimited(tripId)) {
+    const editIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+    if (await isRateLimited(`edit:${editIp}`, 30, 3600)) {
       return NextResponse.json(
         { error: 'Too many edits. Please wait before making more changes.' },
         { status: 429 },
