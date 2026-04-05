@@ -10,12 +10,22 @@ const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? 'https://lulgo.com'),
-  title: 'Lulgo — AI 旅行行程規劃器',
-  description: '用 AI 生成靚嘅可分享旅行行程，專為美國華人設計。Google + Yelp 雙評分，泊車資訊，一鍵分享。',
+  title: {
+    default: 'Lulgo — AI Trip Planner | AI 行程規劃',
+    template: '%s',
+  },
+  description: 'Plan your perfect trip in seconds with AI. Free, no sign-up required. 用 AI 即時生成旅行行程，免登入。',
   openGraph: {
-    title: 'Lulgo — AI Travel Planner',
-    description: 'AI-powered travel itinerary generator for Chinese-American travelers. Dual Google + Yelp ratings, parking info, shareable via WeChat.',
+    siteName: 'Lulgo',
+    type: 'website',
     images: [{ url: '/og-fallback.png', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 }
 
