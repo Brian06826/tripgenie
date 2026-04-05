@@ -69,7 +69,7 @@ async function generateSeedTrip(prompt: string, index: number): Promise<string> 
   const t0 = Date.now()
 
   // 1. Generate trip with Claude
-  const generation = await generateTrip(prompt, (event) => {
+  const generation = await generateTrip(prompt, undefined, (event) => {
     if (event.type === 'day') {
       console.log(`${label}   Day ${event.dayNumber}/${event.totalDays}`)
     }

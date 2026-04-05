@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { TripLoadingOverlay } from '@/components/TripLoadingOverlay'
+import { PaywallModal } from '@/components/PaywallModal'
 import { useUILocale } from '@/lib/i18n-context'
 import { t, isChinese as isChineseLocale } from '@/lib/i18n'
 
@@ -106,6 +107,8 @@ export function ChatInput() {
   const [error, setError] = useState('')
   const [placeholderIdx, setPlaceholderIdx] = useState(0)
   const [placeholderVisible, setPlaceholderVisible] = useState(true)
+  const [showPaywall, setShowPaywall] = useState(false)
+  const [usageInfo, setUsageInfo] = useState<{ used: number; limit: number } | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const pendingTripIdRef = useRef<string | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -244,7 +247,7 @@ export function ChatInput() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: getFullPrompt() }),
+        body: JSON.stringify({ prompt: getFullPrompt(), language: locale }),
         signal: abortController.signal,
       })
 
@@ -253,6 +256,12 @@ export function ChatInput() {
         let msg = 'Unable to generate itinerary. Please try again or rephrase your request.'
         try {
           const data = await res.json()
+          if (data.error === 'usage_limit') {
+            setUsageInfo({ used: data.used ?? 4, limit: data.limit ?? 4 })
+            setShowPaywall(true)
+            setLoading(false)
+            return
+          }
           const raw = data.error ?? ''
           if (raw.includes('Unable to generate') || raw.includes('rephrase') || raw.includes('too long') || raw.includes('Please describe')) {
             msg = raw
@@ -340,9 +349,37 @@ export function ChatInput() {
     }
   }
 
+  // Handle payment success/cancel query params
+  useEffect(() => {
+    const payment = searchParams.get('payment')
+    if (payment === 'success') {
+      setError('')
+      // Brief success indicator — will clear on next interaction
+      const timer = setTimeout(() => {
+        // Clean up URL
+        const url = new URL(window.location.href)
+        url.searchParams.delete('payment')
+        window.history.replaceState({}, '', url.toString())
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+    if (payment === 'cancel') {
+      const url = new URL(window.location.href)
+      url.searchParams.delete('payment')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [searchParams])
+
   return (
     <div className="w-full">
-      {loading && <TripLoadingOverlay lang={lang} phase={loadingPhase} estimatedSeconds={estimatedSeconds} vibe={loadingVibe} prompt={prompt} dayProgress={dayProgress} totalDays={detectTripDays(prompt)} onCancel={() => abortRef.current?.abort()} />}
+      {loading && <TripLoadingOverlay lang={locale} phase={loadingPhase} estimatedSeconds={estimatedSeconds} vibe={loadingVibe} prompt={prompt} dayProgress={dayProgress} totalDays={detectTripDays(prompt)} onCancel={() => abortRef.current?.abort()} />}
+      {showPaywall && usageInfo && (
+        <PaywallModal
+          onClose={() => setShowPaywall(false)}
+          used={usageInfo.used}
+          limit={usageInfo.limit}
+        />
+      )}
       <form onSubmit={handleSubmit} className="space-y-2.5">
         {/* Textarea with rotating placeholder overlay */}
         <div className="relative">

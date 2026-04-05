@@ -705,23 +705,31 @@ Return ONLY a JSON array of the new place objects. Example: [{"name": "...", "ty
 // Public API — routes to single or parallel based on trip length
 // ---------------------------------------------------------------------------
 
-export async function generateTrip(userPrompt: string, onProgress?: (event: GenerationProgress) => void): Promise<TripGeneration> {
+export async function generateTrip(userPrompt: string, language?: string, onProgress?: (event: GenerationProgress) => void): Promise<TripGeneration> {
   const validation = validateTripRequest(userPrompt)
   if (!validation.valid) throw new Error(validation.message)
+
+  // Append explicit language override if the user selected a UI locale
+  const langSuffix = language === 'zh-CN'
+    ? '\n\n[LANGUAGE OVERRIDE: The user selected Simplified Chinese (简体中文). You MUST set "language": "zh-CN" and write ALL text (title, descriptions, tips, day titles) in Simplified Chinese characters (简体字). Do NOT use Traditional Chinese characters.]'
+    : language === 'zh-TW'
+    ? '\n\n[LANGUAGE OVERRIDE: The user selected Traditional Chinese (繁體中文). You MUST set "language": "zh-TW" and write ALL text (title, descriptions, tips, day titles) in Traditional Chinese characters (繁體字). Do NOT use Simplified Chinese characters.]'
+    : ''
+  const prompt = langSuffix ? userPrompt + langSuffix : userPrompt
 
   const days = detectTripDays(userPrompt)
 
   // 5+ day trips: parallel generation for ~40-50% speedup
   if (days >= 5) {
     try {
-      return await generateTripParallel(userPrompt, onProgress)
+      return await generateTripParallel(prompt, onProgress)
     } catch (err) {
       console.warn('[parallel] Parallel generation failed, falling back to single:', err)
       // Fall back to single-shot if parallel fails
     }
   }
 
-  return generateTripSingle(userPrompt, onProgress)
+  return generateTripSingle(prompt, onProgress)
 }
 
 // ---------------------------------------------------------------------------

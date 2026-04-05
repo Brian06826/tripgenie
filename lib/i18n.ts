@@ -184,6 +184,20 @@ const translations = {
 
     // ExampleTripLink
     'example.stops': '{n} stops',
+
+    // Paywall
+    'paywall.title': "You've used all free trips this month",
+    'paywall.subtitle': '{used}/{limit} trips used',
+    'paywall.feature1': '3 extra trip generations',
+    'paywall.feature2': 'Longer trips up to 14 days',
+    'paywall.feature3': 'Credits never expire',
+    'paywall.signInHint': 'Sign in with Google to purchase',
+    'paywall.buy': 'Buy Trip Pass — $2.99',
+    'paywall.signInAndBuy': 'Sign In & Buy Trip Pass',
+    'paywall.later': 'Maybe later',
+    'paywall.resetNote': 'Free trips reset every month',
+    'paywall.error': 'Something went wrong. Please try again.',
+    'paywall.success': 'Trip Pass activated! You have 3 extra trips.',
   },
 
   'zh-TW': {
@@ -312,6 +326,20 @@ const translations = {
     'recent.stops': '{n} 個景點',
 
     'example.stops': '{n} 個景點',
+
+    // Paywall
+    'paywall.title': '今個月免費次數已用完',
+    'paywall.subtitle': '已用 {used}/{limit} 次',
+    'paywall.feature1': '額外 3 次行程生成',
+    'paywall.feature2': '支援長達 14 日行程',
+    'paywall.feature3': '額度永不過期',
+    'paywall.signInHint': '需要用 Google 登入先可以購買',
+    'paywall.buy': '購買 Trip Pass — $2.99',
+    'paywall.signInAndBuy': '登入 & 購買 Trip Pass',
+    'paywall.later': '下次再算',
+    'paywall.resetNote': '免費次數每月重置',
+    'paywall.error': '出咗問題，請再試。',
+    'paywall.success': 'Trip Pass 已啟用！你有 3 次額外行程。',
   },
 
   'zh-CN': {
@@ -440,6 +468,20 @@ const translations = {
     'recent.stops': '{n} 个景点',
 
     'example.stops': '{n} 个景点',
+
+    // Paywall
+    'paywall.title': '本月免费次数已用完',
+    'paywall.subtitle': '已用 {used}/{limit} 次',
+    'paywall.feature1': '额外 3 次行程生成',
+    'paywall.feature2': '支持长达 14 天行程',
+    'paywall.feature3': '额度永不过期',
+    'paywall.signInHint': '需要用 Google 登录才能购买',
+    'paywall.buy': '购买 Trip Pass — $2.99',
+    'paywall.signInAndBuy': '登录 & 购买 Trip Pass',
+    'paywall.later': '下次再说',
+    'paywall.resetNote': '免费次数每月重置',
+    'paywall.error': '出了问题，请再试。',
+    'paywall.success': 'Trip Pass 已激活！你有 3 次额外行程。',
   },
 } as const
 

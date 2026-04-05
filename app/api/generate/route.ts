@@ -11,6 +11,7 @@ import { validateRestaurants, geocodeAllPlaces } from '@/lib/google-places'
 import { optimizeRoutes } from '@/lib/route-optimizer'
 import { authOptions } from '@/lib/auth'
 import { isRateLimited } from '@/lib/rate-limit'
+import { getOrCreateUID, resolveUID, checkUsage, recordUsage } from '@/lib/usage'
 import type { Trip } from '@/lib/types'
 
 export const maxDuration = 300
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
     )
   }
 
-  let body: { prompt?: string }
+  let body: { prompt?: string; language?: string }
   try {
     body = await request.json()
   } catch {
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
   }
 
   const prompt = body.prompt?.trim()
+  const language = body.language as 'en' | 'zh-TW' | 'zh-CN' | undefined
   if (!prompt) {
     return Response.json({ error: 'prompt is required' }, { status: 400 })
   }
@@ -43,6 +45,18 @@ export async function POST(request: Request) {
   const validation = validateTripRequest(prompt)
   if (!validation.valid) {
     return Response.json({ error: validation.message }, { status: 400 })
+  }
+
+  // Usage check — free tier or Trip Pass
+  const cookieUID = await getOrCreateUID()
+  const session0 = await getServerSession(authOptions).catch(() => null)
+  const uid = resolveUID((session0?.user as any)?.id, cookieUID)
+  const usage = await checkUsage(uid)
+  if (!usage.allowed) {
+    return Response.json(
+      { error: 'usage_limit', used: usage.remaining === 0 ? 3 : 0, limit: 3 },
+      { status: 403 }
+    )
   }
 
   const encoder = new TextEncoder()
@@ -62,7 +76,7 @@ export async function POST(request: Request) {
         const userId = (session?.user as any)?.id as string | undefined
 
         const t0 = Date.now()
-        const generation = await generateTrip(prompt, (event) => {
+        const generation = await generateTrip(prompt, language, (event) => {
           if (event.type === 'day') {
             send({ type: 'progress', dayNumber: event.dayNumber, totalDays: event.totalDays })
           }
@@ -159,6 +173,9 @@ export async function POST(request: Request) {
         console.log(`[Pipeline] TOTAL (after generateTrip): ${Date.now() - t0}ms`)
         revalidatePath(`/trip/${tripId}`)
         send({ type: 'done', tripId })
+
+        // Record usage AFTER successful generation (failures don't count)
+        await recordUsage(uid)
 
         // Generate hero + OG images in background, then MERGE onto current Redis state
         // (must re-read from Redis to avoid overwriting edits the user made while images were loading)

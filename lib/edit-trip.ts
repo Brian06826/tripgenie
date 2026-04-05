@@ -43,7 +43,7 @@ EDITING RULES:
 - When adding new places, they MUST be real, well-known establishments you are confident exist.
 - Maintain geographic constraints: all places must be in the trip's destination city or immediate vicinity.
 - No duplicate places across the entire trip.
-- Match the language of the existing trip for all new text (titles, descriptions, tips).
+- Match the language of the existing trip for all new text (titles, descriptions, tips). If the trip's "language" is "zh-CN", write ALL text in Simplified Chinese (简体字). If "zh-TW" or "zh-HK", write ALL text in Traditional Chinese (繁體字). NEVER mix Simplified and Traditional characters.
 - Keep the same "title" and "destination" unless the edit specifically changes them.
 - When removing a place, adjust subsequent arrivalTimes to be natural (no 3-hour gaps between stops).
 - CRITICAL: Copy the EXACT arrivalTime from the original place to the replacement. Do not change it.
@@ -225,11 +225,18 @@ export async function editTrip(
     ? `\nNOTE: You are only editing day${targetDays.length > 1 ? 's' : ''} ${targetDays.join(', ')} of a ${totalDays}-day trip. Return ONLY the modified day${targetDays.length > 1 ? 's' : ''} in the days array.`
     : ''
 
+  const langNote = language === 'zh-CN'
+    ? 'Write ALL text in Simplified Chinese (简体字). Do NOT use Traditional Chinese characters.'
+    : language === 'zh-TW' || language === 'zh-HK'
+    ? 'Write ALL text in Traditional Chinese (繁體字). Do NOT use Simplified Chinese characters.'
+    : 'Write ALL text in English.'
+
   const userMessage = `CURRENT TRIP:
 ${JSON.stringify(tripToSend, null, 2)}
 ${partialNote}
 EDIT INSTRUCTION: ${instruction}
 LANGUAGE: ${language}
+LANGUAGE RULE: ${langNote}
 
 Return the ${isPartial ? 'modified days' : 'complete updated trip'} JSON with modifications applied.`
 

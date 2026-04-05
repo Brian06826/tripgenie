@@ -1,0 +1,1016 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e6]:
+        - paragraph [ref=e7]: Lulgo
+        - heading "東京大阪美食之旅" [level=1] [ref=e8]
+        - paragraph [ref=e9]: 東京、大阪 · 7 days
+        - generic [ref=e10]:
+          - generic [ref=e11]: lulgo.com/trip/ryAV2xj0
+          - generic [ref=e12]:
+            - button "匯出行程" [ref=e14]: 📥 匯出
+            - button "Share trip" [ref=e15]: 📤 Share
+    - main [ref=e16]:
+      - generic [ref=e17]:
+        - button "Day 1 · 6/15 (一)" [ref=e18]
+        - button "Day 2 · 6/16 (二)" [ref=e19]
+        - button "Day 3 · 6/17 (三)" [ref=e20]
+        - button "Day 4 · 6/18 (四)" [ref=e21]
+        - button "Day 5 · 6/19 (五)" [ref=e22]
+        - button "Day 6 · 6/20 (六)" [ref=e23]
+        - button "Day 7 · 6/21 (日)" [ref=e24]
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - heading "Day 16/15 (一)" [level=2] [ref=e27]
+          - paragraph [ref=e28]: 東京初探
+        - generic [ref=e30]:
+          - generic [ref=e32]:
+            - generic [ref=e33]:
+              - text: 🎡
+              - button "9:00 AM 🕐" [ref=e34] [cursor=pointer]:
+                - generic [ref=e35]: 9:00 AM
+                - generic [ref=e36]: 🕐
+              - text: · 2小時
+            - generic [ref=e37]:
+              - heading "Tsukiji Outer Market" [level=3] [ref=e38]
+              - generic [ref=e39]:
+                - button "Edit Tsukiji Outer Market" [ref=e40]: ✏️
+                - button "Remove Tsukiji Outer Market" [ref=e41]: ✕
+            - paragraph [ref=e42]: 築地場外市場
+            - paragraph [ref=e43]: 東京最著名的海鮮市場,可以品嚐新鮮刺身和街頭小食。
+            - generic [ref=e45]: Google 4.4 · 15,000+
+            - paragraph [ref=e46]: Tip 早上人流較少,記得試玉子燒和新鮮海膽。
+            - generic [ref=e47]:
+              - link "Open Tsukiji Outer Market on Google Maps" [ref=e48] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Tsukiji%20Outer%20Market%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Tsukiji Outer Market" [ref=e49] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Tsukiji%20Outer%20Market%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e50]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e51] [cursor=pointer]
+        - generic [ref=e53]:
+          - generic [ref=e55]:
+            - generic [ref=e56]:
+              - text: 🎡
+              - button "10:15 AM 🕐" [ref=e57] [cursor=pointer]:
+                - generic [ref=e58]: 10:15 AM
+                - generic [ref=e59]: 🕐
+              - text: · 1.5小時
+            - generic [ref=e60]:
+              - heading "Senso-ji Temple" [level=3] [ref=e61]
+              - generic [ref=e62]:
+                - button "Edit Senso-ji Temple" [ref=e63]: ✏️
+                - button "Remove Senso-ji Temple" [ref=e64]: ✕
+            - paragraph [ref=e65]: 淺草寺
+            - paragraph [ref=e66]: 東京最古老的寺廟,仲可以在仲見世通買傳統手信。
+            - generic [ref=e68]: Google 4.5 · 95,000+
+            - paragraph [ref=e69]: Tip 由築地乘地鐵約30分鐘到達。
+            - generic [ref=e70]:
+              - link "Open Senso-ji Temple on Google Maps" [ref=e71] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Senso-ji%20Temple%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Senso-ji Temple" [ref=e72] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Senso-ji%20Temple%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e73]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e74] [cursor=pointer]
+        - generic [ref=e76]:
+          - generic [ref=e78]:
+            - generic [ref=e79]:
+              - text: 🍽️
+              - button "5:30 PM 🕐" [ref=e80] [cursor=pointer]:
+                - generic [ref=e81]: 5:30 PM
+                - generic [ref=e82]: 🕐
+              - text: · 1.5小時 · $$$$
+            - generic [ref=e83]:
+              - heading "Asakusa Imahan" [level=3] [ref=e84]
+              - generic [ref=e85]:
+                - button "Edit Asakusa Imahan" [ref=e86]: ✏️
+                - button "Remove Asakusa Imahan" [ref=e87]: ✕
+            - paragraph [ref=e88]: 淺草今半
+            - paragraph [ref=e89]: 百年老店,提供頂級壽喜燒和涮涮鍋,和牛入口即溶。
+            - generic [ref=e91]: Google 4.4 · 1,200+
+            - paragraph [ref=e92]: Tip 建議預約,淺草寺步行5分鐘。
+            - generic [ref=e93]:
+              - link "Open Asakusa Imahan on Google Maps" [ref=e94] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Asakusa%20Imahan%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Asakusa Imahan" [ref=e95] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Asakusa%20Imahan%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e96]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e97] [cursor=pointer]
+        - generic [ref=e99]:
+          - paragraph [ref=e100]: 🏨 Day 1 需要酒店？
+          - generic [ref=e101]:
+            - link "🔍 Google Hotels" [ref=e102] [cursor=pointer]:
+              - /url: https://www.google.com/travel/hotels/%E6%9D%B1%E4%BA%AC?hl=zh-TW
+            - link "🅱️ Booking.com" [ref=e103] [cursor=pointer]:
+              - /url: https://www.booking.com/searchresults.zh-tw.html?ss=%E6%9D%B1%E4%BA%AC
+            - link "🏠 Agoda" [ref=e104] [cursor=pointer]:
+              - /url: https://www.agoda.com/search?city=%E6%9D%B1%E4%BA%AC&cid=-1&languageId=12
+            - button "推薦中..." [disabled] [ref=e908]: 推薦中...
+          - generic [ref=e106]:
+            - textbox "輸入酒店名稱..." [disabled] [ref=e107]
+            - button "➕ 加入行程" [disabled] [ref=e108]
+          - paragraph [ref=e109]: 💡 想加夜間活動？用下面嘅編輯框告訴 AI！
+      - generic [ref=e110]:
+        - generic [ref=e111]:
+          - heading "Day 26/16 (二)" [level=2] [ref=e112]
+          - paragraph [ref=e113]: 現代東京探索
+        - generic [ref=e115]:
+          - generic [ref=e117]:
+            - generic [ref=e118]:
+              - text: 🎡
+              - button "9:00 AM 🕐" [ref=e119] [cursor=pointer]:
+                - generic [ref=e120]: 9:00 AM
+                - generic [ref=e121]: 🕐
+              - text: · 1.5小時
+            - generic [ref=e122]:
+              - heading "Meiji Shrine" [level=3] [ref=e123]
+              - generic [ref=e124]:
+                - button "Edit Meiji Shrine" [ref=e125]: ✏️
+                - button "Remove Meiji Shrine" [ref=e126]: ✕
+            - paragraph [ref=e127]: 明治神宮
+            - paragraph [ref=e128]: 位於東京中心的寧靜神社,被茂密森林包圍。
+            - generic [ref=e130]: Google 4.6 · 78,000+
+            - paragraph [ref=e131]: Tip 早上人流較少,氣氛更莊嚴。
+            - generic [ref=e132]:
+              - link "Open Meiji Shrine on Google Maps" [ref=e133] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Meiji%20Shrine%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Meiji Shrine" [ref=e134] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Meiji%20Shrine%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e135]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e136] [cursor=pointer]
+        - generic [ref=e138]:
+          - generic [ref=e140]:
+            - generic [ref=e141]:
+              - text: 🍽️
+              - button "12:00 PM 🕐" [ref=e142] [cursor=pointer]:
+                - generic [ref=e143]: 12:00 PM
+                - generic [ref=e144]: 🕐
+              - text: · 45分鐘 · $$
+            - generic [ref=e145]:
+              - heading "Afuri Ramen Harajuku" [level=3] [ref=e146]
+              - generic [ref=e147]:
+                - button "Edit Afuri Ramen Harajuku" [ref=e148]: ✏️
+                - button "Remove Afuri Ramen Harajuku" [ref=e149]: ✕
+            - paragraph [ref=e150]: 阿夫利拉麵原宿店
+            - paragraph [ref=e151]: 人氣柚子鹽味拉麵,湯底清爽不油膩。
+            - generic [ref=e153]: Google 4.2 · 3,500+
+            - paragraph [ref=e154]: Tip 由明治神宮步行10分鐘到原宿。
+            - generic [ref=e155]:
+              - link "Open Afuri Ramen Harajuku on Google Maps" [ref=e156] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Afuri%20Ramen%20Harajuku%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Afuri Ramen Harajuku" [ref=e157] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Afuri%20Ramen%20Harajuku%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e158]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e159] [cursor=pointer]
+        - generic [ref=e161]:
+          - generic [ref=e163]:
+            - generic [ref=e164]:
+              - text: 🎡
+              - button "1:30 PM 🕐" [ref=e165] [cursor=pointer]:
+                - generic [ref=e166]: 1:30 PM
+                - generic [ref=e167]: 🕐
+              - text: · 1小時
+            - generic [ref=e168]:
+              - heading "Shibuya Crossing" [level=3] [ref=e169]
+              - generic [ref=e170]:
+                - button "Edit Shibuya Crossing" [ref=e171]: ✏️
+                - button "Remove Shibuya Crossing" [ref=e172]: ✕
+            - paragraph [ref=e173]: 澀谷全向十字路口
+            - paragraph [ref=e174]: 世界最繁忙的行人過路處,東京標誌性景點。
+            - generic [ref=e176]: Google 4.5 · 45,000+
+            - paragraph [ref=e177]: Tip 可以去Magnet by Shibuya109樓上的星巴克俯瞰。
+            - generic [ref=e178]:
+              - link "Open Shibuya Crossing on Google Maps" [ref=e179] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Shibuya%20Crossing%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Shibuya Crossing" [ref=e180] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Shibuya%20Crossing%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e181]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e182] [cursor=pointer]
+        - generic [ref=e184]:
+          - generic [ref=e186]:
+            - generic [ref=e187]:
+              - text: 🎡
+              - button "3:00 PM 🕐" [ref=e188] [cursor=pointer]:
+                - generic [ref=e189]: 3:00 PM
+                - generic [ref=e190]: 🕐
+              - text: · 2小時
+            - generic [ref=e191]:
+              - heading "teamLab Borderless" [level=3] [ref=e192]
+              - generic [ref=e193]:
+                - button "Edit teamLab Borderless" [ref=e194]: ✏️
+                - button "Remove teamLab Borderless" [ref=e195]: ✕
+            - paragraph [ref=e196]: teamLab無界
+            - paragraph [ref=e197]: 沉浸式數碼藝術博物館,互動光影裝置令人驚艷。
+            - generic [ref=e199]: Google 4.6 · 28,000+
+            - paragraph [ref=e200]: Tip 位於台場,需預約門票,由澀谷乘車約30分鐘。
+            - generic [ref=e201]:
+              - link "Open teamLab Borderless on Google Maps" [ref=e202] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/teamLab%20Borderless%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for teamLab Borderless" [ref=e203] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=teamLab%20Borderless%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e204]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e205] [cursor=pointer]
+        - generic [ref=e207]:
+          - generic [ref=e209]:
+            - generic [ref=e210]:
+              - text: 🍽️
+              - button "6:30 PM 🕐" [ref=e211] [cursor=pointer]:
+                - generic [ref=e212]: 6:30 PM
+                - generic [ref=e213]: 🕐
+              - text: · 1.5小時 · $$$
+            - generic [ref=e214]:
+              - heading "Gonpachi Nishi-Azabu" [level=3] [ref=e215]
+              - generic [ref=e216]:
+                - button "Edit Gonpachi Nishi-Azabu" [ref=e217]: ✏️
+                - button "Remove Gonpachi Nishi-Azabu" [ref=e218]: ✕
+            - paragraph [ref=e219]: 權八西麻布
+            - paragraph [ref=e220]: 電影《標殺令》取景地,提供精緻日式料理和串燒。
+            - generic [ref=e222]: Google 4.3 · 4,200+
+            - paragraph [ref=e223]: Tip 由台場返回市區約40分鐘,建議預約。
+            - generic [ref=e224]:
+              - link "Open Gonpachi Nishi-Azabu on Google Maps" [ref=e225] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Gonpachi%20Nishi-Azabu%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Gonpachi Nishi-Azabu" [ref=e226] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Gonpachi%20Nishi-Azabu%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e227]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e228] [cursor=pointer]
+        - generic [ref=e230]:
+          - generic [ref=e232]:
+            - generic [ref=e233]:
+              - text: 🎡
+              - button "8:30 PM 🕐" [ref=e234] [cursor=pointer]:
+                - generic [ref=e235]: 8:30 PM
+                - generic [ref=e236]: 🕐
+              - text: · 1小時
+            - generic [ref=e237]:
+              - heading "Roppongi Hills Observation Deck" [level=3] [ref=e238]
+              - generic [ref=e239]:
+                - button "Edit Roppongi Hills Observation Deck" [ref=e240]: ✏️
+                - button "Remove Roppongi Hills Observation Deck" [ref=e241]: ✕
+            - paragraph [ref=e242]: 六本木之丘展望台
+            - paragraph [ref=e243]: 360度東京夜景,可遠眺東京鐵塔。
+            - generic [ref=e245]: Google 4.4 · 12,000+
+            - paragraph [ref=e246]: Tip 晚上景色最美,由權八步行15分鐘。選擇性活動。
+            - generic [ref=e247]:
+              - link "Open Roppongi Hills Observation Deck on Google Maps" [ref=e248] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Roppongi%20Hills%20Observation%20Deck%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Roppongi Hills Observation Deck" [ref=e249] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Roppongi%20Hills%20Observation%20Deck%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e250]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e251] [cursor=pointer]
+        - generic [ref=e253]:
+          - paragraph [ref=e254]: 🏨 Day 2 需要酒店？
+          - generic [ref=e255]:
+            - link "🔍 Google Hotels" [ref=e256] [cursor=pointer]:
+              - /url: https://www.google.com/travel/hotels/%E6%9D%B1%E4%BA%AC?hl=zh-TW
+            - link "🅱️ Booking.com" [ref=e257] [cursor=pointer]:
+              - /url: https://www.booking.com/searchresults.zh-tw.html?ss=%E6%9D%B1%E4%BA%AC
+            - link "🏠 Agoda" [ref=e258] [cursor=pointer]:
+              - /url: https://www.agoda.com/search?city=%E6%9D%B1%E4%BA%AC&cid=-1&languageId=12
+            - button "✨ AI 推薦" [ref=e259]
+          - generic [ref=e260]:
+            - textbox "輸入酒店名稱..." [ref=e261]
+            - button "➕ 加入行程" [disabled] [ref=e262]
+          - paragraph [ref=e263]: 💡 想加夜間活動？用下面嘅編輯框告訴 AI！
+      - generic [ref=e264]:
+        - generic [ref=e265]:
+          - heading "Day 36/17 (三)" [level=2] [ref=e266]
+          - paragraph [ref=e267]: 文化與購物
+        - generic [ref=e269]:
+          - generic [ref=e271]:
+            - generic [ref=e272]:
+              - text: 🎡
+              - button "9:30 AM 🕐" [ref=e273] [cursor=pointer]:
+                - generic [ref=e274]: 9:30 AM
+                - generic [ref=e275]: 🕐
+              - text: · 2小時
+            - generic [ref=e276]:
+              - heading "Tokyo National Museum" [level=3] [ref=e277]
+              - generic [ref=e278]:
+                - button "Edit Tokyo National Museum" [ref=e279]: ✏️
+                - button "Remove Tokyo National Museum" [ref=e280]: ✕
+            - paragraph [ref=e281]: 東京國立博物館
+            - paragraph [ref=e282]: 日本最大博物館,收藏豐富日本藝術和文物。
+            - generic [ref=e284]: Google 4.5 · 18,000+
+            - paragraph [ref=e285]: Tip 位於上野公園內,逢週一休館。
+            - generic [ref=e286]:
+              - link "Open Tokyo National Museum on Google Maps" [ref=e287] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Tokyo%20National%20Museum%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Tokyo National Museum" [ref=e288] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Tokyo%20National%20Museum%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e289]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e290] [cursor=pointer]
+        - generic [ref=e292]:
+          - generic [ref=e294]:
+            - generic [ref=e295]:
+              - text: 🍽️
+              - button "12:00 PM 🕐" [ref=e296] [cursor=pointer]:
+                - generic [ref=e297]: 12:00 PM
+                - generic [ref=e298]: 🕐
+              - text: · 1小時 · $$
+            - generic [ref=e299]:
+              - heading "Nakiryu Ramen" [level=3] [ref=e300]
+              - generic [ref=e301]:
+                - button "Edit Nakiryu Ramen" [ref=e302]: ✏️
+                - button "Remove Nakiryu Ramen" [ref=e303]: ✕
+            - paragraph [ref=e304]: 鳴龍拉麵
+            - paragraph [ref=e305]: 米芝蓮一星擔擔麵專門店,麻辣湯底層次豐富。
+            - generic [ref=e307]: Google 4.2 · 2,100+
+            - paragraph [ref=e308]: Tip 需要排隊,由上野乘車約15分鐘到大塚。
+            - generic [ref=e309]:
+              - link "Open Nakiryu Ramen on Google Maps" [ref=e310] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Nakiryu%20Ramen%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Nakiryu Ramen" [ref=e311] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Nakiryu%20Ramen%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e312]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e313] [cursor=pointer]
+        - generic [ref=e315]:
+          - generic [ref=e317]:
+            - generic [ref=e318]:
+              - text: 🎡
+              - button "1:30 PM 🕐" [ref=e319] [cursor=pointer]:
+                - generic [ref=e320]: 1:30 PM
+                - generic [ref=e321]: 🕐
+              - text: · 2小時
+            - generic [ref=e322]:
+              - heading "Akihabara Electric Town" [level=3] [ref=e323]
+              - generic [ref=e324]:
+                - button "Edit Akihabara Electric Town" [ref=e325]: ✏️
+                - button "Remove Akihabara Electric Town" [ref=e326]: ✕
+            - paragraph [ref=e327]: 秋葉原電器街
+            - paragraph [ref=e328]: 動漫、電玩和電子產品的天堂,遊戲迷必到。
+            - generic [ref=e330]: Google 4.3 · 25,000+
+            - paragraph [ref=e331]: Tip 由大塚乘車約20分鐘。
+            - generic [ref=e332]:
+              - link "Open Akihabara Electric Town on Google Maps" [ref=e333] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Akihabara%20Electric%20Town%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Akihabara Electric Town" [ref=e334] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Akihabara%20Electric%20Town%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e335]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e336] [cursor=pointer]
+        - generic [ref=e338]:
+          - generic [ref=e340]:
+            - generic [ref=e341]:
+              - text: 🎡
+              - button "4:00 PM 🕐" [ref=e342] [cursor=pointer]:
+                - generic [ref=e343]: 4:00 PM
+                - generic [ref=e344]: 🕐
+              - text: · 2小時
+            - generic [ref=e345]:
+              - heading "Ginza Shopping District" [level=3] [ref=e346]
+              - generic [ref=e347]:
+                - button "Edit Ginza Shopping District" [ref=e348]: ✏️
+                - button "Remove Ginza Shopping District" [ref=e349]: ✕
+            - paragraph [ref=e350]: 銀座購物區
+            - paragraph [ref=e351]: 東京最高檔購物區,國際品牌和百貨公司林立。
+            - generic [ref=e353]: Google 4.4 · 32,000+
+            - paragraph [ref=e354]: Tip 由秋葉原乘車約15分鐘,週末下午部分街道為行人專用區。
+            - generic [ref=e355]:
+              - link "Open Ginza Shopping District on Google Maps" [ref=e356] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Ginza%20Shopping%20District%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Ginza Shopping District" [ref=e357] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Ginza%20Shopping%20District%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e358]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e359] [cursor=pointer]
+        - generic [ref=e361]:
+          - generic [ref=e363]:
+            - generic [ref=e364]:
+              - text: 🍽️
+              - button "6:30 PM 🕐" [ref=e365] [cursor=pointer]:
+                - generic [ref=e366]: 6:30 PM
+                - generic [ref=e367]: 🕐
+              - text: · 1.5小時 · $$$$
+            - generic [ref=e368]:
+              - heading "Sukiyabashi Jiro Roppongi" [level=3] [ref=e369]
+              - generic [ref=e370]:
+                - button "Edit Sukiyabashi Jiro Roppongi" [ref=e371]: ✏️
+                - button "Remove Sukiyabashi Jiro Roppongi" [ref=e372]: ✕
+            - paragraph [ref=e373]: すきやばし次郎六本木店
+            - paragraph [ref=e374]: 二郎壽司分店,傳承米芝蓮三星手藝的頂級江戶前壽司。
+            - generic [ref=e376]: Google 4.6 · 450+
+            - paragraph [ref=e377]: Tip 需提前數週預約,由銀座乘車約15分鐘。
+            - generic [ref=e378]:
+              - link "Open Sukiyabashi Jiro Roppongi on Google Maps" [ref=e379] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Sukiyabashi%20Jiro%20Roppongi%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Sukiyabashi Jiro Roppongi" [ref=e380] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Sukiyabashi%20Jiro%20Roppongi%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e381]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e382] [cursor=pointer]
+        - generic [ref=e384]:
+          - paragraph [ref=e385]: 🏨 Day 3 需要酒店？
+          - generic [ref=e386]:
+            - link "🔍 Google Hotels" [ref=e387] [cursor=pointer]:
+              - /url: https://www.google.com/travel/hotels/%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA?hl=zh-TW
+            - link "🅱️ Booking.com" [ref=e388] [cursor=pointer]:
+              - /url: https://www.booking.com/searchresults.zh-tw.html?ss=%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+            - link "🏠 Agoda" [ref=e389] [cursor=pointer]:
+              - /url: https://www.agoda.com/search?city=%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA&cid=-1&languageId=12
+            - button "✨ AI 推薦" [ref=e390]
+          - generic [ref=e391]:
+            - textbox "輸入酒店名稱..." [ref=e392]
+            - button "➕ 加入行程" [disabled] [ref=e393]
+          - paragraph [ref=e394]: 💡 想加夜間活動？用下面嘅編輯框告訴 AI！
+      - generic [ref=e395]:
+        - generic [ref=e396]:
+          - heading "Day 46/18 (四)" [level=2] [ref=e397]
+          - paragraph [ref=e398]: 東京至大阪移動
+        - generic [ref=e402]:
+          - generic [ref=e403]:
+            - text: 🚗
+            - button "9:00 AM 🕐" [ref=e404] [cursor=pointer]:
+              - generic [ref=e405]: 9:00 AM
+              - generic [ref=e406]: 🕐
+            - text: · 2.5小時
+          - generic [ref=e407]:
+            - heading "Shinkansen to Osaka" [level=3] [ref=e408]
+            - generic [ref=e409]:
+              - button "Edit Shinkansen to Osaka" [ref=e410]: ✏️
+              - button "Remove Shinkansen to Osaka" [ref=e411]: ✕
+          - paragraph [ref=e412]: 新幹線往大阪
+          - paragraph [ref=e413]: 由東京站乘新幹線往大阪,欣賞沿途富士山景色。
+          - paragraph [ref=e414]: Tip 建議預訂靠窗座位E席,天氣好可見富士山。
+          - generic [ref=e415]:
+            - link "Open Shinkansen to Osaka on Google Maps" [ref=e416] [cursor=pointer]:
+              - /url: https://www.google.com/maps/search/Shinkansen%20to%20Osaka%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+              - text: Maps
+            - link "Search Google Reviews for Shinkansen to Osaka" [ref=e417] [cursor=pointer]:
+              - /url: https://www.google.com/search?q=Shinkansen%20to%20Osaka%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+              - text: Reviews
+        - generic [ref=e419]:
+          - generic [ref=e421]:
+            - generic [ref=e422]:
+              - text: 🎡
+              - button "12:30 PM 🕐" [ref=e423] [cursor=pointer]:
+                - generic [ref=e424]: 12:30 PM
+                - generic [ref=e425]: 🕐
+              - text: · 1.5小時
+            - generic [ref=e426]:
+              - heading "Dotonbori" [level=3] [ref=e427]
+              - generic [ref=e428]:
+                - button "Edit Dotonbori" [ref=e429]: ✏️
+                - button "Remove Dotonbori" [ref=e430]: ✕
+            - paragraph [ref=e431]: 道頓堀
+            - paragraph [ref=e432]: 大阪最熱鬧的美食街,霓虹燈招牌和格力高跑步者標誌是打卡熱點。
+            - generic [ref=e434]: Google 4.4 · 68,000+
+            - paragraph [ref=e435]: Tip 由新大阪站乘地鐵約20分鐘到難波。
+            - generic [ref=e436]:
+              - link "Open Dotonbori on Google Maps" [ref=e437] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Dotonbori%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Dotonbori" [ref=e438] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Dotonbori%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e439]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e440] [cursor=pointer]
+        - generic [ref=e444]:
+          - generic [ref=e445]:
+            - text: 🎡
+            - button "2:30 PM 🕐" [ref=e446] [cursor=pointer]:
+              - generic [ref=e447]: 2:30 PM
+              - generic [ref=e448]: 🕐
+            - text: · 2小時
+          - generic [ref=e449]:
+            - heading "Osaka Castle" [level=3] [ref=e450]
+            - generic [ref=e451]:
+              - button "Edit Osaka Castle" [ref=e452]: ✏️
+              - button "Remove Osaka Castle" [ref=e453]: ✕
+          - paragraph [ref=e454]: 大阪城
+          - paragraph [ref=e455]: 日本三大名城之一,天守閣內有豐臣秀吉的歷史展覽。
+          - generic [ref=e457]: Google 4.5 · 82,000+
+          - paragraph [ref=e458]: Tip 由道頓堀乘地鐵約15分鐘,公園適合散步。
+          - generic [ref=e459]:
+            - link "Open Osaka Castle on Google Maps" [ref=e460] [cursor=pointer]:
+              - /url: https://www.google.com/maps/search/Osaka%20Castle%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+              - text: Maps
+            - link "Search Google Reviews for Osaka Castle" [ref=e461] [cursor=pointer]:
+              - /url: https://www.google.com/search?q=Osaka%20Castle%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+              - text: Reviews
+        - generic [ref=e463]:
+          - generic [ref=e465]:
+            - generic [ref=e466]:
+              - text: 🍽️
+              - button "6:30 PM 🕐" [ref=e467] [cursor=pointer]:
+                - generic [ref=e468]: 6:30 PM
+                - generic [ref=e469]: 🕐
+              - text: · 1.5小時 · $$$
+            - generic [ref=e470]:
+              - heading "Kani Doraku Dotombori Honten" [level=3] [ref=e471]
+              - generic [ref=e472]:
+                - button "Edit Kani Doraku Dotombori Honten" [ref=e473]: ✏️
+                - button "Remove Kani Doraku Dotombori Honten" [ref=e474]: ✕
+            - paragraph [ref=e475]: 蟹道樂道頓堀本店
+            - paragraph [ref=e476]: 大阪地標餐廳,以巨型螃蟹招牌聞名,提供多款蟹料理套餐。
+            - generic [ref=e478]: Google 4.2 · 5,800+
+            - paragraph [ref=e479]: Tip 由大阪城返回道頓堀約20分鐘,建議預約。
+            - generic [ref=e480]:
+              - link "Open Kani Doraku Dotombori Honten on Google Maps" [ref=e481] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Kani%20Doraku%20Dotombori%20Honten%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Kani Doraku Dotombori Honten" [ref=e482] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Kani%20Doraku%20Dotombori%20Honten%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e483]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e484] [cursor=pointer]
+        - generic [ref=e486]:
+          - paragraph [ref=e487]: 🏨 Day 4 需要酒店？
+          - generic [ref=e488]:
+            - link "🔍 Google Hotels" [ref=e489] [cursor=pointer]:
+              - /url: https://www.google.com/travel/hotels/%E6%9D%B1%E4%BA%AC?hl=zh-TW
+            - link "🅱️ Booking.com" [ref=e490] [cursor=pointer]:
+              - /url: https://www.booking.com/searchresults.zh-tw.html?ss=%E6%9D%B1%E4%BA%AC
+            - link "🏠 Agoda" [ref=e491] [cursor=pointer]:
+              - /url: https://www.agoda.com/search?city=%E6%9D%B1%E4%BA%AC&cid=-1&languageId=12
+            - button "✨ AI 推薦" [ref=e492]
+          - generic [ref=e493]:
+            - textbox "輸入酒店名稱..." [ref=e494]
+            - button "➕ 加入行程" [disabled] [ref=e495]
+          - paragraph [ref=e496]: 💡 想加夜間活動？用下面嘅編輯框告訴 AI！
+      - generic [ref=e497]:
+        - generic [ref=e498]:
+          - heading "Day 56/19 (五)" [level=2] [ref=e499]
+          - paragraph [ref=e500]: 大阪美食探索
+        - generic [ref=e502]:
+          - generic [ref=e504]:
+            - generic [ref=e505]:
+              - text: 🎡
+              - button "9:00 AM 🕐" [ref=e506] [cursor=pointer]:
+                - generic [ref=e507]: 9:00 AM
+                - generic [ref=e508]: 🕐
+              - text: · 1.5小時
+            - generic [ref=e509]:
+              - heading "Sumiyoshi Taisha Shrine" [level=3] [ref=e510]
+              - generic [ref=e511]:
+                - button "Edit Sumiyoshi Taisha Shrine" [ref=e512]: ✏️
+                - button "Remove Sumiyoshi Taisha Shrine" [ref=e513]: ✕
+            - paragraph [ref=e514]: 住吉大社
+            - paragraph [ref=e515]: 大阪最古老神社之一,獨特的住吉造建築和紅色太鼓橋。
+            - generic [ref=e517]: Google 4.4 · 12,000+
+            - paragraph [ref=e518]: Tip 乘南海電鐵約20分鐘,早上遊客較少。
+            - generic [ref=e519]:
+              - link "Open Sumiyoshi Taisha Shrine on Google Maps" [ref=e520] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Sumiyoshi%20Taisha%20Shrine%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Sumiyoshi Taisha Shrine" [ref=e521] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Sumiyoshi%20Taisha%20Shrine%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e522]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e523] [cursor=pointer]
+        - generic [ref=e525]:
+          - generic [ref=e527]:
+            - generic [ref=e528]:
+              - text: 🍽️
+              - button "11:30 AM 🕐" [ref=e529] [cursor=pointer]:
+                - generic [ref=e530]: 11:30 AM
+                - generic [ref=e531]: 🕐
+              - text: · 1小時 · $$
+            - generic [ref=e532]:
+              - heading "Harukoma Sushi" [level=3] [ref=e533]
+              - generic [ref=e534]:
+                - button "Edit Harukoma Sushi" [ref=e535]: ✏️
+                - button "Remove Harukoma Sushi" [ref=e536]: ✕
+            - paragraph [ref=e537]: 春駒壽司
+            - paragraph [ref=e538]: 超人氣立食壽司店,性價比極高的新鮮刺身和壽司。
+            - generic [ref=e540]: Google 4.3 · 2,400+
+            - paragraph [ref=e541]: Tip 由住吉大社乘車約25分鐘到天滿橋,需排隊。
+            - generic [ref=e542]:
+              - link "Open Harukoma Sushi on Google Maps" [ref=e543] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Harukoma%20Sushi%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Harukoma Sushi" [ref=e544] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Harukoma%20Sushi%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e545]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e546] [cursor=pointer]
+        - generic [ref=e548]:
+          - generic [ref=e550]:
+            - generic [ref=e551]:
+              - text: 🎡
+              - button "3:00 PM 🕐" [ref=e552] [cursor=pointer]:
+                - generic [ref=e553]: 3:00 PM
+                - generic [ref=e554]: 🕐
+              - text: · 1.5小時
+            - generic [ref=e555]:
+              - heading "Shinsekai" [level=3] [ref=e556]
+              - generic [ref=e557]:
+                - button "Edit Shinsekai" [ref=e558]: ✏️
+                - button "Remove Shinsekai" [ref=e559]: ✕
+            - paragraph [ref=e560]: 新世界
+            - paragraph [ref=e561]: 復古懷舊街區,以通天閣和串炸店聞名,充滿昭和風情。
+            - generic [ref=e563]: Google 4.3 · 22,000+
+            - paragraph [ref=e564]: Tip 由黑門市場步行約15分鐘。
+            - generic [ref=e565]:
+              - link "Open Shinsekai on Google Maps" [ref=e566] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Shinsekai%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Shinsekai" [ref=e567] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Shinsekai%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e568]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e569] [cursor=pointer]
+        - generic [ref=e571]:
+          - generic [ref=e573]:
+            - generic [ref=e574]:
+              - text: 🍽️
+              - button "6:00 PM 🕐" [ref=e575] [cursor=pointer]:
+                - generic [ref=e576]: 6:00 PM
+                - generic [ref=e577]: 🕐
+              - text: · 1.5小時 · $$
+            - generic [ref=e578]:
+              - heading "Chibo Okonomiyaki" [level=3] [ref=e579]
+              - generic [ref=e580]:
+                - button "Edit Chibo Okonomiyaki" [ref=e581]: ✏️
+                - button "Remove Chibo Okonomiyaki" [ref=e582]: ✕
+            - paragraph [ref=e583]: 千房大阪燒
+            - paragraph [ref=e584]: 大阪燒老字號,多層配料的豐盛御好燒和炒麵。
+            - generic [ref=e586]: Google 4.2 · 3,200+
+            - paragraph [ref=e587]: Tip 道頓堀分店由新世界乘車約10分鐘。
+            - generic [ref=e588]:
+              - link "Open Chibo Okonomiyaki on Google Maps" [ref=e589] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Chibo%20Okonomiyaki%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Chibo Okonomiyaki" [ref=e590] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Chibo%20Okonomiyaki%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e591]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e592] [cursor=pointer]
+        - generic [ref=e594]:
+          - generic [ref=e596]:
+            - generic [ref=e597]:
+              - text: 🎡
+              - button "8:00 PM 🕐" [ref=e598] [cursor=pointer]:
+                - generic [ref=e599]: 8:00 PM
+                - generic [ref=e600]: 🕐
+              - text: · 1小時
+            - generic [ref=e601]:
+              - heading "Umeda Sky Building" [level=3] [ref=e602]
+              - generic [ref=e603]:
+                - button "Edit Umeda Sky Building" [ref=e604]: ✏️
+                - button "Remove Umeda Sky Building" [ref=e605]: ✕
+            - paragraph [ref=e606]: 梅田藍天大廈
+            - paragraph [ref=e607]: 獨特的空中庭園展望台,360度大阪夜景和情侶聖地。
+            - generic [ref=e609]: Google 4.4 · 28,000+
+            - paragraph [ref=e610]: Tip 由道頓堀乘車約20分鐘到梅田,晚上景色最浪漫。選擇性活動。
+            - generic [ref=e611]:
+              - link "Open Umeda Sky Building on Google Maps" [ref=e612] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Umeda%20Sky%20Building%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Umeda Sky Building" [ref=e613] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Umeda%20Sky%20Building%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e614]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e615] [cursor=pointer]
+        - generic [ref=e617]:
+          - paragraph [ref=e618]: 🏨 Day 5 需要酒店？
+          - generic [ref=e619]:
+            - link "🔍 Google Hotels" [ref=e620] [cursor=pointer]:
+              - /url: https://www.google.com/travel/hotels/%E5%A4%A7%E9%98%AA?hl=zh-TW
+            - link "🅱️ Booking.com" [ref=e621] [cursor=pointer]:
+              - /url: https://www.booking.com/searchresults.zh-tw.html?ss=%E5%A4%A7%E9%98%AA
+            - link "🏠 Agoda" [ref=e622] [cursor=pointer]:
+              - /url: https://www.agoda.com/search?city=%E5%A4%A7%E9%98%AA&cid=-1&languageId=12
+            - button "✨ AI 推薦" [ref=e623]
+          - generic [ref=e624]:
+            - textbox "輸入酒店名稱..." [ref=e625]
+            - button "➕ 加入行程" [disabled] [ref=e626]
+          - paragraph [ref=e627]: 💡 想加夜間活動？用下面嘅編輯框告訴 AI！
+      - generic [ref=e628]:
+        - generic [ref=e629]:
+          - heading "Day 66/20 (六)" [level=2] [ref=e630]
+          - paragraph [ref=e631]: 大阪近郊體驗
+        - generic [ref=e633]:
+          - generic [ref=e635]:
+            - generic [ref=e636]:
+              - text: 🎡
+              - button "9:00 AM 🕐" [ref=e637] [cursor=pointer]:
+                - generic [ref=e638]: 9:00 AM
+                - generic [ref=e639]: 🕐
+              - text: · 2.5小時
+            - generic [ref=e640]:
+              - heading "Fushimi Inari Shrine" [level=3] [ref=e641]
+              - generic [ref=e642]:
+                - button "Edit Fushimi Inari Shrine" [ref=e643]: ✏️
+                - button "Remove Fushimi Inari Shrine" [ref=e644]: ✕
+            - paragraph [ref=e645]: 伏見稻荷大社
+            - paragraph [ref=e646]: 千本鳥居隧道,京都最具代表性的神社,橙紅色鳥居綿延山間。
+            - generic [ref=e648]: Google 4.6 · 95,000+
+            - paragraph [ref=e649]: Tip 由大阪乘JR約45分鐘到京都,早上遊客較少,建議行至中段即可。
+            - generic [ref=e650]:
+              - link "Open Fushimi Inari Shrine on Google Maps" [ref=e651] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Fushimi%20Inari%20Shrine%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Fushimi Inari Shrine" [ref=e652] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Fushimi%20Inari%20Shrine%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e653]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e654] [cursor=pointer]
+        - generic [ref=e656]:
+          - generic [ref=e658]:
+            - generic [ref=e659]:
+              - text: 🎡
+              - button "12:00 PM 🕐" [ref=e660] [cursor=pointer]:
+                - generic [ref=e661]: 12:00 PM
+                - generic [ref=e662]: 🕐
+              - text: · 1小時
+            - generic [ref=e663]:
+              - heading "Nishiki Market" [level=3] [ref=e664]
+              - generic [ref=e665]:
+                - button "Edit Nishiki Market" [ref=e666]: ✏️
+                - button "Remove Nishiki Market" [ref=e667]: ✕
+            - paragraph [ref=e668]: 錦市場
+            - paragraph [ref=e669]: 京都廚房,400米長的傳統市場,售賣京都特產和街頭小食。
+            - generic [ref=e671]: Google 4.3 · 18,000+
+            - paragraph [ref=e672]: Tip 由伏見稻荷乘車約20分鐘,可邊行邊食午餐。
+            - generic [ref=e673]:
+              - link "Open Nishiki Market on Google Maps" [ref=e674] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Nishiki%20Market%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Nishiki Market" [ref=e675] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Nishiki%20Market%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e676]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e677] [cursor=pointer]
+        - generic [ref=e679]:
+          - generic [ref=e681]:
+            - generic [ref=e682]:
+              - text: 🎡
+              - button "2:00 PM 🕐" [ref=e683] [cursor=pointer]:
+                - generic [ref=e684]: 2:00 PM
+                - generic [ref=e685]: 🕐
+              - text: · 1.5小時
+            - generic [ref=e686]:
+              - heading "Arashiyama Bamboo Grove" [level=3] [ref=e687]
+              - generic [ref=e688]:
+                - button "Edit Arashiyama Bamboo Grove" [ref=e689]: ✏️
+                - button "Remove Arashiyama Bamboo Grove" [ref=e690]: ✕
+            - paragraph [ref=e691]: 嵐山竹林
+            - paragraph [ref=e692]: 夢幻竹林小徑,陽光透過竹葉灑落的奇妙景觀。
+            - generic [ref=e694]: Google 4.5 · 42,000+
+            - paragraph [ref=e695]: Tip 由市中心乘車約30分鐘,下午光線最美。
+            - generic [ref=e696]:
+              - link "Open Arashiyama Bamboo Grove on Google Maps" [ref=e697] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Arashiyama%20Bamboo%20Grove%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Arashiyama Bamboo Grove" [ref=e698] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Arashiyama%20Bamboo%20Grove%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e699]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e700] [cursor=pointer]
+        - generic [ref=e702]:
+          - generic [ref=e704]:
+            - generic [ref=e705]:
+              - text: 🎡
+              - button "5:30 PM 🕐" [ref=e706] [cursor=pointer]:
+                - generic [ref=e707]: 5:30 PM
+                - generic [ref=e708]: 🕐
+              - text: · 30分鐘
+            - generic [ref=e709]:
+              - heading "Pontocho Alley" [level=3] [ref=e710]
+              - generic [ref=e711]:
+                - button "Edit Pontocho Alley" [ref=e712]: ✏️
+                - button "Remove Pontocho Alley" [ref=e713]: ✕
+            - paragraph [ref=e714]: 先斗町
+            - paragraph [ref=e715]: 鴨川旁的窄巷,傳統町家餐廳和居酒屋林立,京都最浪漫的夜晚去處。
+            - generic [ref=e717]: Google 4.4 · 8,500+
+            - paragraph [ref=e718]: Tip 由嵐山返回市區約30分鐘,黃昏時分最有氣氛。
+            - generic [ref=e719]:
+              - link "Open Pontocho Alley on Google Maps" [ref=e720] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Pontocho%20Alley%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Pontocho Alley" [ref=e721] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Pontocho%20Alley%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e722]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e723] [cursor=pointer]
+        - generic [ref=e725]:
+          - generic [ref=e727]:
+            - generic [ref=e728]:
+              - text: 🍽️
+              - button "6:30 PM 🕐" [ref=e729] [cursor=pointer]:
+                - generic [ref=e730]: 6:30 PM
+                - generic [ref=e731]: 🕐
+              - text: · 2小時 · $$$$
+            - generic [ref=e732]:
+              - heading "Kikunoi Roan" [level=3] [ref=e733]
+              - generic [ref=e734]:
+                - button "Edit Kikunoi Roan" [ref=e735]: ✏️
+                - button "Remove Kikunoi Roan" [ref=e736]: ✕
+            - paragraph [ref=e737]: 菊乃井露庵
+            - paragraph [ref=e738]: 米芝蓮二星懷石料理,精緻京都傳統料理藝術。
+            - generic [ref=e740]: Google 4.6 · 380+
+            - paragraph [ref=e741]: Tip 先斗町附近,需提前預約,享受河邊景色。
+            - generic [ref=e742]:
+              - link "Open Kikunoi Roan on Google Maps" [ref=e743] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Kikunoi%20Roan%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Kikunoi Roan" [ref=e744] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Kikunoi%20Roan%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e745]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e746] [cursor=pointer]
+        - generic [ref=e750]:
+          - generic [ref=e751]:
+            - text: 🚗
+            - button "8:45 PM 🕐" [ref=e752] [cursor=pointer]:
+              - generic [ref=e753]: 8:45 PM
+              - generic [ref=e754]: 🕐
+            - text: · 45分鐘
+          - generic [ref=e755]:
+            - heading "Train back to Osaka" [level=3] [ref=e756]
+            - generic [ref=e757]:
+              - button "Edit Train back to Osaka" [ref=e758]: ✏️
+              - button "Remove Train back to Osaka" [ref=e759]: ✕
+          - paragraph [ref=e760]: 返回大阪
+          - paragraph [ref=e761]: 由京都乘JR或私鐵返回大阪。
+          - paragraph [ref=e762]: Tip 晚餐後返回大阪約45分鐘車程。
+          - generic [ref=e763]:
+            - link "Open Train back to Osaka on Google Maps" [ref=e764] [cursor=pointer]:
+              - /url: https://www.google.com/maps/search/Train%20back%20to%20Osaka%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+              - text: Maps
+            - link "Search Google Reviews for Train back to Osaka" [ref=e765] [cursor=pointer]:
+              - /url: https://www.google.com/search?q=Train%20back%20to%20Osaka%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+              - text: Reviews
+        - generic [ref=e767]:
+          - paragraph [ref=e768]: 🏨 Day 6 需要酒店？
+          - generic [ref=e769]:
+            - link "🔍 Google Hotels" [ref=e770] [cursor=pointer]:
+              - /url: https://www.google.com/travel/hotels/%E5%A4%A7%E9%98%AA?hl=zh-TW
+            - link "🅱️ Booking.com" [ref=e771] [cursor=pointer]:
+              - /url: https://www.booking.com/searchresults.zh-tw.html?ss=%E5%A4%A7%E9%98%AA
+            - link "🏠 Agoda" [ref=e772] [cursor=pointer]:
+              - /url: https://www.agoda.com/search?city=%E5%A4%A7%E9%98%AA&cid=-1&languageId=12
+            - button "✨ AI 推薦" [ref=e773]
+          - generic [ref=e774]:
+            - textbox "輸入酒店名稱..." [ref=e775]
+            - button "➕ 加入行程" [disabled] [ref=e776]
+          - paragraph [ref=e777]: 💡 想加夜間活動？用下面嘅編輯框告訴 AI！
+      - generic [ref=e778]:
+        - generic [ref=e779]:
+          - heading "Day 76/21 (日)" [level=2] [ref=e780]
+          - paragraph [ref=e781]: 最後購物與離開
+        - generic [ref=e783]:
+          - generic [ref=e785]:
+            - generic [ref=e786]:
+              - text: 🎡
+              - button "10:00 AM 🕐" [ref=e787] [cursor=pointer]:
+                - generic [ref=e788]: 10:00 AM
+                - generic [ref=e789]: 🕐
+              - text: · 2小時
+            - generic [ref=e790]:
+              - heading "Shinsaibashi Shopping Arcade" [level=3] [ref=e791]
+              - generic [ref=e792]:
+                - button "Edit Shinsaibashi Shopping Arcade" [ref=e793]: ✏️
+                - button "Remove Shinsaibashi Shopping Arcade" [ref=e794]: ✕
+            - paragraph [ref=e795]: 心齋橋商店街
+            - paragraph [ref=e796]: 大阪最長購物街,超過600米的商店街,時裝、藥妝和手信應有盡有。
+            - generic [ref=e798]: Google 4.3 · 28,000+
+            - paragraph [ref=e799]: Tip 乘地鐵到心齋橋站,鄰近道頓堀。
+            - generic [ref=e800]:
+              - link "Open Shinsaibashi Shopping Arcade on Google Maps" [ref=e801] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Shinsaibashi%20Shopping%20Arcade%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Shinsaibashi Shopping Arcade" [ref=e802] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Shinsaibashi%20Shopping%20Arcade%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e803]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e804] [cursor=pointer]
+        - generic [ref=e806]:
+          - generic [ref=e808]:
+            - generic [ref=e809]:
+              - text: 🍽️
+              - button "12:30 PM 🕐" [ref=e810] [cursor=pointer]:
+                - generic [ref=e811]: 12:30 PM
+                - generic [ref=e812]: 🕐
+              - text: · 1小時 · $$
+            - generic [ref=e813]:
+              - heading "Kushikatsu Daruma" [level=3] [ref=e814]
+              - generic [ref=e815]:
+                - button "Edit Kushikatsu Daruma" [ref=e816]: ✏️
+                - button "Remove Kushikatsu Daruma" [ref=e817]: ✕
+            - paragraph [ref=e818]: 串炸達摩
+            - paragraph [ref=e819]: 新世界發源的串炸名店,炸物酥脆配特製醬汁,記得不能重複沾醬。
+            - generic [ref=e821]: Google 4.1 · 4,500+
+            - paragraph [ref=e822]: Tip 心齋橋分店步行範圍內。
+            - generic [ref=e823]:
+              - link "Open Kushikatsu Daruma on Google Maps" [ref=e824] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Kushikatsu%20Daruma%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Kushikatsu Daruma" [ref=e825] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Kushikatsu%20Daruma%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e826]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e827] [cursor=pointer]
+        - generic [ref=e829]:
+          - generic [ref=e831]:
+            - generic [ref=e832]:
+              - text: 🎡
+              - button "2:00 PM 🕐" [ref=e833] [cursor=pointer]:
+                - generic [ref=e834]: 2:00 PM
+                - generic [ref=e835]: 🕐
+              - text: · 45分鐘
+            - generic [ref=e836]:
+              - heading "Hozenji Yokocho" [level=3] [ref=e837]
+              - generic [ref=e838]:
+                - button "Edit Hozenji Yokocho" [ref=e839]: ✏️
+                - button "Remove Hozenji Yokocho" [ref=e840]: ✕
+            - paragraph [ref=e841]: 法善寺橫丁
+            - paragraph [ref=e842]: 道頓堀旁的小巷,石板路和苔蘚覆蓋的水掛不動明王像,懷舊氛圍濃厚。
+            - generic [ref=e844]: Google 4.3 · 3,200+
+            - paragraph [ref=e845]: Tip 由心齋橋步行5分鐘,適合拍照。
+            - generic [ref=e846]:
+              - link "Open Hozenji Yokocho on Google Maps" [ref=e847] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Hozenji%20Yokocho%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Hozenji Yokocho" [ref=e848] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Hozenji%20Yokocho%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e849]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e850] [cursor=pointer]
+        - generic [ref=e852]:
+          - generic [ref=e854]:
+            - generic [ref=e855]:
+              - text: 🍽️
+              - button "3:00 PM 🕐" [ref=e856] [cursor=pointer]:
+                - generic [ref=e857]: 3:00 PM
+                - generic [ref=e858]: 🕐
+              - text: · 30分鐘 · $$
+            - generic [ref=e859]:
+              - heading "Pablo Cheese Tart" [level=3] [ref=e860]
+              - generic [ref=e861]:
+                - button "Edit Pablo Cheese Tart" [ref=e862]: ✏️
+                - button "Remove Pablo Cheese Tart" [ref=e863]: ✕
+            - paragraph [ref=e864]: PABLO半熟芝士撻
+            - paragraph [ref=e865]: 大阪人氣甜品店,流心芝士撻必試,作為旅程最後的甜蜜回憶。
+            - generic [ref=e867]: Google 4.3 · 1,800+
+            - paragraph [ref=e868]: Tip 道頓堀店步行可達,可買手信盒裝。
+            - generic [ref=e869]:
+              - link "Open Pablo Cheese Tart on Google Maps" [ref=e870] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/Pablo%20Cheese%20Tart%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+                - text: Maps
+              - link "Search Google Reviews for Pablo Cheese Tart" [ref=e871] [cursor=pointer]:
+                - /url: https://www.google.com/search?q=Pablo%20Cheese%20Tart%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+                - text: Reviews
+          - group [ref=e872]:
+            - generic "🔄 Alternative Suggestions (1)" [ref=e873] [cursor=pointer]
+        - generic [ref=e877]:
+          - generic [ref=e878]:
+            - text: 🚗
+            - button "4:00 PM 🕐" [ref=e879] [cursor=pointer]:
+              - generic [ref=e880]: 4:00 PM
+              - generic [ref=e881]: 🕐
+            - text: · 45分鐘
+          - generic [ref=e882]:
+            - heading "Train to Kansai Airport" [level=3] [ref=e883]
+            - generic [ref=e884]:
+              - button "Edit Train to Kansai Airport" [ref=e885]: ✏️
+              - button "Remove Train to Kansai Airport" [ref=e886]: ✕
+          - paragraph [ref=e887]: 前往關西機場
+          - paragraph [ref=e888]: 由難波乘南海電鐵特急往關西國際機場。
+          - paragraph [ref=e889]: Tip 建議預留3小時往機場,配合6月21日航班時間。
+          - generic [ref=e890]:
+            - link "Open Train to Kansai Airport on Google Maps" [ref=e891] [cursor=pointer]:
+              - /url: https://www.google.com/maps/search/Train%20to%20Kansai%20Airport%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA
+              - text: Maps
+            - link "Search Google Reviews for Train to Kansai Airport" [ref=e892] [cursor=pointer]:
+              - /url: https://www.google.com/search?q=Train%20to%20Kansai%20Airport%20%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA%20reviews
+              - text: Reviews
+      - paragraph [ref=e893]: 💡 想加活動？用下面嘅編輯框話畀 AI！例如：'加個酒吧' 或 '加個夜市'
+      - generic [ref=e896]:
+        - paragraph [ref=e897]: 💡 你可以加景點、換餐廳、加酒店、調整時間... 用自然語言描述就得！
+        - generic [ref=e898]:
+          - textbox "修改行程... 例如 '晚餐改成日本料理'" [ref=e899]
+          - button [disabled] [ref=e900]:
+            - img [ref=e901]
+      - link "✨ 規劃類似行程 → 東京、大阪" [ref=e904] [cursor=pointer]:
+        - /url: /?dest=%E6%9D%B1%E4%BA%AC%E3%80%81%E5%A4%A7%E9%98%AA&days=7
+      - generic [ref=e905]:
+        - text: Made with
+        - link "Lulgo" [ref=e906] [cursor=pointer]:
+          - /url: /
+  - alert [ref=e907]
