@@ -41,3 +41,9 @@ yarn-error.log*
 next-env.d.ts
 .gstack/
 .env*.local
+
+# playwright MCP logs
+.playwright-mcp/
+
+# QA screenshots (temp files from testing)
+/*.png
