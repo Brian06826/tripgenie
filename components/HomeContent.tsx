@@ -131,23 +131,6 @@ export function HomeContent() {
         </p>
       </div>
 
-      {/* Comparison strip */}
-      <div className="max-w-xl lg:max-w-3xl mx-auto px-4 pb-4">
-        <div className="flex items-center justify-center gap-5 sm:gap-8 text-xs text-gray-500">
-          <span className="flex items-center gap-1.5">
-            <span>🗺️</span> {t(locale, 'comp.map')}
-          </span>
-          <span className="text-gray-300">·</span>
-          <span className="flex items-center gap-1.5">
-            <span>⭐</span> {t(locale, 'comp.verified')}
-          </span>
-          <span className="text-gray-300">·</span>
-          <span className="flex items-center gap-1.5">
-            <span>✏️</span> {t(locale, 'comp.edit')}
-          </span>
-        </div>
-      </div>
-
       {/* My Trips (logged-in users only) */}
       <MyTrips onHasTrips={setHideRecent} />
 

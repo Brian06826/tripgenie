@@ -48,7 +48,7 @@ const translations = {
     'hero.step1': 'Describe',
     'hero.step2': 'AI Plans',
     'hero.step3': 'Edit & Go',
-    'hero.trust': '⚡ AI-powered planning · 📍 Google Maps ratings · ✈️ Free to try',
+    'hero.trust': '🗺️ Interactive map · ⭐ Google-verified ratings · ✏️ Edit & share with friends',
     'hero.examples': 'Not sure where to go? Try these ✨',
 
     // Footer
@@ -199,11 +199,6 @@ const translations = {
     'paywall.error': 'Something went wrong. Please try again.',
     'paywall.success': 'Trip Pass activated! You have 3 extra trips.',
 
-    // Comparison strip
-    'comp.map': 'Interactive map, not a wall of text',
-    'comp.verified': 'Google-verified restaurant ratings',
-    'comp.edit': 'Edit live + share with friends',
-
     // My Trips
     'myTrips.title': 'My Trips',
   },
@@ -213,7 +208,7 @@ const translations = {
     'hero.step1': '描述行程',
     'hero.step2': 'AI 規劃',
     'hero.step3': '編輯出發',
-    'hero.trust': '⚡ AI 即時規劃 · 📍 Google Maps 評分 · ✈️ 免費試用',
+    'hero.trust': '🗺️ 互動地圖 · ⭐ Google 驗證評分 · ✏️ 即時編輯分享',
     'hero.examples': '唔知去邊？試下呢啲 ✨',
 
     'footer.privacy': '隱私政策',
@@ -349,11 +344,6 @@ const translations = {
     'paywall.error': '出咗問題，請再試。',
     'paywall.success': 'Trip Pass 已啟用！你有 3 次額外行程。',
 
-    // Comparison strip
-    'comp.map': '互動地圖，唔係文字清單',
-    'comp.verified': 'Google 驗證餐廳評分',
-    'comp.edit': '即時編輯 + 分享協作',
-
     // My Trips
     'myTrips.title': '我嘅行程',
   },
@@ -363,7 +353,7 @@ const translations = {
     'hero.step1': '描述行程',
     'hero.step2': 'AI 规划',
     'hero.step3': '编辑出发',
-    'hero.trust': '⚡ AI 即时规划 · 📍 Google Maps 评分 · ✈️ 免费试用',
+    'hero.trust': '🗺️ 互动地图 · ⭐ Google 验证评分 · ✏️ 即时编辑分享',
     'hero.examples': '不知道去哪？试试这些 ✨',
 
     'footer.privacy': '隐私政策',
@@ -498,11 +488,6 @@ const translations = {
     'paywall.resetNote': '免费次数每月重置',
     'paywall.error': '出了问题，请再试。',
     'paywall.success': 'Trip Pass 已激活！你有 3 次额外行程。',
-
-    // Comparison strip
-    'comp.map': '互动地图，不是文字清单',
-    'comp.verified': 'Google 验证餐厅评分',
-    'comp.edit': '即时编辑 + 分享协作',
 
     // My Trips
     'myTrips.title': '我的行程',
