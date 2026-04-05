@@ -177,6 +177,9 @@ export function TripItinerary({
   const [activeDay, setActiveDay] = useState(0)
   const [addingAt, setAddingAt] = useState<string | null>(null) // "dayIndex-placeIndex" for expanded picker
   const [addingPosition, setAddingPosition] = useState<string | null>(null) // loading state for add
+  const [customAddKey, setCustomAddKey] = useState<string | null>(null) // which "+" shows the custom input
+  const [customAddText, setCustomAddText] = useState('')
+  const customInputRef = useRef<HTMLInputElement>(null)
   const sectionRefs = useRef<(HTMLElement | null)[]>([])
   const tabBarRef = useRef<HTMLDivElement>(null)
   const isScrollingRef = useRef(false)
@@ -386,16 +389,17 @@ export function TripItinerary({
     })
   }, [onTimeCascade])
 
-  const handleAddPlace = useCallback(async (dayIndex: number, afterPlaceIndex: number, categoryType: string) => {
+  const handleAddPlace = useCallback(async (dayIndex: number, afterPlaceIndex: number, categoryType: string, customText?: string) => {
     if (!tripId || !destination) return
     const key = `${dayIndex}-${afterPlaceIndex}`
     setAddingPosition(key)
     setAddingAt(null)
+    setCustomAddKey(null)
+    setCustomAddText('')
 
     try {
       const day = days[dayIndex]
       const afterPlace = day.places[afterPlaceIndex]
-      const nextPlace = day.places[afterPlaceIndex + 1]
 
       // Calculate time for the new place: between afterPlace end and nextPlace start
       let suggestedTime = ''
@@ -408,11 +412,18 @@ export function TripItinerary({
       }
 
       // Build instruction for AI
-      const categoryLabel = ADD_CATEGORIES.find(c => c.type === categoryType)
-      const categoryName = isChinese ? (categoryLabel?.labelCN ?? categoryType) : (categoryLabel?.label ?? categoryType)
-      const instruction = isChinese
-        ? `喺 Day ${day.dayNumber} 嘅 "${afterPlace.name}" 之後加一個${categoryName}，大約${suggestedTime ? ` ${suggestedTime}` : ''}。`
-        : `Add a ${categoryName} after "${afterPlace.name}" on Day ${day.dayNumber}${suggestedTime ? ` around ${suggestedTime}` : ''}.`
+      let instruction: string
+      if (customText) {
+        instruction = isChinese
+          ? `喺 Day ${day.dayNumber} 嘅 "${afterPlace.name}" 之後加：${customText}${suggestedTime ? `，大約 ${suggestedTime}` : ''}。`
+          : `Add after "${afterPlace.name}" on Day ${day.dayNumber}: ${customText}${suggestedTime ? ` around ${suggestedTime}` : ''}.`
+      } else {
+        const categoryLabel = ADD_CATEGORIES.find(c => c.type === categoryType)
+        const categoryName = isChinese ? (categoryLabel?.labelCN ?? categoryType) : (categoryLabel?.label ?? categoryType)
+        instruction = isChinese
+          ? `喺 Day ${day.dayNumber} 嘅 "${afterPlace.name}" 之後加一個${categoryName}，大約${suggestedTime ? ` ${suggestedTime}` : ''}。`
+          : `Add a ${categoryName} after "${afterPlace.name}" on Day ${day.dayNumber}${suggestedTime ? ` around ${suggestedTime}` : ''}.`
+      }
 
       const res = await fetch('/api/edit-trip', {
         method: 'POST',
@@ -560,23 +571,61 @@ export function TripItinerary({
                         {isChinese ? '新增中...' : 'Adding...'}
                       </span>
                     ) : addingAt === `${dayIndex}-${placeIndex}` ? (
-                      <div className="flex flex-wrap justify-center gap-1.5 animate-fade-in">
-                        {ADD_CATEGORIES.map(cat => (
+                      <div className="flex flex-col items-center gap-1.5 animate-fade-in">
+                        <div className="flex flex-wrap justify-center gap-1.5">
+                          {ADD_CATEGORIES.map(cat => (
+                            <button
+                              key={cat.type}
+                              onClick={() => handleAddPlace(dayIndex, placeIndex, cat.type)}
+                              className="flex items-center gap-1 text-[11px] bg-white border border-gray-200 text-gray-600 px-2.5 py-1.5 rounded-full hover:border-orange hover:text-orange transition-colors"
+                            >
+                              <span>{cat.emoji}</span>
+                              <span>{isChinese ? cat.labelCN : cat.label}</span>
+                            </button>
+                          ))}
+                          {customAddKey !== `${dayIndex}-${placeIndex}` && (
+                            <button
+                              onClick={() => {
+                                setCustomAddKey(`${dayIndex}-${placeIndex}`)
+                                setTimeout(() => customInputRef.current?.focus(), 50)
+                              }}
+                              className="flex items-center gap-1 text-[11px] bg-white border border-dashed border-gray-300 text-gray-500 px-2.5 py-1.5 rounded-full hover:border-orange hover:text-orange transition-colors"
+                            >
+                              <span>✍️</span>
+                              <span>{isChinese ? '自訂' : 'Custom'}</span>
+                            </button>
+                          )}
                           <button
-                            key={cat.type}
-                            onClick={() => handleAddPlace(dayIndex, placeIndex, cat.type)}
-                            className="flex items-center gap-1 text-[11px] bg-white border border-gray-200 text-gray-600 px-2.5 py-1.5 rounded-full hover:border-orange hover:text-orange transition-colors"
+                            onClick={() => { setAddingAt(null); setCustomAddKey(null); setCustomAddText('') }}
+                            className="text-[11px] text-gray-400 px-1.5 py-1.5 rounded-full hover:text-gray-600 transition-colors"
                           >
-                            <span>{cat.emoji}</span>
-                            <span>{isChinese ? cat.labelCN : cat.label}</span>
+                            ✕
                           </button>
-                        ))}
-                        <button
-                          onClick={() => setAddingAt(null)}
-                          className="text-[11px] text-gray-400 px-1.5 py-1.5 rounded-full hover:text-gray-600 transition-colors"
-                        >
-                          ✕
-                        </button>
+                        </div>
+                        {customAddKey === `${dayIndex}-${placeIndex}` && (
+                          <div className="flex gap-1.5 w-full max-w-xs">
+                            <input
+                              ref={customInputRef}
+                              type="text"
+                              value={customAddText}
+                              onChange={(e) => setCustomAddText(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && customAddText.trim()) handleAddPlace(dayIndex, placeIndex, 'custom', customAddText.trim())
+                                if (e.key === 'Escape') { setCustomAddKey(null); setCustomAddText('') }
+                              }}
+                              placeholder={isChinese ? '例如：拉麵店、書店...' : 'e.g. ramen shop, bookstore...'}
+                              autoComplete="off"
+                              className="flex-1 text-xs border border-gray-200 rounded-full px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-orange focus:border-transparent"
+                            />
+                            <button
+                              onClick={() => { if (customAddText.trim()) handleAddPlace(dayIndex, placeIndex, 'custom', customAddText.trim()) }}
+                              disabled={!customAddText.trim()}
+                              className="shrink-0 text-xs bg-orange text-white px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-40 transition-opacity font-semibold"
+                            >
+                              {isChinese ? '加' : 'Add'}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <button
