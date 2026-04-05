@@ -354,11 +354,28 @@ export function ChatInput() {
     const payment = searchParams.get('payment')
     if (payment === 'success') {
       setError('')
-      // Brief success indicator — will clear on next interaction
+      // Verify payment and add credits (fallback — don't rely on webhook alone)
+      const sessionId = searchParams.get('session_id')
+      if (sessionId) {
+        fetch('/api/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionId }),
+        }).then(res => res.json()).then(data => {
+          if (data.ok) {
+            console.log('Payment verified, credits added')
+          } else {
+            console.error('Payment verification:', data)
+          }
+        }).catch(err => {
+          console.error('Payment verification failed:', err)
+        })
+      }
+      // Clean up URL
       const timer = setTimeout(() => {
-        // Clean up URL
         const url = new URL(window.location.href)
         url.searchParams.delete('payment')
+        url.searchParams.delete('session_id')
         window.history.replaceState({}, '', url.toString())
       }, 100)
       return () => clearTimeout(timer)
@@ -366,6 +383,7 @@ export function ChatInput() {
     if (payment === 'cancel') {
       const url = new URL(window.location.href)
       url.searchParams.delete('payment')
+      url.searchParams.delete('session_id')
       window.history.replaceState({}, '', url.toString())
     }
   }, [searchParams])

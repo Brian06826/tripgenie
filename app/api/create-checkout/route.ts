@@ -55,7 +55,7 @@ export async function POST(request: Request) {
         uid: userId,
         credits: '3',
       },
-      success_url: `${origin}?payment=success`,
+      success_url: `${origin}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}?payment=cancel`,
     })
 
