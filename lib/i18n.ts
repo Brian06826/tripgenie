@@ -120,6 +120,8 @@ const translations = {
     'share.copyLink': '📋 Copy Link',
     'share.collabHint': '🤝 Anyone with this link can view AND edit this trip',
     'share.sharedCollab': '✅ Shared! Recipients can edit this trip together',
+    'collab.receiverHint': '✏️ You can edit this trip! Changes save automatically.',
+    'collab.dismiss': 'Got it',
 
     // TripMap
     'map.hide': '📋 Hide Map',
@@ -255,6 +257,8 @@ const translations = {
     'share.copyLink': '📋 複製連結',
     'share.collabHint': '🤝 收到連結嘅人可以一齊睇同編輯呢個行程',
     'share.sharedCollab': '✅ 已分享！對方可以一齊編輯行程',
+    'collab.receiverHint': '✏️ 你可以直接編輯呢個行程！修改會自動儲存。',
+    'collab.dismiss': '知道了',
 
     'map.hide': '📋 隱藏地圖',
     'map.show': '🗺️ 顯示地圖',
@@ -381,6 +385,8 @@ const translations = {
     'share.copyLink': '📋 复制链接',
     'share.collabHint': '🤝 收到链接的人可以一起查看和编辑这个行程',
     'share.sharedCollab': '✅ 已分享！对方可以一起编辑行程',
+    'collab.receiverHint': '✏️ 你可以直接编辑这个行程！修改会自动保存。',
+    'collab.dismiss': '知道了',
 
     'map.hide': '📋 隐藏地图',
     'map.show': '🗺️ 显示地图',

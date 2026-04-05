@@ -638,7 +638,7 @@ export function TripItinerary({
                     ) : (
                       <button
                         onClick={() => setAddingAt(`${dayIndex}-${placeIndex}`)}
-                        className="w-10 h-10 flex items-center justify-center rounded-full border border-dashed border-gray-200 text-gray-300 hover:border-orange/40 hover:bg-orange/10 hover:text-orange transition-colors text-lg font-bold"
+                        className="w-9 h-9 flex items-center justify-center rounded-full text-gray-300 hover:bg-orange/10 hover:text-orange transition-colors text-base font-medium"
                         aria-label={t(locale, 'itin.addPlace')}
                       >
                         +

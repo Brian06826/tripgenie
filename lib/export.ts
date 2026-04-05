@@ -223,6 +223,7 @@ export function generateShareText(trip: Trip, tripUrl: string): string {
 
   lines.push('')
   lines.push(`🔗 ${tripUrl}`)
+  lines.push(`✏️ ${cn ? '打開連結可以一齊編輯行程！' : 'Open the link to edit together!'}`)
   lines.push(`✨ ${cn ? '用 Lulgo 規劃行程' : 'Plan your trip on Lulgo'} → lulgo.com`)
   return lines.join('\n')
 }

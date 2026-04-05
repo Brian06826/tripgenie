@@ -5,6 +5,8 @@ import type { Trip, DayPlan, Place } from '@/lib/types'
 import { TripItinerary } from './TripItinerary'
 import { TripMap } from './TripMap'
 import { TripEditBar } from './TripEditBar'
+import { useUILocale } from '@/lib/i18n-context'
+import { t } from '@/lib/i18n'
 
 // --- Time utilities for instant delete ---
 function parseTimeToMinutes(timeStr: string): number | null {
@@ -116,8 +118,19 @@ export function TripEditor({ tripId, trip }: Props) {
   const [isEditing, setIsEditing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [undoToast, setUndoToast] = useState<{ message: string; tripData: Trip } | null>(null)
+  const [showCollabHint, setShowCollabHint] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const { locale } = useUILocale()
+
+  // Show collab hint for receivers (once per session)
+  useEffect(() => {
+    try {
+      if (!sessionStorage.getItem('lulgo_collab_seen')) {
+        setShowCollabHint(true)
+      }
+    } catch {}
+  }, [])
 
   // Check sessionStorage for pending undo on mount
   useEffect(() => {
@@ -297,6 +310,22 @@ export function TripEditor({ tripId, trip }: Props) {
 
   return (
     <>
+      {/* Collaborative editing hint for receivers */}
+      {showCollabHint && (
+        <div className="flex items-center justify-between gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 mb-3 text-xs text-blue-700">
+          <span>{t(locale, 'collab.receiverHint')}</span>
+          <button
+            onClick={() => {
+              setShowCollabHint(false)
+              try { sessionStorage.setItem('lulgo_collab_seen', '1') } catch {}
+            }}
+            className="shrink-0 text-blue-400 hover:text-blue-600 font-medium transition-colors"
+          >
+            {t(locale, 'collab.dismiss')}
+          </button>
+        </div>
+      )}
+
       <TripMap key={`map-${editVersion}`} days={currentTrip.days} />
       <TripItinerary
         key={`itin-${editVersion}`}
