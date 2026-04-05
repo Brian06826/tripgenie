@@ -1,14 +1,11 @@
 import Stripe from 'stripe'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { getOrCreateUID, resolveUID } from '@/lib/usage'
 
 let _stripe: Stripe | null = null
 function getStripe(): Stripe {
   if (!_stripe) {
-    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: '2026-03-25.dahlia',
-    })
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
   }
   return _stripe
 }
@@ -18,16 +15,18 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Stripe not configured' }, { status: 500 })
   }
 
-  const session = await getServerSession(authOptions).catch(() => null)
-  const userId = (session?.user as any)?.id as string | undefined
+  let userId: string | undefined
+  try {
+    const session = await getServerSession(authOptions)
+    userId = (session?.user as any)?.id as string | undefined
+  } catch (err) {
+    console.error('Session error in create-checkout:', err)
+  }
 
   // Trip Pass requires sign-in so credits persist across devices
   if (!userId) {
     return Response.json({ error: 'sign_in_required' }, { status: 401 })
   }
-
-  const cookieUID = await getOrCreateUID()
-  const uid = resolveUID(userId, cookieUID)
 
   try {
     const origin = request.headers.get('origin') ?? process.env.NEXTAUTH_URL ?? 'https://lulgo.com'
@@ -48,7 +47,7 @@ export async function POST(request: Request) {
         },
       ],
       metadata: {
-        uid,
+        uid: userId,
         credits: '3',
       },
       success_url: `${origin}?payment=success`,
@@ -58,6 +57,7 @@ export async function POST(request: Request) {
     return Response.json({ url: checkoutSession.url })
   } catch (err) {
     console.error('Stripe checkout error:', err)
-    return Response.json({ error: 'Failed to create checkout session' }, { status: 500 })
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    return Response.json({ error: 'checkout_failed', detail: message }, { status: 500 })
   }
 }

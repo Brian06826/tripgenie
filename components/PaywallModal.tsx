@@ -40,7 +40,8 @@ export function PaywallModal({ onClose, used, limit }: Props) {
       if (data.url) {
         window.location.href = data.url
       } else {
-        setError(t(locale, 'paywall.error'))
+        console.error('Checkout response:', data)
+        setError(data.detail ?? t(locale, 'paywall.error'))
       }
     } catch {
       setError(t(locale, 'paywall.error'))
