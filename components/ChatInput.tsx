@@ -257,7 +257,7 @@ export function ChatInput() {
         try {
           const data = await res.json()
           if (data.error === 'usage_limit') {
-            setUsageInfo({ used: data.used ?? 4, limit: data.limit ?? 4 })
+            setUsageInfo({ used: data.used ?? 3, limit: data.limit ?? 3 })
             setShowPaywall(true)
             setLoading(false)
             return

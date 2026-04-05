@@ -30,9 +30,18 @@ export function PaywallModal({ onClose, used, limit }: Props) {
 
     try {
       const res = await fetch('/api/create-checkout', { method: 'POST' })
-      const data = await res.json()
+
+      let data: any
+      try {
+        data = await res.json()
+      } catch {
+        // Non-JSON response (Vercel error page, etc.)
+        setError(`Server error (${res.status}). Please try again.`)
+        return
+      }
 
       if (data.error === 'sign_in_required') {
+        // Server can't find session — re-authenticate
         signIn('google', { callbackUrl: window.location.href + '?payment=pending' })
         return
       }
@@ -41,9 +50,10 @@ export function PaywallModal({ onClose, used, limit }: Props) {
         window.location.href = data.url
       } else {
         console.error('Checkout response:', data)
-        setError(data.detail ?? t(locale, 'paywall.error'))
+        setError(data.detail ?? `Checkout failed: ${data.error ?? 'unknown'}`)
       }
-    } catch {
+    } catch (err) {
+      console.error('Checkout fetch error:', err)
       setError(t(locale, 'paywall.error'))
     } finally {
       setLoading(false)

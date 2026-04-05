@@ -5,27 +5,32 @@ import { authOptions } from '@/lib/auth'
 let _stripe: Stripe | null = null
 function getStripe(): Stripe {
   if (!_stripe) {
-    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim())
   }
   return _stripe
 }
 
 export async function POST(request: Request) {
-  if (!process.env.STRIPE_SECRET_KEY) {
-    return Response.json({ error: 'Stripe not configured' }, { status: 500 })
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) {
+    console.error('STRIPE_SECRET_KEY is not set')
+    return Response.json({ error: 'stripe_not_configured', detail: 'Stripe key missing' }, { status: 500 })
   }
 
   let userId: string | undefined
+  let sessionDebug: string = 'no_attempt'
   try {
     const session = await getServerSession(authOptions)
+    sessionDebug = session ? `ok:${!!(session.user as any)?.id}` : 'null_session'
     userId = (session?.user as any)?.id as string | undefined
   } catch (err) {
+    sessionDebug = `error:${err instanceof Error ? err.message : 'unknown'}`
     console.error('Session error in create-checkout:', err)
   }
 
-  // Trip Pass requires sign-in so credits persist across devices
   if (!userId) {
-    return Response.json({ error: 'sign_in_required' }, { status: 401 })
+    console.log(`create-checkout: sign_in_required (session=${sessionDebug})`)
+    return Response.json({ error: 'sign_in_required', debug: sessionDebug }, { status: 401 })
   }
 
   try {
