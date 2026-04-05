@@ -29,7 +29,7 @@ function formatDate(dateStr: string, language?: string): string {
   }
 }
 
-export function MyTrips() {
+export function MyTrips({ onHasTrips }: { onHasTrips?: (has: boolean) => void } = {}) {
   const { data: session, status } = useSession()
   const [trips, setTrips] = useState<MyTrip[]>([])
   const [loading, setLoading] = useState(false)
@@ -42,7 +42,10 @@ export function MyTrips() {
     fetch('/api/my-trips')
       .then(res => res.json())
       .then(data => {
-        if (data.trips) setTrips(data.trips)
+        if (data.trips) {
+          setTrips(data.trips)
+          onHasTrips?.(data.trips.length > 0)
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false))

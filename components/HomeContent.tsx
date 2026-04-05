@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useUILocale } from '@/lib/i18n-context'
 import { t } from '@/lib/i18n'
@@ -75,6 +76,7 @@ const EXAMPLE_TRIPS = [
 
 export function HomeContent() {
   const { locale } = useUILocale()
+  const [hideRecent, setHideRecent] = useState(false)
 
   return (
     <div className="min-h-dvh bg-gray-50">
@@ -130,10 +132,10 @@ export function HomeContent() {
       </div>
 
       {/* My Trips (logged-in users only) */}
-      <MyTrips />
+      <MyTrips onHasTrips={setHideRecent} />
 
       {/* Recent trips */}
-      <RecentTrips />
+      {!hideRecent && <RecentTrips />}
 
       {/* Example trips */}
       <section className="max-w-xl lg:max-w-3xl mx-auto px-4 pt-2 pb-4">
