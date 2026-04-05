@@ -402,12 +402,16 @@ export function TripItinerary({
       const afterPlace = day.places[afterPlaceIndex]
 
       // Calculate time for the new place: between afterPlace end and nextPlace start
+      // Cap at 9:00 PM (1260 mins) — never suggest absurdly late times
       let suggestedTime = ''
       if (afterPlace?.arrivalTime) {
         const afterMins = parseTimeToMinutes(afterPlace.arrivalTime)
         if (afterMins !== null) {
           const duration = afterPlace.duration ? parseDurationMinutes(afterPlace.duration) : 60
-          suggestedTime = minutesToTimeStr(afterMins + duration + 15, true) // 15 min gap
+          const rawTime = afterMins + duration + 15
+          if (rawTime <= 1260) { // only suggest if <= 9:00 PM
+            suggestedTime = minutesToTimeStr(rawTime, true)
+          }
         }
       }
 
@@ -440,8 +444,15 @@ export function TripItinerary({
         throw new Error(err.error || 'Add place failed')
       }
 
-      // Reload page to show updated trip
-      window.location.reload()
+      const result = await res.json()
+      if (result.trip?.days) {
+        // Update local state immediately from API response
+        setDays(result.trip.days)
+        // Sync parent TripEditor state (also saves to Redis, but edit-trip already saved — harmless)
+        if (onTimeCascade) onTimeCascade(result.trip.days, 0)
+        setToast(isChinese ? '已新增' : 'Added')
+        setTimeout(() => setToast(null), 3000)
+      }
     } catch (err) {
       console.error('[add-place] Failed:', err)
       setToast(isChinese ? '新增失敗' : 'Failed to add')
@@ -449,7 +460,7 @@ export function TripItinerary({
     } finally {
       setAddingPosition(null)
     }
-  }, [days, tripId, destination, language, isChinese])
+  }, [days, tripId, destination, language, isChinese, onTimeCascade])
 
   const handleRemove = useCallback(async (dayIndex: number, placeIndex: number) => {
     if (!onRemovePlace) return
