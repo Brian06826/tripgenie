@@ -4,6 +4,7 @@ import { AuthProvider } from '@/components/AuthProvider'
 import { I18nProvider } from '@/lib/i18n-context'
 import { detectLocaleFromHeader } from '@/lib/i18n'
 import { headers } from 'next/headers'
+import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
@@ -40,6 +41,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <I18nProvider detected={detected}>
           <AuthProvider>{children}</AuthProvider>
         </I18nProvider>
+        <Analytics />
       </body>
     </html>
   )
