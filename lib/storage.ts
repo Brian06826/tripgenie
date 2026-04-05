@@ -79,3 +79,27 @@ export async function getTrip(id: string): Promise<TripItinerary | null> {
     return fileGet(id);
   }
 }
+
+/** Add a trip ID to the user's trip index (Redis sorted set, scored by timestamp) */
+export async function addTripToUserIndex(userId: string, tripId: string): Promise<void> {
+  if (!isProduction()) return; // dev mode doesn't need indexing
+  try {
+    const redis = await getRedis();
+    await redis.zadd(`user-trips:${userId}`, Date.now(), tripId);
+  } catch (error) {
+    console.error('Redis ZADD user-trips error:', error);
+  }
+}
+
+/** Get all trip IDs for a user, newest first */
+export async function getUserTripIds(userId: string): Promise<string[]> {
+  if (!isProduction()) return [];
+  try {
+    const redis = await getRedis();
+    // Return newest first, cap at 50
+    return await redis.zrevrange(`user-trips:${userId}`, 0, 49);
+  } catch (error) {
+    console.error('Redis ZREVRANGE user-trips error:', error);
+    return [];
+  }
+}

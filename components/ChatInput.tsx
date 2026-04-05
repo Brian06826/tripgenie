@@ -109,6 +109,7 @@ export function ChatInput() {
   const [placeholderVisible, setPlaceholderVisible] = useState(true)
   const [showPaywall, setShowPaywall] = useState(false)
   const [usageInfo, setUsageInfo] = useState<{ used: number; limit: number } | null>(null)
+  const [paymentToast, setPaymentToast] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const pendingTripIdRef = useRef<string | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -363,13 +364,18 @@ export function ChatInput() {
           body: JSON.stringify({ session_id: sessionId }),
         }).then(res => res.json()).then(data => {
           if (data.ok) {
-            console.log('Payment verified, credits added')
+            setPaymentToast(t(locale, 'paywall.success'))
+            setTimeout(() => setPaymentToast(null), 5000)
           } else {
             console.error('Payment verification:', data)
           }
         }).catch(err => {
           console.error('Payment verification failed:', err)
         })
+      } else {
+        // No session_id but payment=success — show toast anyway (webhook may have handled it)
+        setPaymentToast(t(locale, 'paywall.success'))
+        setTimeout(() => setPaymentToast(null), 5000)
       }
       // Clean up URL
       const timer = setTimeout(() => {
@@ -510,6 +516,20 @@ export function ChatInput() {
             className="w-full bg-red-600 text-white py-2 rounded-lg font-semibold text-sm hover:bg-red-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
           >
             {t(locale, 'chat.tryAgain')}
+          </button>
+        </div>
+      )}
+
+      {/* Payment success toast */}
+      {paymentToast && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white text-sm px-5 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-fade-in">
+          <span>✅</span>
+          <span>{paymentToast}</span>
+          <button
+            onClick={() => setPaymentToast(null)}
+            className="ml-2 text-white/70 hover:text-white transition-colors"
+          >
+            ✕
           </button>
         </div>
       )}

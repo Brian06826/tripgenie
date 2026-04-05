@@ -6,6 +6,7 @@ import { t } from '@/lib/i18n'
 import { ChatInput } from '@/components/ChatInput'
 import { ExampleTripLink } from '@/components/ExampleTripLink'
 import { RecentTrips } from '@/components/RecentTrips'
+import { MyTrips } from '@/components/MyTrips'
 import { UserMenu } from '@/components/UserMenu'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
@@ -127,6 +128,9 @@ export function HomeContent() {
           {t(locale, 'hero.trust')}
         </p>
       </div>
+
+      {/* My Trips (logged-in users only) */}
+      <MyTrips />
 
       {/* Recent trips */}
       <RecentTrips />

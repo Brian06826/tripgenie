@@ -198,6 +198,9 @@ const translations = {
     'paywall.resetNote': 'Free trips reset every month',
     'paywall.error': 'Something went wrong. Please try again.',
     'paywall.success': 'Trip Pass activated! You have 3 extra trips.',
+
+    // My Trips
+    'myTrips.title': 'My Trips',
   },
 
   'zh-TW': {
@@ -340,6 +343,9 @@ const translations = {
     'paywall.resetNote': '免費次數每月重置',
     'paywall.error': '出咗問題，請再試。',
     'paywall.success': 'Trip Pass 已啟用！你有 3 次額外行程。',
+
+    // My Trips
+    'myTrips.title': '我嘅行程',
   },
 
   'zh-CN': {
@@ -482,6 +488,9 @@ const translations = {
     'paywall.resetNote': '免费次数每月重置',
     'paywall.error': '出了问题，请再试。',
     'paywall.success': 'Trip Pass 已激活！你有 3 次额外行程。',
+
+    // My Trips
+    'myTrips.title': '我的行程',
   },
 } as const
 

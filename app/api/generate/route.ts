@@ -3,7 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
 import { generateTrip, validateTripRequest, deduplicatePlaces, backfillSpareDays } from '@/lib/claude'
 import { clampLateTimes, sortPlacesByTime } from '@/lib/edit-trip'
-import { saveTrip, getTrip } from '@/lib/storage'
+import { saveTrip, getTrip, addTripToUserIndex } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
 import { generateAndUploadOgImage } from '@/lib/og'
 import { fetchHeroImage } from '@/lib/unsplash'
@@ -116,6 +116,7 @@ export async function POST(request: Request) {
 
         // Save preview and tell client to navigate immediately
         await saveTrip(tripId, previewTrip)
+        if (userId) await addTripToUserIndex(userId, tripId)
         send({ type: 'preview', tripId })
 
         // Validate restaurants against Google Places API
