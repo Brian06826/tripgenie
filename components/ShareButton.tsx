@@ -116,7 +116,7 @@ export function ShareButton({ tripId, tripTitle, trip }: Props) {
       {/* Share success toast (after native share) */}
       {shareSuccess && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-800 text-white text-sm px-4 py-2.5 rounded-xl shadow-lg animate-fade-in">
-          {t(locale, 'share.shared')}
+          {t(locale, 'share.sharedCollab')}
         </div>
       )}
 
@@ -204,6 +204,11 @@ export function ShareButton({ tripId, tripTitle, trip }: Props) {
                 height={140}
                 className="rounded-lg border border-gray-100"
               />
+            </div>
+
+            {/* Collaboration hint */}
+            <div className="bg-orange/5 border border-orange/15 rounded-lg px-3 py-2 mb-3 text-xs text-gray-600 text-center">
+              {t(locale, 'share.collabHint')}
             </div>
 
             {/* URL display */}
