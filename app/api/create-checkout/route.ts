@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
-import { auth } from '@/lib/auth'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { isRateLimited, rateLimitResponse } from '@/lib/rate-limit'
 
 let _stripe: Stripe | null = null
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
   let userId: string | undefined
   let sessionDebug: string = 'no_attempt'
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     sessionDebug = session ? `ok:${!!(session.user as any)?.id}` : 'null_session'
     userId = (session?.user as any)?.id as string | undefined
   } catch (err) {

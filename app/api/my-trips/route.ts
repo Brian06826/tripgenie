@@ -1,8 +1,9 @@
-import { auth } from '@/lib/auth'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { getUserTripIds, getTrip } from '@/lib/storage'
 
 export async function GET() {
-  const session = await auth().catch(() => null)
+  const session = await getServerSession(authOptions).catch(() => null)
   const userId = (session?.user as any)?.id as string | undefined
 
   if (!userId) {
