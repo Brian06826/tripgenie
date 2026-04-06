@@ -1,6 +1,5 @@
 import { nanoid } from 'nanoid'
 import { revalidatePath } from 'next/cache'
-import { getServerSession } from 'next-auth'
 import { generateTrip, validateTripRequest, deduplicatePlaces, backfillSpareDays } from '@/lib/claude'
 import { clampLateTimes, sortPlacesByTime } from '@/lib/edit-trip'
 import { saveTrip, getTrip, addTripToUserIndex } from '@/lib/storage'
@@ -9,7 +8,7 @@ import { generateAndUploadOgImage } from '@/lib/og'
 import { fetchHeroImage } from '@/lib/unsplash'
 import { validateRestaurants, geocodeAllPlaces } from '@/lib/google-places'
 import { optimizeRoutes } from '@/lib/route-optimizer'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth'
 import { isRateLimited, rateLimitResponse } from '@/lib/rate-limit'
 import { getOrCreateUID, resolveUID, checkUsage, recordUsage } from '@/lib/usage'
 import type { Trip } from '@/lib/types'
@@ -46,7 +45,7 @@ export async function POST(request: Request) {
 
   // Usage check — free tier or Trip Pass
   const cookieUID = await getOrCreateUID()
-  const session0 = await getServerSession(authOptions).catch(() => null)
+  const session0 = await auth().catch(() => null)
   const uid = resolveUID((session0?.user as any)?.id, cookieUID)
   const usage = await checkUsage(uid)
   if (!usage.allowed) {
@@ -69,7 +68,7 @@ export async function POST(request: Request) {
 
       try {
         // Get userId if logged in (optional — anonymous trips work fine)
-        const session = await getServerSession(authOptions).catch(() => null)
+        const session = await auth().catch(() => null)
         const userId = (session?.user as any)?.id as string | undefined
 
         const t0 = Date.now()
