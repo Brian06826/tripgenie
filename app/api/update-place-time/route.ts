@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { saveTrip, getTrip } from '@/lib/storage'
+import { isRateLimited, rateLimitResponse } from '@/lib/rate-limit'
 
 function parseTimeToMinutes(timeStr: string): number | null {
   const match12 = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
@@ -75,7 +76,13 @@ function cascadeTimes(
 
 export async function POST(request: Request) {
   try {
-    const { tripId, dayNumber, placeIndex, newTime } = await request.json()
+    const body = await request.json()
+    const { tripId, dayNumber, placeIndex, newTime, language } = body
+
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+    if (await isRateLimited(`updatetime:${ip}`, 30, 3600)) {
+      return rateLimitResponse(language)
+    }
 
     if (!tripId || typeof tripId !== 'string') {
       return NextResponse.json({ error: 'Missing tripId' }, { status: 400 })

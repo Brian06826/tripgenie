@@ -36,6 +36,19 @@ async function checkMemory(key: string, limit: number, windowMs: number): Promis
   return false
 }
 
+const RATE_LIMIT_MESSAGES: Record<string, string> = {
+  en: 'Too many requests. Please try again in a few minutes.',
+  'zh-TW': '請求太頻繁，請稍後再試。',
+  'zh-HK': '請求太頻繁，請稍後再試。',
+  'zh-CN': '请求太频繁，请稍后再试。',
+}
+
+/** Return a 429 Response with a localized rate-limit message. */
+export function rateLimitResponse(language?: string): Response {
+  const msg = RATE_LIMIT_MESSAGES[language ?? 'en'] ?? RATE_LIMIT_MESSAGES.en
+  return Response.json({ error: msg }, { status: 429 })
+}
+
 /**
  * Check if a key is rate limited.
  * @param key   Unique key (e.g. "gen:1.2.3.4" or "edit:1.2.3.4")

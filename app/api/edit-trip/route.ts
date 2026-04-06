@@ -5,7 +5,7 @@ import { saveTrip, getTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
 import { geocodeAllPlaces } from '@/lib/google-places'
 import { optimizeRoutes } from '@/lib/route-optimizer'
-import { isRateLimited } from '@/lib/rate-limit'
+import { isRateLimited, rateLimitResponse } from '@/lib/rate-limit'
 import type { Trip, TripGeneration } from '@/lib/types'
 
 export const maxDuration = 300
@@ -69,13 +69,13 @@ export async function POST(request: Request) {
     if (!instruction || typeof instruction !== 'string' || !instruction.trim()) {
       return NextResponse.json({ error: 'Missing instruction' }, { status: 400 })
     }
+    if (instruction.length > 500) {
+      return NextResponse.json({ error: 'Instruction too long (max 500 chars)' }, { status: 400 })
+    }
 
     const editIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
     if (await isRateLimited(`edit:${editIp}`, 30, 3600)) {
-      return NextResponse.json(
-        { error: 'Too many edits. Please wait before making more changes.' },
-        { status: 429 },
-      )
+      return rateLimitResponse(body.language)
     }
 
     // 1. Fetch current trip

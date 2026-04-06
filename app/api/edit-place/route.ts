@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server'
 import { editPlace } from '@/lib/edit'
+import { isRateLimited, rateLimitResponse } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
     const { instruction, currentPlace, destination, language } = body
+
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+    if (await isRateLimited(`editplace:${ip}`, 20, 3600)) {
+      return rateLimitResponse(language)
+    }
 
     if (!instruction || !currentPlace || !destination) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })

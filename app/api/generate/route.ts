@@ -10,7 +10,7 @@ import { fetchHeroImage } from '@/lib/unsplash'
 import { validateRestaurants, geocodeAllPlaces } from '@/lib/google-places'
 import { optimizeRoutes } from '@/lib/route-optimizer'
 import { authOptions } from '@/lib/auth'
-import { isRateLimited } from '@/lib/rate-limit'
+import { isRateLimited, rateLimitResponse } from '@/lib/rate-limit'
 import { getOrCreateUID, resolveUID, checkUsage, recordUsage } from '@/lib/usage'
 import type { Trip } from '@/lib/types'
 
@@ -19,10 +19,7 @@ export const maxDuration = 300
 export async function POST(request: Request) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
   if (await isRateLimited(`gen:${ip}`, 15, 3600)) {
-    return Response.json(
-      { error: 'Too many requests. Please wait before trying again.' },
-      { status: 429 }
-    )
+    return rateLimitResponse()
   }
 
   let body: { prompt?: string; language?: string }

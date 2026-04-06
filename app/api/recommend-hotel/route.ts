@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { isRateLimited, rateLimitResponse } from '@/lib/rate-limit'
 
 export const maxDuration = 30
 
@@ -17,6 +18,11 @@ function getClient(): Anthropic {
 export async function POST(request: Request) {
   try {
     const { dayCity, destination, language } = await request.json()
+
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+    if (await isRateLimited(`rechotel:${ip}`, 10, 3600)) {
+      return rateLimitResponse(language)
+    }
 
     if (!dayCity && !destination) {
       return NextResponse.json({ error: 'Missing city or destination' }, { status: 400 })

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { saveTrip, getTrip } from '@/lib/storage'
 import { buildGoogleMapsUrl, buildGoogleReviewsUrl, buildYelpUrl } from '@/lib/url-helpers'
+import { isRateLimited, rateLimitResponse } from '@/lib/rate-limit'
 import type { Place } from '@/lib/types'
 
 export const maxDuration = 30
@@ -93,6 +94,11 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     const { tripId, hotelName, dayNumber, language, bookingUrl } = body
+
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+    if (await isRateLimited(`addhotel:${ip}`, 10, 3600)) {
+      return rateLimitResponse(language)
+    }
 
     if (!tripId || typeof tripId !== 'string') {
       return NextResponse.json({ error: 'Missing tripId' }, { status: 400 })

@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { isRateLimited, rateLimitResponse } from '@/lib/rate-limit'
 
 let _stripe: Stripe | null = null
 function getStripe(): Stripe {
@@ -11,6 +12,11 @@ function getStripe(): Stripe {
 }
 
 export async function POST(request: Request) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (await isRateLimited(`checkout:${ip}`, 5, 3600)) {
+    return rateLimitResponse()
+  }
+
   const key = process.env.STRIPE_SECRET_KEY
   if (!key) {
     console.error('STRIPE_SECRET_KEY is not set')
