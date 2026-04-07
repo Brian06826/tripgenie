@@ -59,11 +59,6 @@ export const authOptions: NextAuthOptions = {
           AppleProvider({
             clientId: APPLE_CLIENT_ID,
             clientSecret: appleClientSecret,
-            // Apple uses form_post response mode, which causes the PKCE
-            // code_verifier cookie to be lost on the POST callback
-            // (SameSite=Lax cookies aren't sent on cross-site POSTs).
-            // Use state check instead of PKCE.
-            checks: ['state'],
           }),
         ]
       : []),
@@ -92,5 +87,40 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/auth/signin',
+  },
+  // Apple uses response_mode=form_post → callback is a cross-site POST from
+  // appleid.apple.com. Default NextAuth cookies are SameSite=Lax, which browsers
+  // do NOT send on cross-site POSTs, causing "PKCE code_verifier cookie was missing".
+  // Override the OAuth check cookies to SameSite=None + Secure so they survive.
+  cookies: {
+    pkceCodeVerifier: {
+      name: '__Secure-next-auth.pkce.code_verifier',
+      options: {
+        httpOnly: true,
+        sameSite: 'none',
+        path: '/',
+        secure: true,
+        maxAge: 60 * 15,
+      },
+    },
+    state: {
+      name: '__Secure-next-auth.state',
+      options: {
+        httpOnly: true,
+        sameSite: 'none',
+        path: '/',
+        secure: true,
+        maxAge: 60 * 15,
+      },
+    },
+    nonce: {
+      name: '__Secure-next-auth.nonce',
+      options: {
+        httpOnly: true,
+        sameSite: 'none',
+        path: '/',
+        secure: true,
+      },
+    },
   },
 }
