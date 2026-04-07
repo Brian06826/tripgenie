@@ -177,6 +177,14 @@ const translations = {
     'user.signIn': 'Sign In',
     'user.signOut': 'Sign Out',
 
+    // Sign-in page
+    'signin.title': 'Welcome to Lulgo',
+    'signin.subtitle': 'Sign in to save your trips',
+    'signin.google': 'Continue with Google',
+    'signin.apple': 'Continue with Apple',
+    'signin.terms': 'By signing in, you agree to our Terms and Privacy Policy.',
+    'signin.error': 'Sign-in failed. Please try again.',
+
     // RecentTrips
     'recent.title': 'Your Recent Trips',
     'recent.clearAll': 'Clear All',
@@ -191,7 +199,7 @@ const translations = {
     'paywall.feature1': '3 extra trip generations',
     'paywall.feature2': 'Longer trips up to 14 days',
     'paywall.feature3': 'Credits never expire',
-    'paywall.signInHint': 'Sign in with Google to purchase',
+    'paywall.signInHint': 'Sign in to purchase',
     'paywall.buy': 'Buy Trip Pass — $2.99',
     'paywall.signInAndBuy': 'Sign In & Buy Trip Pass',
     'paywall.later': 'Maybe later',
@@ -324,6 +332,14 @@ const translations = {
     'user.signIn': '登入',
     'user.signOut': '登出',
 
+    // Sign-in page
+    'signin.title': '歡迎使用 Lulgo',
+    'signin.subtitle': '登入以儲存您的行程',
+    'signin.google': '使用 Google 繼續',
+    'signin.apple': '使用 Apple 繼續',
+    'signin.terms': '登入即表示您同意我們的服務條款和私隱政策。',
+    'signin.error': '登入失敗，請再試一次。',
+
     'recent.title': '你最近嘅行程',
     'recent.clearAll': '清除全部',
     'recent.stops': '{n} 個景點',
@@ -336,7 +352,7 @@ const translations = {
     'paywall.feature1': '額外 3 次行程生成',
     'paywall.feature2': '支援長達 14 日行程',
     'paywall.feature3': '額度永不過期',
-    'paywall.signInHint': '需要用 Google 登入先可以購買',
+    'paywall.signInHint': '需要登入先可以購買',
     'paywall.buy': '購買 Trip Pass — $2.99',
     'paywall.signInAndBuy': '登入 & 購買 Trip Pass',
     'paywall.later': '下次再算',
@@ -469,6 +485,14 @@ const translations = {
     'user.signIn': '登录',
     'user.signOut': '退出',
 
+    // Sign-in page
+    'signin.title': '欢迎使用 Lulgo',
+    'signin.subtitle': '登录以保存您的行程',
+    'signin.google': '使用 Google 继续',
+    'signin.apple': '使用 Apple 继续',
+    'signin.terms': '登录即表示您同意我们的服务条款和隐私政策。',
+    'signin.error': '登录失败，请再试一次。',
+
     'recent.title': '你最近的行程',
     'recent.clearAll': '清除全部',
     'recent.stops': '{n} 个景点',
@@ -481,7 +505,7 @@ const translations = {
     'paywall.feature1': '额外 3 次行程生成',
     'paywall.feature2': '支持长达 14 天行程',
     'paywall.feature3': '额度永不过期',
-    'paywall.signInHint': '需要用 Google 登录才能购买',
+    'paywall.signInHint': '需要登录才能购买',
     'paywall.buy': '购买 Trip Pass — $2.99',
     'paywall.signInAndBuy': '登录 & 购买 Trip Pass',
     'paywall.later': '下次再说',

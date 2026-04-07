@@ -21,7 +21,7 @@ export function PaywallModal({ onClose, used, limit }: Props) {
   async function handleBuyPass() {
     if (!isSignedIn) {
       // Sign in first, then redirect back
-      signIn('google', { callbackUrl: window.location.href + '?payment=pending' })
+      signIn(undefined, { callbackUrl: window.location.href + '?payment=pending' })
       return
     }
 
@@ -42,7 +42,7 @@ export function PaywallModal({ onClose, used, limit }: Props) {
 
       if (data.error === 'sign_in_required') {
         // Server can't find session — re-authenticate
-        signIn('google', { callbackUrl: window.location.href + '?payment=pending' })
+        signIn(undefined, { callbackUrl: window.location.href + '?payment=pending' })
         return
       }
 
