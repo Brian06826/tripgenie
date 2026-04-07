@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
 import { AuthProvider } from '@/components/AuthProvider'
+import { NativeBootstrap } from '@/components/NativeBootstrap'
 import { I18nProvider } from '@/lib/i18n-context'
 import { detectLocaleFromHeader } from '@/lib/i18n'
 import { headers } from 'next/headers'
@@ -41,6 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <I18nProvider detected={detected}>
           <AuthProvider>{children}</AuthProvider>
         </I18nProvider>
+        <NativeBootstrap />
         <Analytics />
       </body>
     </html>

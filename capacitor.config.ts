@@ -16,12 +16,21 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      launchAutoHide: true,
-      launchShowDuration: 2000,
-      backgroundColor: '#0f1b2d',
+      // Hide manually from JS after the WebView reports ready, to avoid a
+      // white flash before lulgo.com finishes loading.
+      launchAutoHide: false,
+      launchShowDuration: 3000,
+      backgroundColor: '#ffffff',
+      showSpinner: true,
+      iosSpinnerStyle: 'small',
+      spinnerColor: '#f97316', // brand orange
+      splashFullScreen: true,
+      splashImmersive: true,
     },
     StatusBar: {
-      style: 'LIGHT',
+      // Dark icons on white background to match the splash + light UI.
+      style: 'DARK',
+      overlaysWebView: false,
     },
   },
 }
