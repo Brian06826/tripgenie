@@ -209,6 +209,9 @@ const translations = {
 
     // My Trips
     'myTrips.title': 'My Trips',
+    'myTrips.delete': 'Delete',
+    'myTrips.deleteConfirm': 'Delete this trip? This cannot be undone.',
+    'myTrips.deleteFailed': 'Delete failed. Please try again.',
   },
 
   'zh-TW': {
@@ -362,6 +365,9 @@ const translations = {
 
     // My Trips
     'myTrips.title': '我嘅行程',
+    'myTrips.delete': '刪除',
+    'myTrips.deleteConfirm': '確定要刪除呢個行程？刪咗就冇得返。',
+    'myTrips.deleteFailed': '刪除失敗，請再試。',
   },
 
   'zh-CN': {
@@ -515,6 +521,9 @@ const translations = {
 
     // My Trips
     'myTrips.title': '我的行程',
+    'myTrips.delete': '删除',
+    'myTrips.deleteConfirm': '确定要删除这个行程？删除后无法恢复。',
+    'myTrips.deleteFailed': '删除失败，请重试。',
   },
 } as const
 

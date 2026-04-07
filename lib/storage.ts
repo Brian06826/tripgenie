@@ -91,6 +91,50 @@ export async function addTripToUserIndex(userId: string, tripId: string): Promis
   }
 }
 
+/** Remove a trip ID from the user's trip index */
+export async function removeTripFromUserIndex(userId: string, tripId: string): Promise<void> {
+  if (!isProduction()) return;
+  try {
+    const redis = await getRedis();
+    await redis.zrem(`user-trips:${userId}`, tripId);
+  } catch (error) {
+    console.error('Redis ZREM user-trips error:', error);
+  }
+}
+
+/** Delete a trip's data + remove from owner's index. Returns true if deleted. */
+export async function deleteTrip(id: string, userId: string): Promise<boolean> {
+  if (isProduction()) {
+    try {
+      const redis = await getRedis();
+      const data = await redis.get(`trip:${id}`);
+      if (!data) return false;
+      const trip = JSON.parse(data) as TripItinerary;
+      if (trip.userId !== userId) return false;
+      await redis.del(`trip:${id}`);
+      await redis.zrem(`user-trips:${userId}`, id);
+      return true;
+    } catch (error) {
+      console.error('Redis deleteTrip error:', error);
+      return false;
+    }
+  } else {
+    try {
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      const trip = await fileGet(id);
+      if (!trip) return false;
+      if (trip.userId !== userId) return false;
+      const filePath = path.join(process.cwd(), '.next', 'dev-trips', `${id}.json`);
+      await fs.unlink(filePath);
+      return true;
+    } catch (error) {
+      console.error('File deleteTrip error:', error);
+      return false;
+    }
+  }
+}
+
 /** Get all trip IDs for a user, newest first */
 export async function getUserTripIds(userId: string): Promise<string[]> {
   if (!isProduction()) return [];

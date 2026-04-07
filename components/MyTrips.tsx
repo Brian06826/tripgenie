@@ -33,7 +33,36 @@ export function MyTrips({ onHasTrips }: { onHasTrips?: (has: boolean) => void } 
   const { data: session, status } = useSession()
   const [trips, setTrips] = useState<MyTrip[]>([])
   const [loading, setLoading] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const { locale } = useUILocale()
+
+  async function handleDelete(e: React.MouseEvent, id: string) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (deletingId) return
+    if (!confirm(t(locale, 'myTrips.deleteConfirm'))) return
+    setDeletingId(id)
+    const prev = trips
+    setTrips(curr => {
+      const next = curr.filter(tr => tr.id !== id)
+      onHasTrips?.(next.length > 0)
+      return next
+    })
+    try {
+      const res = await fetch('/api/delete-trip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      if (!res.ok) throw new Error('delete failed')
+    } catch {
+      setTrips(prev)
+      onHasTrips?.(prev.length > 0)
+      alert(t(locale, 'myTrips.deleteFailed'))
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   useEffect(() => {
     if (status !== 'authenticated') return
@@ -73,41 +102,58 @@ export function MyTrips({ onHasTrips }: { onHasTrips?: (has: boolean) => void } 
       ) : (
         <div className="space-y-2">
           {trips.map(trip => (
-            <a
+            <div
               key={trip.id}
-              href={`/trip/${trip.id}`}
-              className="block bg-white rounded-xl border border-gray-100 hover:border-orange/40 hover:shadow-sm transition-all overflow-hidden"
+              className={`relative bg-white rounded-xl border border-gray-100 hover:border-orange/40 hover:shadow-sm transition-all overflow-hidden ${deletingId === trip.id ? 'opacity-50' : ''}`}
             >
-              <div className="flex items-center">
-                {trip.heroImageUrl && (
-                  <div className="w-16 h-16 shrink-0">
-                    <img
-                      src={trip.heroImageUrl}
-                      alt={trip.destination}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0 px-4 py-3">
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0 pr-3">
-                      <p className="text-sm font-semibold text-gray-900 truncate">
-                        {trip.destination}
-                      </p>
-                      <p className="text-xs text-gray-500 truncate">{trip.title}</p>
+              <a href={`/trip/${trip.id}`} className="block">
+                <div className="flex items-center">
+                  {trip.heroImageUrl && (
+                    <div className="w-16 h-16 shrink-0">
+                      <img
+                        src={trip.heroImageUrl}
+                        alt={trip.destination}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                    <div className="flex-shrink-0 text-right">
-                      <p className="text-xs font-medium text-gray-700">
-                        {trip.days} {locale === 'en' ? `day${trip.days !== 1 ? 's' : ''}` : '日'}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {formatDate(trip.createdAt, trip.language)}
-                      </p>
+                  )}
+                  <div className="flex-1 min-w-0 px-4 py-3">
+                    <div className="flex items-center justify-between">
+                      <div className="min-w-0 pr-3">
+                        <p className="text-sm font-semibold text-gray-900 truncate">
+                          {trip.destination}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">{trip.title}</p>
+                      </div>
+                      <div className="flex-shrink-0 text-right pr-10">
+                        <p className="text-xs font-medium text-gray-700">
+                          {trip.days} {locale === 'en' ? `day${trip.days !== 1 ? 's' : ''}` : '日'}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {formatDate(trip.createdAt, trip.language)}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </a>
+              </a>
+              <button
+                type="button"
+                onClick={e => handleDelete(e, trip.id)}
+                disabled={deletingId === trip.id}
+                aria-label={t(locale, 'myTrips.delete')}
+                title={t(locale, 'myTrips.delete')}
+                className="absolute top-1/2 right-2 -translate-y-1/2 p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M3 6h18" />
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                  <line x1="10" y1="11" x2="10" y2="17" />
+                  <line x1="14" y1="11" x2="14" y2="17" />
+                </svg>
+              </button>
+            </div>
           ))}
         </div>
       )}
