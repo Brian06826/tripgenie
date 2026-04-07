@@ -59,6 +59,11 @@ export const authOptions: NextAuthOptions = {
           AppleProvider({
             clientId: APPLE_CLIENT_ID,
             clientSecret: appleClientSecret,
+            // Apple uses form_post response mode, which causes the PKCE
+            // code_verifier cookie to be lost on the POST callback
+            // (SameSite=Lax cookies aren't sent on cross-site POSTs).
+            // Use state check instead of PKCE.
+            checks: ['state'],
           }),
         ]
       : []),
