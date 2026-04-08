@@ -6,6 +6,7 @@
 import { useEffect } from 'react'
 import { isNative } from '@/lib/native'
 import { BiometricLock } from './BiometricLock'
+import { BiometricSetupPrompt } from './BiometricSetupPrompt'
 
 export function NativeBootstrap() {
   useEffect(() => {
@@ -28,5 +29,10 @@ export function NativeBootstrap() {
     return () => { cancelled = true }
   }, [])
 
-  return <BiometricLock />
+  return (
+    <>
+      <BiometricLock />
+      <BiometricSetupPrompt />
+    </>
+  )
 }

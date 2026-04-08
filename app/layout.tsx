@@ -40,9 +40,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="zh-HK" className={`${geist.variable} h-full`}>
       <body className="min-h-full antialiased">
         <I18nProvider detected={detected}>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            {children}
+            {/* Native shell (Face ID lock + setup prompt). Mounted inside the
+                AuthProvider so it can react to session state. No-op on web. */}
+            <NativeBootstrap />
+          </AuthProvider>
         </I18nProvider>
-        <NativeBootstrap />
         <Analytics />
       </body>
     </html>

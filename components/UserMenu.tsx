@@ -4,12 +4,64 @@ import { useState, useRef, useEffect } from 'react'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { useUILocale } from '@/lib/i18n-context'
 import { t } from '@/lib/i18n'
+import { isNative } from '@/lib/native'
+import {
+  authenticate,
+  checkAvailability,
+  isEnabled as biometricIsEnabled,
+  setEnabled as setBiometricEnabled,
+  markAsked,
+} from '@/lib/native/biometric'
 
 export function UserMenu() {
   const { data: session, status } = useSession()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const { locale } = useUILocale()
+  const [bioAvail, setBioAvail] = useState(false)
+  const [bioLabel, setBioLabel] = useState<'Face ID' | 'Touch ID'>('Face ID')
+  const [bioOn, setBioOn] = useState(false)
+  const [bioBusy, setBioBusy] = useState(false)
+
+  // Probe biometric capability when the user is signed in on a native app.
+  useEffect(() => {
+    if (!isNative()) return
+    if (status !== 'authenticated') {
+      setBioAvail(false)
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      const avail = await checkAvailability()
+      if (cancelled) return
+      setBioAvail(avail.available)
+      if (avail.type === 'touchId') setBioLabel('Touch ID')
+      setBioOn(biometricIsEnabled())
+    })()
+    return () => { cancelled = true }
+  }, [status])
+
+  async function toggleBiometric() {
+    if (bioBusy) return
+    setBioBusy(true)
+    if (bioOn) {
+      // Disabling: re-auth first so a stranger can't switch it off without
+      // the rightful user's biometry.
+      const result = await authenticate(`Disable ${bioLabel} for Lulgo`)
+      if (result.ok) {
+        setBiometricEnabled(false)
+        setBioOn(false)
+      }
+    } else {
+      const result = await authenticate(`Enable ${bioLabel} for Lulgo`)
+      if (result.ok) {
+        setBiometricEnabled(true)
+        markAsked()
+        setBioOn(true)
+      }
+    }
+    setBioBusy(false)
+  }
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -66,6 +118,23 @@ export function UserMenu() {
             <p className="text-sm font-semibold text-gray-800 truncate">{user?.name}</p>
             <p className="text-xs text-gray-400 truncate">{user?.email}</p>
           </div>
+          {bioAvail && (
+            <button
+              onClick={toggleBiometric}
+              disabled={bioBusy}
+              className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 border-b border-gray-100"
+            >
+              <span>{t(locale, 'biometric.toggle', { method: bioLabel })}</span>
+              <span
+                aria-hidden="true"
+                className={`relative inline-block w-9 h-5 rounded-full transition-colors ${bioOn ? 'bg-orange' : 'bg-gray-300'}`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${bioOn ? 'translate-x-4' : ''}`}
+                />
+              </span>
+            </button>
+          )}
           <button
             onClick={() => { setOpen(false); signOut() }}
             className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
