@@ -1,16 +1,22 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
 import { useUILocale } from '@/lib/i18n-context'
 import { t } from '@/lib/i18n'
+import { isNativeApp } from '@/lib/platform'
 
 function SignInButtons() {
   const params = useSearchParams()
   const callbackUrl = params.get('callbackUrl') ?? '/'
   const error = params.get('error')
   const { locale } = useUILocale()
+  const [isNative, setIsNative] = useState(false)
+
+  useEffect(() => {
+    setIsNative(isNativeApp())
+  }, [])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-orange-50 to-white px-4">
@@ -34,6 +40,7 @@ function SignInButtons() {
         )}
 
         <div className="space-y-3">
+          {!isNative && (
           <button
             onClick={() => signIn('google', { callbackUrl })}
             className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-xl transition-colors"
@@ -46,6 +53,7 @@ function SignInButtons() {
             </svg>
             <span className="text-sm">{t(locale, 'signin.google')}</span>
           </button>
+          )}
 
           <button
             onClick={() => signIn('apple', { callbackUrl })}
