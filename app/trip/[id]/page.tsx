@@ -8,6 +8,8 @@ import { ExportButton } from '@/components/ExportButton'
 import { ExampleTripViewer } from '@/components/ExampleTripViewer'
 import { TripEditor } from '@/components/TripEditor'
 import { SaveRecentTrip } from '@/components/SaveRecentTrip'
+import { OfflineIndicator } from '@/components/OfflineIndicator'
+import { TripReminderPrompt } from '@/components/TripReminderPrompt'
 
 export const dynamic = 'force-dynamic'
 export const fetchCache = 'force-no-store'
@@ -123,7 +125,9 @@ export default async function TripPage({ params }: Props) {
         destination={trip.destination}
         days={Math.max(...trip.days.map(d => d.dayNumber))}
         createdAt={trip.createdAt}
+        trip={trip}
       />
+      <OfflineIndicator />
       {/* Header */}
       <header className="relative z-10 text-white px-4 pt-8 pb-6">
         {/* Background: hero image or navy gradient (overflow-hidden only on bg to avoid clipping dropdown) */}
@@ -203,6 +207,12 @@ export default async function TripPage({ params }: Props) {
 
       {/* Day content + edit bar */}
       <main className="relative z-0 max-w-4xl mx-auto px-4 py-4">
+        <TripReminderPrompt
+          tripId={id}
+          tripTitle={trip.title}
+          destination={trip.destination}
+          startDate={trip.startDate}
+        />
         <TripEditor tripId={id} trip={trip} />
 
         {/* Viral CTA — pre-fill destination */}

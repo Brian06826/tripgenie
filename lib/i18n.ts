@@ -212,6 +212,20 @@ const translations = {
     'myTrips.delete': 'Delete',
     'myTrips.deleteConfirm': 'Delete this trip? This cannot be undone.',
     'myTrips.deleteFailed': 'Delete failed. Please try again.',
+
+    // Offline + reminders (native)
+    'offline.indicator': 'You are offline — showing saved trips',
+    'offline.viewing': 'offline',
+    'reminder.title': 'Set a trip reminder?',
+    'reminder.description': "We'll remind you the day before your trip starts.",
+    'reminder.dateLabel': 'Trip start date',
+    'reminder.set': 'Set reminder',
+    'reminder.dismiss': 'Not now',
+    'reminder.scheduled': 'Reminder scheduled!',
+    'reminder.permission': 'Notifications permission denied. Enable it in Settings.',
+    'reminder.past': 'That date is too soon — pick a date at least 2 days away.',
+    'reminder.invalid': 'Please pick a valid trip start date.',
+    'reminder.error': 'Could not schedule reminder. Please try again.',
   },
 
   'zh-TW': {
@@ -368,6 +382,20 @@ const translations = {
     'myTrips.delete': '刪除',
     'myTrips.deleteConfirm': '確定要刪除呢個行程？刪咗就冇得返。',
     'myTrips.deleteFailed': '刪除失敗，請再試。',
+
+    // Offline + reminders (native)
+    'offline.indicator': '冇網絡 — 顯示已儲存嘅行程',
+    'offline.viewing': '離線',
+    'reminder.title': '設定旅行提醒？',
+    'reminder.description': '我哋會喺出發前一日提醒你。',
+    'reminder.dateLabel': '出發日期',
+    'reminder.set': '設定提醒',
+    'reminder.dismiss': '下次再算',
+    'reminder.scheduled': '提醒已設定！',
+    'reminder.permission': '通知權限被拒。請喺設定開啟。',
+    'reminder.past': '日期太近喇 — 請揀至少 2 日後。',
+    'reminder.invalid': '請揀返一個有效嘅出發日期。',
+    'reminder.error': '設定失敗，請再試。',
   },
 
   'zh-CN': {
@@ -524,6 +552,20 @@ const translations = {
     'myTrips.delete': '删除',
     'myTrips.deleteConfirm': '确定要删除这个行程？删除后无法恢复。',
     'myTrips.deleteFailed': '删除失败，请重试。',
+
+    // Offline + reminders (native)
+    'offline.indicator': '无网络 — 显示已保存的行程',
+    'offline.viewing': '离线',
+    'reminder.title': '设定旅行提醒？',
+    'reminder.description': '我们会在出发前一天提醒你。',
+    'reminder.dateLabel': '出发日期',
+    'reminder.set': '设定提醒',
+    'reminder.dismiss': '下次再说',
+    'reminder.scheduled': '提醒已设定！',
+    'reminder.permission': '通知权限被拒。请在设置中开启。',
+    'reminder.past': '日期太近 — 请选至少 2 天后。',
+    'reminder.invalid': '请选择有效的出发日期。',
+    'reminder.error': '设定失败，请重试。',
   },
 } as const
 

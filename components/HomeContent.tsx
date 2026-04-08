@@ -10,6 +10,7 @@ import { RecentTrips } from '@/components/RecentTrips'
 import { MyTrips } from '@/components/MyTrips'
 import { UserMenu } from '@/components/UserMenu'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { OfflineIndicator } from '@/components/OfflineIndicator'
 
 const EXAMPLE_TRIPS = [
   {
@@ -80,6 +81,7 @@ export function HomeContent() {
 
   return (
     <div className="min-h-dvh bg-gray-50">
+      <OfflineIndicator />
       {/* Hero header */}
       <header
         className="text-white px-4 pt-8 pb-6 text-center relative z-0"

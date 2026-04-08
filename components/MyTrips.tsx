@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useUILocale } from '@/lib/i18n-context'
 import { t } from '@/lib/i18n'
+import { cacheTripList, getCachedTripList, removeCachedTrip } from '@/lib/native/offline-cache'
 
 type MyTrip = {
   id: string
@@ -34,6 +35,7 @@ export function MyTrips({ onHasTrips }: { onHasTrips?: (has: boolean) => void } 
   const [trips, setTrips] = useState<MyTrip[]>([])
   const [loading, setLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [fromCache, setFromCache] = useState(false)
   const { locale } = useUILocale()
 
   async function handleDelete(e: React.MouseEvent, id: string) {
@@ -55,6 +57,19 @@ export function MyTrips({ onHasTrips }: { onHasTrips?: (has: boolean) => void } 
         body: JSON.stringify({ id }),
       })
       if (!res.ok) throw new Error('delete failed')
+      // Drop the trip from the offline cache too so it doesn't reappear.
+      removeCachedTrip(id).catch(() => {})
+      cacheTripList(
+        prev.filter(tr => tr.id !== id).map(tr => ({
+          id: tr.id,
+          title: tr.title,
+          destination: tr.destination,
+          days: tr.days,
+          language: tr.language,
+          createdAt: tr.createdAt,
+          heroImageUrl: tr.heroImageUrl,
+        }))
+      ).catch(() => {})
     } catch {
       setTrips(prev)
       onHasTrips?.(prev.length > 0)
@@ -66,18 +81,52 @@ export function MyTrips({ onHasTrips }: { onHasTrips?: (has: boolean) => void } 
 
   useEffect(() => {
     if (status !== 'authenticated') return
+    let cancelled = false
 
     setLoading(true)
+
+    // Hydrate from offline cache immediately so the list shows even on a
+    // failed network. The live fetch below will replace it on success.
+    getCachedTripList().then(cached => {
+      if (cancelled) return
+      if (cached.length > 0 && trips.length === 0) {
+        setTrips(cached as MyTrip[])
+        onHasTrips?.(cached.length > 0)
+        setFromCache(true)
+      }
+    }).catch(() => {})
+
     fetch('/api/my-trips')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`status ${res.status}`)
+        return res.json()
+      })
       .then(data => {
+        if (cancelled) return
         if (data.trips) {
           setTrips(data.trips)
           onHasTrips?.(data.trips.length > 0)
+          setFromCache(false)
+          // Cache for offline use on next launch.
+          cacheTripList(data.trips).catch(() => {})
         }
       })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+      .catch(() => {
+        // Network failed — keep whatever the cache hydration produced.
+        if (cancelled) return
+        getCachedTripList().then(cached => {
+          if (cancelled || cached.length === 0) return
+          setTrips(cached as MyTrip[])
+          onHasTrips?.(cached.length > 0)
+          setFromCache(true)
+        }).catch(() => {})
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
   // Don't render if not logged in or no trips
@@ -86,11 +135,16 @@ export function MyTrips({ onHasTrips }: { onHasTrips?: (has: boolean) => void } 
 
   return (
     <section className="max-w-xl lg:max-w-3xl mx-auto px-4 pb-4">
-      <h2 className="text-sm font-semibold text-gray-500 mb-2.5">
-        {t(locale, 'myTrips.title')}
+      <h2 className="text-sm font-semibold text-gray-500 mb-2.5 flex items-center gap-2">
+        <span>{t(locale, 'myTrips.title')}</span>
+        {fromCache && (
+          <span className="text-[10px] font-normal text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+            {t(locale, 'offline.viewing')}
+          </span>
+        )}
       </h2>
 
-      {loading ? (
+      {loading && trips.length === 0 ? (
         <div className="space-y-2">
           {[1, 2].map(i => (
             <div key={i} className="bg-white rounded-xl border border-gray-100 px-4 py-3 animate-pulse">
