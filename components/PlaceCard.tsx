@@ -86,7 +86,7 @@ export function PlaceCard({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-3 transition-all duration-300">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-3 transition-all duration-300 overflow-hidden">
       {/* Time + type */}
       {place.arrivalTime && (
         <div className="text-xs font-semibold text-orange mb-1">
@@ -233,7 +233,7 @@ export function PlaceCard({
 
       {/* Parking */}
       {place.parking && (
-        <div className="text-xs text-gray-500 bg-gray-50 px-2 py-1.5 rounded-md mb-3">
+        <div className="text-xs text-gray-500 bg-gray-50 px-2 py-1.5 rounded-md mb-3 overflow-hidden break-words">
           <span className="font-semibold text-gray-600">{t(locale, 'place.parking')}</span> {place.parking.details}
           {place.parking.tips && ` · ${place.parking.tips}`}
         </div>
@@ -241,19 +241,19 @@ export function PlaceCard({
 
       {/* Tips */}
       {place.tips && (
-        <p className="text-xs text-amber-700 bg-amber-50 px-2 py-1.5 rounded-md mb-3">
+        <p className="text-xs text-amber-700 bg-amber-50 px-2 py-1.5 rounded-md mb-3 overflow-hidden break-words">
           <span className="font-semibold">{t(locale, 'place.tip')}</span> {place.tips}
         </p>
       )}
 
       {/* Action buttons */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <a
           href={place.googleMapsUrl}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Open ${place.name} on Google Maps`}
-          className="flex-1 flex items-center justify-center text-xs font-semibold bg-blue-50 text-blue-600 min-h-[44px] rounded-lg hover:bg-blue-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+          className="flex-1 min-w-0 flex items-center justify-center text-xs font-semibold bg-blue-50 text-blue-600 min-h-[44px] rounded-lg hover:bg-blue-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         >
           {t(locale, 'place.maps')}
         </a>
@@ -262,7 +262,7 @@ export function PlaceCard({
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Search Google Reviews for ${place.name}`}
-          className="flex-1 flex items-center justify-center text-xs font-semibold bg-blue-50 text-blue-600 min-h-[44px] rounded-lg hover:bg-blue-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+          className="flex-1 min-w-0 flex items-center justify-center text-xs font-semibold bg-blue-50 text-blue-600 min-h-[44px] rounded-lg hover:bg-blue-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         >
           {t(locale, 'place.reviews')}
         </a>
@@ -272,7 +272,7 @@ export function PlaceCard({
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Search Yelp for ${place.name}`}
-            className="flex-1 flex items-center justify-center text-xs font-semibold bg-red-50 text-red-500 min-h-[44px] rounded-lg hover:bg-red-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+            className="flex-1 min-w-0 flex items-center justify-center text-xs font-semibold bg-red-50 text-red-500 min-h-[44px] rounded-lg hover:bg-red-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
           >
             Yelp
           </a>
@@ -283,7 +283,7 @@ export function PlaceCard({
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Open booking for ${place.name}`}
-            className="flex-1 flex items-center justify-center gap-1 text-xs font-semibold bg-orange/10 text-orange min-h-[44px] rounded-lg hover:bg-orange/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+            className="flex-1 min-w-0 flex items-center justify-center gap-1 text-xs font-semibold bg-orange/10 text-orange min-h-[44px] rounded-lg hover:bg-orange/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange"
           >
             {t(locale, 'place.book')}
           </a>

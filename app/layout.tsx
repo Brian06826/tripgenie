@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist } from 'next/font/google'
 import { AuthProvider } from '@/components/AuthProvider'
 import { NativeBootstrap } from '@/components/NativeBootstrap'
@@ -7,6 +7,12 @@ import { detectLocaleFromHeader } from '@/lib/i18n'
 import { headers } from 'next/headers'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+}
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
 
