@@ -13,7 +13,7 @@
 import { cookies } from 'next/headers'
 import { nanoid } from 'nanoid'
 
-const FREE_LIMIT = 3
+const FREE_LIMIT = 4
 const FREE_MAX_DAYS = 7
 const PASS_MAX_DAYS = 14
 const COOKIE_NAME = 'lulgo_uid'

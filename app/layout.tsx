@@ -5,7 +5,7 @@ import { NativeBootstrap } from '@/components/NativeBootstrap'
 import { I18nProvider } from '@/lib/i18n-context'
 import { detectLocaleFromHeader } from '@/lib/i18n'
 import { headers } from 'next/headers'
-import { Analytics } from '@vercel/analytics/next'
+import { ConditionalAnalytics } from '@/components/ConditionalAnalytics'
 import './globals.css'
 
 export const viewport: Viewport = {
@@ -53,7 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <NativeBootstrap />
           </AuthProvider>
         </I18nProvider>
-        <Analytics />
+        <ConditionalAnalytics />
       </body>
     </html>
   )

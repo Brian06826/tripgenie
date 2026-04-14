@@ -51,7 +51,7 @@ export async function POST(request: Request) {
   const usage = await checkUsage(uid)
   if (!usage.allowed) {
     return Response.json(
-      { error: 'usage_limit', used: usage.remaining === 0 ? 3 : 0, limit: 3 },
+      { error: 'usage_limit', used: usage.remaining === 0 ? 4 : 0, limit: 4 },
       { status: 403 }
     )
   }
