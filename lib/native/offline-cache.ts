@@ -20,26 +20,32 @@ export type CachedTripSummary = {
   heroImageUrl?: string
 }
 
-async function prefs() {
-  try {
-    const mod = await import('@capacitor/preferences')
-    return mod.Preferences
-  } catch {
-    return null
+// Capacitor plugin proxies are thenable — returning one directly from an
+// async function causes `await` to call `.then()`, which throws on web
+// ("Preferences.then() is not implemented on web"). Wrapping in a plain
+// object prevents the Promise resolution from unwrapping the thenable.
+let _prefsPromise: Promise<{ api: any } | null> | null = null
+
+function prefs(): Promise<{ api: any } | null> {
+  if (!_prefsPromise) {
+    _prefsPromise = import('@capacitor/preferences')
+      .then(mod => ({ api: mod.Preferences }))
+      .catch(() => null)
   }
+  return _prefsPromise
 }
 
 async function setItem(key: string, value: string) {
-  const p = await prefs()
-  if (!p) return
-  try { await p.set({ key, value }) } catch {}
+  const wrapper = await prefs()
+  if (!wrapper) return
+  try { await wrapper.api.set({ key, value }) } catch {}
 }
 
 async function getItem(key: string): Promise<string | null> {
-  const p = await prefs()
-  if (!p) return null
+  const wrapper = await prefs()
+  if (!wrapper) return null
   try {
-    const r = await p.get({ key })
+    const r = await wrapper.api.get({ key })
     return r.value ?? null
   } catch {
     return null
@@ -47,9 +53,9 @@ async function getItem(key: string): Promise<string | null> {
 }
 
 async function removeItem(key: string) {
-  const p = await prefs()
-  if (!p) return
-  try { await p.remove({ key }) } catch {}
+  const wrapper = await prefs()
+  if (!wrapper) return
+  try { await wrapper.api.remove({ key }) } catch {}
 }
 
 /** Cache a full trip's JSON for offline viewing. */
