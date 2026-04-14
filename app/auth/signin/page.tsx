@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useUILocale } from '@/lib/i18n-context'
 import { t } from '@/lib/i18n'
 import { isNativeApp } from '@/lib/platform'
+import AppleSignIn from '@/lib/native/apple-signin'
 
 function SignInButtons() {
   const params = useSearchParams()
@@ -25,7 +26,6 @@ function SignInButtons() {
     setLoading(true)
     setSignInError('')
     try {
-      const { default: AppleSignIn } = await import('@/lib/native/apple-signin')
       const result = await AppleSignIn.signIn()
 
       // Send identity token to server to create a NextAuth session

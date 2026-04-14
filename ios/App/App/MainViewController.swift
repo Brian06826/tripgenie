@@ -34,6 +34,10 @@ class MainViewController: CAPBridgeViewController {
         scheduleLoadTimeout()
     }
 
+    override open func capacitorDidLoad() {
+        bridge?.registerPluginInstance(AppleSignInPlugin())
+    }
+
     deinit {
         isLoadingObservation?.invalidate()
         urlObservation?.invalidate()
