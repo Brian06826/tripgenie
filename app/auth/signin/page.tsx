@@ -5,7 +5,7 @@ import { signIn } from 'next-auth/react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useUILocale } from '@/lib/i18n-context'
 import { t } from '@/lib/i18n'
-import { isNativeApp } from '@/lib/platform'
+import { isNative as isNativeApp } from '@/lib/native'
 import AppleSignIn from '@/lib/native/apple-signin'
 
 function SignInButtons() {
