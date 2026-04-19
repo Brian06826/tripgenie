@@ -5,6 +5,7 @@ import type { Trip } from '@/lib/types'
 import { TripItinerary } from '@/components/TripItinerary'
 import { TripMap } from '@/components/TripMap'
 import { ShareButton } from '@/components/ShareButton'
+import { ExportButton } from '@/components/ExportButton'
 import { useUILocale } from '@/lib/i18n-context'
 import { t } from '@/lib/i18n'
 
@@ -41,7 +42,10 @@ export function ExampleTripViewer({ trip }: { trip: Trip }) {
             <span className="text-xs opacity-90 truncate font-mono">
               lulgo.com{tripUrl}
             </span>
-            <ShareButton tripId={trip.id} tripTitle={trip.title} trip={trip} />
+            <div className="flex items-center gap-2 shrink-0">
+              <ExportButton trip={trip} />
+              <ShareButton tripId={trip.id} tripTitle={trip.title} trip={trip} />
+            </div>
           </div>
         </div>
       </header>
