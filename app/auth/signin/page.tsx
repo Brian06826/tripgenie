@@ -98,7 +98,7 @@ function SignInButtons() {
           )}
 
           <button
-            onClick={() => isNative ? handleNativeAppleSignIn() : signIn('apple', { callbackUrl })}
+            onClick={() => isNativeApp() ? handleNativeAppleSignIn() : signIn('apple', { callbackUrl })}
             disabled={loading}
             className="w-full flex items-center justify-center gap-3 bg-black hover:bg-gray-900 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50"
           >

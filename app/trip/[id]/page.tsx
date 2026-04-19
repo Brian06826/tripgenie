@@ -177,7 +177,7 @@ export default async function TripPage({ params }: Props) {
           </p>
 
           {/* Share bar */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 flex items-center justify-between gap-3 overflow-hidden">
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 flex items-center justify-between gap-3">
             <span className="text-xs opacity-90 truncate font-mono min-w-0">
               lulgo.com{tripUrl}
             </span>
