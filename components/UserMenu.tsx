@@ -168,28 +168,40 @@ export function UserMenu() {
         </div>
       )}
 
-      {/* Delete account confirmation modal — portaled to body to avoid clipping */}
+      {/* Delete account confirmation — iOS-style bottom sheet */}
       {showDeleteConfirm && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/50 p-4" onClick={() => !deleting && setShowDeleteConfirm(false)}>
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl mb-safe" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">{t(locale, 'user.deleteAccount')}</h3>
-            <p className="text-sm text-gray-600 mb-5">{t(locale, 'user.deleteConfirm')}</p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={deleting}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50"
-              >
-                {t(locale, 'edit.cancel')}
-              </button>
-              <button
-                onClick={handleDeleteAccount}
-                disabled={deleting}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-colors disabled:opacity-50"
-              >
-                {deleting ? t(locale, 'user.deleting') : t(locale, 'user.deleteAccount')}
-              </button>
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/50" onClick={() => !deleting && setShowDeleteConfirm(false)}>
+          <div
+            className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm px-6 pt-5 pb-9 sm:pb-6 shadow-xl"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Drag handle */}
+            <div className="w-9 h-1 bg-gray-300 rounded-full mx-auto mb-5 sm:hidden" />
+            {/* Warning icon + text */}
+            <div className="text-center mb-5">
+              <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+              </div>
+              <h3 className="text-[17px] font-bold text-gray-900 mb-1.5">{t(locale, 'user.deleteAccount')}</h3>
+              <p className="text-[13px] text-gray-500 leading-relaxed">{t(locale, 'user.deleteConfirm')}</p>
             </div>
+            {/* Stacked buttons */}
+            <button
+              onClick={handleDeleteAccount}
+              disabled={deleting}
+              className="w-full py-3.5 rounded-xl text-[15px] font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors disabled:opacity-50 mb-2.5"
+            >
+              {deleting ? t(locale, 'user.deleting') : t(locale, 'user.deleteAccount')}
+            </button>
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={deleting}
+              className="w-full py-3.5 rounded-xl text-[15px] font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50"
+            >
+              {t(locale, 'edit.cancel')}
+            </button>
           </div>
         </div>,
         document.body
