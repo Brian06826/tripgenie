@@ -218,7 +218,9 @@ const translations = {
     // My Trips
     'myTrips.title': 'My Trips',
     'myTrips.delete': 'Delete',
+    'myTrips.deleteAll': 'Delete All',
     'myTrips.deleteConfirm': 'Delete this trip? This cannot be undone.',
+    'myTrips.deleteAllConfirm': 'Delete ALL trips? This cannot be undone.',
     'myTrips.deleteFailed': 'Delete failed. Please try again.',
 
     // Offline + reminders (native)
@@ -416,7 +418,9 @@ const translations = {
     // My Trips
     'myTrips.title': '我嘅行程',
     'myTrips.delete': '刪除',
+    'myTrips.deleteAll': '刪除全部',
     'myTrips.deleteConfirm': '確定要刪除呢個行程？刪咗就冇得返。',
+    'myTrips.deleteAllConfirm': '確定要刪除全部行程？刪咗就冇得返。',
     'myTrips.deleteFailed': '刪除失敗，請再試。',
 
     // Offline + reminders (native)
@@ -614,7 +618,9 @@ const translations = {
     // My Trips
     'myTrips.title': '我的行程',
     'myTrips.delete': '删除',
+    'myTrips.deleteAll': '删除全部',
     'myTrips.deleteConfirm': '确定要删除这个行程？删除后无法恢复。',
+    'myTrips.deleteAllConfirm': '确定要删除全部行程？删除后无法恢复。',
     'myTrips.deleteFailed': '删除失败，请重试。',
 
     // Offline + reminders (native)

@@ -35,6 +35,7 @@ export function MyTrips({ onHasTrips }: { onHasTrips?: (has: boolean) => void } 
   const [trips, setTrips] = useState<MyTrip[]>([])
   const [loading, setLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deletingAll, setDeletingAll] = useState(false)
   const [fromCache, setFromCache] = useState(false)
   const { locale } = useUILocale()
 
@@ -76,6 +77,26 @@ export function MyTrips({ onHasTrips }: { onHasTrips?: (has: boolean) => void } 
       alert(t(locale, 'myTrips.deleteFailed'))
     } finally {
       setDeletingId(null)
+    }
+  }
+
+  async function handleDeleteAll() {
+    if (deletingAll || deletingId) return
+    if (!confirm(t(locale, 'myTrips.deleteAllConfirm'))) return
+    setDeletingAll(true)
+    const prev = trips
+    setTrips([])
+    onHasTrips?.(false)
+    try {
+      const res = await fetch('/api/delete-all-trips', { method: 'DELETE' })
+      if (!res.ok) throw new Error('delete all failed')
+      cacheTripList([]).catch(() => {})
+    } catch {
+      setTrips(prev)
+      onHasTrips?.(prev.length > 0)
+      alert(t(locale, 'myTrips.deleteFailed'))
+    } finally {
+      setDeletingAll(false)
     }
   }
 
@@ -135,14 +156,25 @@ export function MyTrips({ onHasTrips }: { onHasTrips?: (has: boolean) => void } 
 
   return (
     <section className="max-w-xl lg:max-w-3xl mx-auto px-4 pb-4">
-      <h2 className="text-sm font-semibold text-gray-500 mb-2.5 flex items-center gap-2">
-        <span>{t(locale, 'myTrips.title')}</span>
-        {fromCache && (
-          <span className="text-[10px] font-normal text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
-            {t(locale, 'offline.viewing')}
-          </span>
+      <div className="flex items-center justify-between mb-2.5">
+        <h2 className="text-sm font-semibold text-gray-500 flex items-center gap-2">
+          <span>{t(locale, 'myTrips.title')}</span>
+          {fromCache && (
+            <span className="text-[10px] font-normal text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+              {t(locale, 'offline.viewing')}
+            </span>
+          )}
+        </h2>
+        {trips.length > 1 && (
+          <button
+            onClick={handleDeleteAll}
+            disabled={deletingAll || !!deletingId}
+            className="text-xs text-red-400 hover:text-red-600 transition-colors disabled:opacity-50"
+          >
+            {deletingAll ? '...' : t(locale, 'myTrips.deleteAll')}
+          </button>
         )}
-      </h2>
+      </div>
 
       {loading && trips.length === 0 ? (
         <div className="space-y-2">
