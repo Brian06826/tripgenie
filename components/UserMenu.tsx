@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { useUILocale } from '@/lib/i18n-context'
 import { t } from '@/lib/i18n'
@@ -167,10 +168,10 @@ export function UserMenu() {
         </div>
       )}
 
-      {/* Delete account confirmation modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={() => !deleting && setShowDeleteConfirm(false)}>
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl" onClick={e => e.stopPropagation()}>
+      {/* Delete account confirmation modal — portaled to body to avoid clipping */}
+      {showDeleteConfirm && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/50 p-4" onClick={() => !deleting && setShowDeleteConfirm(false)}>
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl mb-safe" onClick={e => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-gray-900 mb-2">{t(locale, 'user.deleteAccount')}</h3>
             <p className="text-sm text-gray-600 mb-5">{t(locale, 'user.deleteConfirm')}</p>
             <div className="flex gap-3">
@@ -190,7 +191,8 @@ export function UserMenu() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
