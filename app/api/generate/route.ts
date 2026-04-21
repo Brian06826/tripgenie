@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     return rateLimitResponse()
   }
 
-  let body: { prompt?: string; language?: string }
+  let body: { prompt?: string; language?: string; native?: boolean }
   try {
     body = await request.json()
   } catch {
@@ -31,6 +31,7 @@ export async function POST(request: Request) {
 
   const prompt = body.prompt?.trim()
   const language = body.language as 'en' | 'zh-TW' | 'zh-CN' | undefined
+  const native = body.native === true
   if (!prompt) {
     return Response.json({ error: 'prompt is required' }, { status: 400 })
   }
@@ -48,10 +49,11 @@ export async function POST(request: Request) {
   const cookieUID = await getOrCreateUID()
   const session0 = await getServerSession(authOptions).catch(() => null)
   const uid = resolveUID((session0?.user as any)?.id, cookieUID)
-  const usage = await checkUsage(uid)
+  const limit = native ? 7 : 4
+  const usage = await checkUsage(uid, native)
   if (!usage.allowed) {
     return Response.json(
-      { error: 'usage_limit', used: usage.remaining === 0 ? 4 : 0, limit: 4 },
+      { error: 'usage_limit', used: limit, limit, native },
       { status: 403 }
     )
   }

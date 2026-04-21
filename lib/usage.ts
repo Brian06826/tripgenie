@@ -14,6 +14,7 @@ import { cookies } from 'next/headers'
 import { nanoid } from 'nanoid'
 
 const FREE_LIMIT = 4
+const NATIVE_FREE_LIMIT = 7
 const FREE_MAX_DAYS = 7
 const PASS_MAX_DAYS = 14
 const COOKIE_NAME = 'lulgo_uid'
@@ -75,10 +76,12 @@ export type UsageStatus = {
   reason?: 'limit_reached'
 }
 
-export async function checkUsage(uid: string): Promise<UsageStatus> {
+export async function checkUsage(uid: string, native = false): Promise<UsageStatus> {
+  const limit = native ? NATIVE_FREE_LIMIT : FREE_LIMIT
+
   if (!process.env.REDIS_URL) {
     // Local dev: always allow
-    return { allowed: true, remaining: FREE_LIMIT, hasPass: false, passCredits: 0, maxDays: PASS_MAX_DAYS }
+    return { allowed: true, remaining: limit, hasPass: false, passCredits: 0, maxDays: PASS_MAX_DAYS }
   }
 
   try {
@@ -91,18 +94,18 @@ export async function checkUsage(uid: string): Promise<UsageStatus> {
     const passCredits = parseInt(passStr ?? '0', 10)
     const hasPass = passCredits > 0
 
-    if (count < FREE_LIMIT) {
+    if (count < limit) {
       return {
         allowed: true,
-        remaining: FREE_LIMIT - count,
+        remaining: limit - count,
         hasPass,
         passCredits,
         maxDays: hasPass ? PASS_MAX_DAYS : FREE_MAX_DAYS,
       }
     }
 
-    // Free limit reached — check pass credits
-    if (passCredits > 0) {
+    // Free limit reached — check pass credits (web only, native has no IAP)
+    if (!native && passCredits > 0) {
       return {
         allowed: true,
         remaining: 0,
@@ -122,7 +125,7 @@ export async function checkUsage(uid: string): Promise<UsageStatus> {
     }
   } catch (err) {
     console.error('Usage check error, allowing:', err)
-    return { allowed: true, remaining: FREE_LIMIT, hasPass: false, passCredits: 0, maxDays: PASS_MAX_DAYS }
+    return { allowed: true, remaining: limit, hasPass: false, passCredits: 0, maxDays: PASS_MAX_DAYS }
   }
 }
 
@@ -186,14 +189,16 @@ export async function checkWebhookProcessed(sessionId: string): Promise<boolean>
 
 // ── Client-side API ──────────────────────────────────────────────
 
-export async function getUsageForClient(uid: string): Promise<{
+export async function getUsageForClient(uid: string, native = false): Promise<{
   used: number
   limit: number
   passCredits: number
   maxDays: number
 }> {
+  const limit = native ? NATIVE_FREE_LIMIT : FREE_LIMIT
+
   if (!process.env.REDIS_URL) {
-    return { used: 0, limit: FREE_LIMIT, passCredits: 0, maxDays: PASS_MAX_DAYS }
+    return { used: 0, limit, passCredits: 0, maxDays: PASS_MAX_DAYS }
   }
 
   try {
@@ -207,12 +212,12 @@ export async function getUsageForClient(uid: string): Promise<{
 
     return {
       used,
-      limit: FREE_LIMIT,
-      passCredits,
-      maxDays: passCredits > 0 ? PASS_MAX_DAYS : FREE_MAX_DAYS,
+      limit,
+      passCredits: native ? 0 : passCredits,
+      maxDays: !native && passCredits > 0 ? PASS_MAX_DAYS : FREE_MAX_DAYS,
     }
   } catch (err) {
     console.error('Get usage for client error:', err)
-    return { used: 0, limit: FREE_LIMIT, passCredits: 0, maxDays: PASS_MAX_DAYS }
+    return { used: 0, limit, passCredits: 0, maxDays: PASS_MAX_DAYS }
   }
 }

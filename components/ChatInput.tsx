@@ -5,6 +5,7 @@ import { TripLoadingOverlay } from '@/components/TripLoadingOverlay'
 import { PaywallModal } from '@/components/PaywallModal'
 import { useUILocale } from '@/lib/i18n-context'
 import { t, isChinese as isChineseLocale } from '@/lib/i18n'
+import { isNative } from '@/lib/native'
 
 const ROTATING_PLACEHOLDERS = [
   '"3 days Tokyo food trip"',
@@ -248,7 +249,7 @@ export function ChatInput() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: getFullPrompt(), language: locale }),
+        body: JSON.stringify({ prompt: getFullPrompt(), language: locale, native: isNative() }),
         signal: abortController.signal,
       })
 

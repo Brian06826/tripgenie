@@ -4,8 +4,6 @@ import { useUILocale } from '@/lib/i18n-context'
 import { t } from '@/lib/i18n'
 import { signIn, useSession } from 'next-auth/react'
 import { isNative } from '@/lib/native'
-import StoreKit, { TRIP_PASS_PRODUCT_ID } from '@/lib/native/store-kit'
-import type { StoreKitProduct } from '@/lib/native/store-kit'
 
 type Props = {
   onClose: () => void
@@ -19,63 +17,12 @@ export function PaywallModal({ onClose, used, limit }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [native, setNative] = useState(false)
-  const [iapProduct, setIapProduct] = useState<StoreKitProduct | null>(null)
 
   const isSignedIn = !!session?.user
 
   useEffect(() => {
-    const n = isNative()
-    setNative(n)
-    if (n) {
-      StoreKit.getProducts({ productIds: [TRIP_PASS_PRODUCT_ID] })
-        .then(res => {
-          if (res.products.length > 0) setIapProduct(res.products[0])
-        })
-        .catch(() => {})
-    }
+    setNative(isNative())
   }, [])
-
-  // --- Native IAP flow ---
-  async function handleIAPPurchase() {
-    if (!isSignedIn) {
-      signIn(undefined, { callbackUrl: window.location.href + '?payment=pending' })
-      return
-    }
-
-    setLoading(true)
-    setError('')
-
-    try {
-      const result = await StoreKit.purchase({ productId: TRIP_PASS_PRODUCT_ID })
-
-      // Verify with our server and add credits
-      const res = await fetch('/api/verify-iap', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          transactionId: result.transactionId,
-          productId: result.productId,
-          jwsRepresentation: result.jwsRepresentation,
-        }),
-      })
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || 'Verification failed')
-      }
-
-      // Success — reload to reflect new credits
-      window.location.reload()
-    } catch (err: any) {
-      if (err?.code === 'CANCELLED') {
-        // User cancelled — do nothing
-      } else {
-        setError(err?.message || 'Purchase failed')
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
 
   // --- Web Stripe flow ---
   async function handleStripePurchase() {
@@ -115,9 +62,46 @@ export function PaywallModal({ onClose, used, limit }: Props) {
     }
   }
 
-  const displayPrice = native && iapProduct ? iapProduct.displayPrice : '$2.99'
-  const handleBuy = native ? handleIAPPurchase : handleStripePurchase
+  // --- Native: free limit reached, no purchase option ---
+  if (native) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={onClose}>
+        <div
+          className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm px-6 pt-5 pb-9 sm:pb-6 shadow-xl"
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="w-9 h-1 bg-gray-300 rounded-full mx-auto mb-5 sm:hidden" />
+          <div className="text-center mb-5">
+            <div className="text-3xl mb-2">✈️</div>
+            <h2 className="text-lg font-bold text-gray-900">
+              {t(locale, 'paywall.nativeTitle')}
+            </h2>
+            <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+              {t(locale, 'paywall.nativeSubtitle', { limit: String(limit) })}
+            </p>
+          </div>
 
+          <div className="bg-gray-50 rounded-xl p-4 mb-5 text-center">
+            <p className="text-2xl font-bold text-gray-900 mb-1">
+              {used}/{limit}
+            </p>
+            <p className="text-xs text-gray-400">
+              {t(locale, 'paywall.resetNote')}
+            </p>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="w-full bg-orange text-white py-3.5 rounded-xl font-semibold text-[15px] hover:opacity-90 transition-opacity"
+          >
+            {t(locale, 'paywall.nativeOk')}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // --- Web: Stripe paywall ---
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <div
@@ -139,7 +123,7 @@ export function PaywallModal({ onClose, used, limit }: Props) {
         <div className="border border-orange/30 rounded-xl p-4 mb-4 bg-orange/5">
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold text-gray-900">Trip Pass</span>
-            <span className="text-orange font-bold">{displayPrice}</span>
+            <span className="text-orange font-bold">$2.99</span>
           </div>
           <ul className="text-sm text-gray-600 space-y-1.5">
             <li>✓ {t(locale, 'paywall.feature1')}</li>
@@ -162,7 +146,7 @@ export function PaywallModal({ onClose, used, limit }: Props) {
 
         {/* Actions */}
         <button
-          onClick={handleBuy}
+          onClick={handleStripePurchase}
           disabled={loading}
           className="w-full bg-orange text-white py-2.5 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
         >
