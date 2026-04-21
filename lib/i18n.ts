@@ -176,6 +176,11 @@ const translations = {
     // UserMenu
     'user.signIn': 'Sign In',
     'user.signOut': 'Sign Out',
+    'user.deleteAccount': 'Delete Account',
+    'user.deleteConfirm': 'Are you sure? This will permanently delete your account, all trips, and purchase history. This cannot be undone.',
+    'user.deleteSuccess': 'Account deleted.',
+    'user.deleteFailed': 'Deletion failed. Please try again.',
+    'user.deleting': 'Deleting...',
 
     // Sign-in page
     'signin.title': 'Welcome to Lulgo',
@@ -368,6 +373,11 @@ const translations = {
 
     'user.signIn': '登入',
     'user.signOut': '登出',
+    'user.deleteAccount': '刪除帳戶',
+    'user.deleteConfirm': '確定要刪除？所有行程、購買記錄同帳戶資料都會永久刪除，無法復原。',
+    'user.deleteSuccess': '帳戶已刪除。',
+    'user.deleteFailed': '刪除失敗，請再試。',
+    'user.deleting': '刪除中...',
 
     // Sign-in page
     'signin.title': '歡迎使用 Lulgo',
@@ -558,6 +568,11 @@ const translations = {
 
     'user.signIn': '登录',
     'user.signOut': '退出',
+    'user.deleteAccount': '删除账户',
+    'user.deleteConfirm': '确定要删除？所有行程、购买记录和账户数据都会永久删除，无法恢复。',
+    'user.deleteSuccess': '账户已删除。',
+    'user.deleteFailed': '删除失败，请重试。',
+    'user.deleting': '删除中...',
 
     // Sign-in page
     'signin.title': '欢迎使用 Lulgo',

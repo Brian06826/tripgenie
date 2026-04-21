@@ -16,6 +16,8 @@ import {
 export function UserMenu() {
   const { data: session, status } = useSession()
   const [open, setOpen] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const { locale } = useUILocale()
   const [bioAvail, setBioAvail] = useState(false)
@@ -61,6 +63,21 @@ export function UserMenu() {
       }
     }
     setBioBusy(false)
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true)
+    try {
+      const res = await fetch('/api/delete-account', { method: 'DELETE' })
+      if (!res.ok) throw new Error('Failed')
+      // Sign out and redirect to home
+      await signOut({ callbackUrl: '/' })
+    } catch {
+      alert(t(locale, 'user.deleteFailed'))
+    } finally {
+      setDeleting(false)
+      setShowDeleteConfirm(false)
+    }
   }
 
   // Close dropdown on outside click
@@ -137,10 +154,42 @@ export function UserMenu() {
           )}
           <button
             onClick={() => { setOpen(false); signOut() }}
-            className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors border-b border-gray-100"
           >
             {t(locale, 'user.signOut')}
           </button>
+          <button
+            onClick={() => { setOpen(false); setShowDeleteConfirm(true) }}
+            className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
+          >
+            {t(locale, 'user.deleteAccount')}
+          </button>
+        </div>
+      )}
+
+      {/* Delete account confirmation modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={() => !deleting && setShowDeleteConfirm(false)}>
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">{t(locale, 'user.deleteAccount')}</h3>
+            <p className="text-sm text-gray-600 mb-5">{t(locale, 'user.deleteConfirm')}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50"
+              >
+                {t(locale, 'edit.cancel')}
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-colors disabled:opacity-50"
+              >
+                {deleting ? t(locale, 'user.deleting') : t(locale, 'user.deleteAccount')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
