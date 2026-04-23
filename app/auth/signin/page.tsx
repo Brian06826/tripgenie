@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { signIn } from 'next-auth/react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useUILocale } from '@/lib/i18n-context'
 import { t } from '@/lib/i18n'
 import { isNative as isNativeApp } from '@/lib/native'
@@ -10,7 +10,6 @@ import AppleSignIn from '@/lib/native/apple-signin'
 
 function SignInButtons() {
   const params = useSearchParams()
-  const router = useRouter()
   const callbackUrl = params.get('callbackUrl') ?? '/'
   const error = params.get('error')
   const { locale } = useUILocale()
@@ -45,9 +44,14 @@ function SignInButtons() {
         throw new Error(data.error || 'Authentication failed')
       }
 
-      // Session cookie set by server — navigate and refresh session
-      router.push(callbackUrl)
-      router.refresh()
+      // Mark that we just signed in so BiometricLock skips the first
+      // lock — the user already verified identity via Apple Face ID.
+      try { sessionStorage.setItem('lulgo.justSignedIn', '1') } catch {}
+
+      // Full page reload so NextAuth's SessionProvider picks up the new
+      // session cookie. Client-side router.push() won't trigger a session
+      // refresh because the cookie was set via a custom endpoint.
+      window.location.href = callbackUrl
     } catch (err: any) {
       if (err?.code === 'CANCELLED') {
         // User cancelled — do nothing

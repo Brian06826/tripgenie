@@ -45,6 +45,15 @@ export function BiometricLock() {
       if (cancelled) return
       setAvailable(avail.available)
       if (avail.type === 'touchId') setBiometryLabel('Touch ID')
+      // Skip lock if user just signed in — they already verified identity
+      // via Apple Face ID. The flag is set by the sign-in page.
+      try {
+        if (sessionStorage.getItem('lulgo.justSignedIn')) {
+          sessionStorage.removeItem('lulgo.justSignedIn')
+          setReady(true)
+          return
+        }
+      } catch {}
       // Only lock on launch if the user opted in. The session check happens
       // in a separate effect because session may still be loading here.
       if (avail.available && isEnabled()) {
