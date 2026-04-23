@@ -35,6 +35,10 @@ export function BiometricLock() {
   // session. The user has to manually retry after the first prompt resolves,
   // so we never spam the system dialog.
   const autoPromptedRef = useRef(false)
+  // Cooldown after unlock: the Face ID dialog dismiss triggers an
+  // appStateChange(isActive: true) event which would immediately re-lock.
+  // We ignore state changes for a short window after a successful unlock.
+  const unlockTimeRef = useRef(0)
 
   // Initial mount: check device capability + decide if we need to lock.
   useEffect(() => {
@@ -81,6 +85,10 @@ export function BiometricLock() {
       if (!isEnabled()) return
       if (!available) return
       if (status !== 'authenticated') return
+      // Ignore state changes shortly after unlock — the Face ID dialog
+      // dismiss itself triggers appStateChange which would re-lock
+      // immediately, creating an infinite loop.
+      if (Date.now() - unlockTimeRef.current < 2000) return
       if (!isActive) {
         // Background — relock so the snapshot doesn't show app contents.
         autoPromptedRef.current = false
@@ -105,6 +113,7 @@ export function BiometricLock() {
     const result = await authenticate(`Unlock Lulgo with ${biometryLabel}`)
     setBusy(false)
     if (result.ok) {
+      unlockTimeRef.current = Date.now()
       setLocked(false)
       autoPromptedRef.current = false
       return
