@@ -35,9 +35,13 @@ export function BiometricLock() {
   // session. The user has to manually retry after the first prompt resolves,
   // so we never spam the system dialog.
   const autoPromptedRef = useRef(false)
-  // Cooldown after unlock: the Face ID dialog dismiss triggers an
-  // appStateChange(isActive: true) event which would immediately re-lock.
-  // We ignore state changes for a short window after a successful unlock.
+  // True while the Face ID / Touch ID dialog is on screen. The biometric
+  // dialog causes iOS to fire appStateChange (isActive: false when it
+  // appears, isActive: true when it dismisses). Without this guard the
+  // handler would immediately re-lock the app, creating an infinite loop.
+  const authenticatingRef = useRef(false)
+  // Extra cooldown after a successful unlock — belt-and-suspenders guard
+  // against any delayed appStateChange events after the dialog is gone.
   const unlockTimeRef = useRef(0)
 
   // Initial mount: check device capability + decide if we need to lock.
@@ -85,10 +89,13 @@ export function BiometricLock() {
       if (!isEnabled()) return
       if (!available) return
       if (status !== 'authenticated') return
-      // Ignore state changes shortly after unlock — the Face ID dialog
-      // dismiss itself triggers appStateChange which would re-lock
-      // immediately, creating an infinite loop.
-      if (Date.now() - unlockTimeRef.current < 2000) return
+      // Skip ALL state changes while the biometric dialog is showing —
+      // iOS fires isActive:false when Face ID appears, isActive:true when
+      // it dismisses. Without this, the app re-locks mid-authentication.
+      if (authenticatingRef.current) return
+      // Also skip state changes shortly after a successful unlock, as a
+      // belt-and-suspenders guard against delayed events.
+      if (Date.now() - unlockTimeRef.current < 3000) return
       if (!isActive) {
         // Background — relock so the snapshot doesn't show app contents.
         autoPromptedRef.current = false
@@ -110,10 +117,12 @@ export function BiometricLock() {
     if (busy) return
     setBusy(true)
     setError(null)
+    authenticatingRef.current = true
     const result = await authenticate(`Unlock Lulgo with ${biometryLabel}`)
+    authenticatingRef.current = false
+    unlockTimeRef.current = Date.now()
     setBusy(false)
     if (result.ok) {
-      unlockTimeRef.current = Date.now()
       setLocked(false)
       autoPromptedRef.current = false
       return
