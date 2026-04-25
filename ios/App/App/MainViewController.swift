@@ -56,6 +56,11 @@ class MainViewController: CAPBridgeViewController {
                 return
             }
 
+            // Enable pinch-to-zoom in the WKWebView scroll view
+            webView.scrollView.minimumZoomScale = 1.0
+            webView.scrollView.maximumZoomScale = 5.0
+            webView.scrollView.pinchGestureRecognizer?.isEnabled = true
+
             // Observe isLoading → becomes false once a load completes (or fails).
             self.isLoadingObservation = webView.observe(\.isLoading, options: [.new]) { [weak self] wv, change in
                 guard let self = self else { return }

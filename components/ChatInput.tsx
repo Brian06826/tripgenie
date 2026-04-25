@@ -162,6 +162,8 @@ export function ChatInput() {
   useEffect(() => {
     function handleVisibility() {
       if (document.visibilityState !== 'visible') return
+      // Clear stale errors from SSE disconnect (e.g. iOS "Load failed")
+      setError('')
       const tripId = pendingTripIdRef.current || sessionStorage.getItem('tg_pending_trip')
       if (!tripId) return
       // Trip was being generated — try to navigate directly (server saved it to Redis)

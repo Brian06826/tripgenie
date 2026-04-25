@@ -114,7 +114,7 @@ export default async function TripPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -149,10 +149,10 @@ export default async function TripPage({ params }: Props) {
 
         {/* Content */}
         <div className="relative max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <p className="text-xs text-orange font-semibold">Lulgo</p>
-              <span className="text-[10px] text-white/40">
+          <div className="flex items-center justify-between mb-3 overflow-hidden">
+            <div className="flex items-center gap-2 min-w-0">
+              <p className="text-xs text-orange font-semibold shrink-0">Lulgo</p>
+              <span className="text-[10px] text-white/40 truncate">
                 {isChinese(trip.language)
                   ? (trip.language === 'zh-CN' ? 'AI 生成行程 · 60 秒规划你的旅程' : 'AI 生成行程 · 60 秒規劃你嘅旅程')
                   : 'AI-generated itinerary · Make your own in 60 seconds'}

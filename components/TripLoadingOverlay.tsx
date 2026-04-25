@@ -718,7 +718,7 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col overflow-hidden select-none"
-      style={{ background: 'linear-gradient(160deg, #091b2e 0%, #1a3a5c 50%, #2d5a8e 100%)' }}
+      style={{ background: 'linear-gradient(180deg, #091b2e 0%, #1a3a5c 55%, #2d5a8e 100%)' }}
       aria-live="polite"
       aria-label={isChinese ? '正在生成行程' : 'Generating your trip'}
     >
@@ -734,7 +734,7 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
       </div>
 
       {/* Plane flight zone */}
-      <div className="relative w-full mt-14" style={{ height: 88 }}>
+      <div className="relative w-full mt-8 sm:mt-14" style={{ height: 72 }}>
         {/* Dashed flight path */}
         <div
           className="absolute left-0 right-0"
@@ -775,7 +775,7 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center pb-10">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center pb-6">
         <p className="text-white/40 text-xs tracking-[0.18em] uppercase font-semibold mb-4">
           Lulgo ✨
         </p>
