@@ -11,6 +11,7 @@ import './globals.css'
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  maximumScale: 5,
   viewportFit: 'cover',
 }
 
@@ -48,8 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <I18nProvider detected={detected}>
           <AuthProvider>
             {children}
-            {/* Native shell (Face ID lock + setup prompt). Mounted inside the
-                AuthProvider so it can react to session state. No-op on web. */}
+            {/* Native shell (splash screen, status bar). No-op on web. */}
             <NativeBootstrap />
           </AuthProvider>
         </I18nProvider>
