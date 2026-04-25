@@ -237,25 +237,6 @@ const translations = {
     'reminder.invalid': 'Please pick a valid trip start date.',
     'reminder.error': 'Could not schedule reminder. Please try again.',
 
-    // Biometric lock (native)
-    'biometric.lockTitle': 'Lulgo is locked',
-    'biometric.lockSubtitle': 'Verify your identity to continue.',
-    'biometric.unlock': 'Unlock with {method}',
-    'biometric.retry': 'Try {method} again',
-    'biometric.signOut': 'Sign out instead',
-    'biometric.toggle': 'Unlock with {method}',
-    'biometric.setup.title': 'Protect Lulgo with {method}?',
-    'biometric.setup.description': 'Use {method} to lock the app on launch and keep your trips private.',
-    'biometric.setup.enable': 'Enable {method}',
-    'biometric.setup.dismiss': 'Maybe later',
-    'biometric.setupError': 'Could not enable. Please try again.',
-    'biometric.error.cancel': 'Authentication cancelled. Tap to try again.',
-    'biometric.error.lockout': 'Too many attempts. Unlock your device with the passcode, then try again.',
-    'biometric.error.notEnrolled': 'No biometrics are enrolled on this device. Add one in Settings.',
-    'biometric.error.unavailable': 'Biometric authentication is not available on this device.',
-    'biometric.error.passcodeNotSet': 'Set a device passcode in Settings to use biometric unlock.',
-    'biometric.error.failed': "Couldn't recognize you. Please try again.",
-    'biometric.error.error': 'Something went wrong. Please try again.',
   },
 
   'zh-TW': {
@@ -437,25 +418,6 @@ const translations = {
     'reminder.invalid': '請揀返一個有效嘅出發日期。',
     'reminder.error': '設定失敗，請再試。',
 
-    // Biometric lock (native)
-    'biometric.lockTitle': 'Lulgo 已鎖定',
-    'biometric.lockSubtitle': '請驗證身份以繼續使用。',
-    'biometric.unlock': '使用 {method} 解鎖',
-    'biometric.retry': '再試一次 {method}',
-    'biometric.signOut': '改為登出',
-    'biometric.toggle': '用 {method} 解鎖',
-    'biometric.setup.title': '用 {method} 保護 Lulgo？',
-    'biometric.setup.description': '開啟後每次打開 App 都要 {method} 驗證，行程更安全。',
-    'biometric.setup.enable': '啟用 {method}',
-    'biometric.setup.dismiss': '下次再算',
-    'biometric.setupError': '啟用失敗，請再試。',
-    'biometric.error.cancel': '驗證已取消。請再試一次。',
-    'biometric.error.lockout': '驗證失敗太多次。請先用 passcode 解鎖手機再試。',
-    'biometric.error.notEnrolled': '呢部裝置未設定生物辨識，請喺設定加入。',
-    'biometric.error.unavailable': '呢部裝置唔支援生物辨識。',
-    'biometric.error.passcodeNotSet': '請先喺設定設定 passcode 先可以使用。',
-    'biometric.error.failed': '識別唔到，請再試一次。',
-    'biometric.error.error': '出咗啲錯，請再試。',
   },
 
   'zh-CN': {
@@ -637,25 +599,6 @@ const translations = {
     'reminder.invalid': '请选择有效的出发日期。',
     'reminder.error': '设定失败，请重试。',
 
-    // Biometric lock (native)
-    'biometric.lockTitle': 'Lulgo 已锁定',
-    'biometric.lockSubtitle': '请验证身份以继续使用。',
-    'biometric.unlock': '使用 {method} 解锁',
-    'biometric.retry': '再试一次 {method}',
-    'biometric.signOut': '改为退出登录',
-    'biometric.toggle': '用 {method} 解锁',
-    'biometric.setup.title': '用 {method} 保护 Lulgo？',
-    'biometric.setup.description': '开启后每次打开 App 都要 {method} 验证，行程更安全。',
-    'biometric.setup.enable': '启用 {method}',
-    'biometric.setup.dismiss': '下次再说',
-    'biometric.setupError': '启用失败，请重试。',
-    'biometric.error.cancel': '验证已取消。请再试一次。',
-    'biometric.error.lockout': '验证失败次数过多。请先用 passcode 解锁手机再试。',
-    'biometric.error.notEnrolled': '此设备未设置生物识别，请在设置中添加。',
-    'biometric.error.unavailable': '此设备不支持生物识别。',
-    'biometric.error.passcodeNotSet': '请先在设置中设置 passcode。',
-    'biometric.error.failed': '无法识别，请再试一次。',
-    'biometric.error.error': '出错了，请重试。',
   },
 } as const
 

@@ -1,12 +1,9 @@
 'use client'
 
 // Runs once on app mount inside the Capacitor WebView. Hides the splash
-// screen, configures the status bar, and renders the BiometricLock overlay.
-// On the web build, every call is a no-op.
+// screen and configures the status bar. On the web build, every call is a no-op.
 import { useEffect } from 'react'
 import { isNative } from '@/lib/native'
-import { BiometricLock } from './BiometricLock'
-import { BiometricSetupPrompt } from './BiometricSetupPrompt'
 
 export function NativeBootstrap() {
   useEffect(() => {
@@ -29,10 +26,5 @@ export function NativeBootstrap() {
     return () => { cancelled = true }
   }, [])
 
-  return (
-    <>
-      <BiometricLock />
-      <BiometricSetupPrompt />
-    </>
-  )
+  return null
 }

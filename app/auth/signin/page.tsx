@@ -44,10 +44,6 @@ function SignInButtons() {
         throw new Error(data.error || 'Authentication failed')
       }
 
-      // Mark that we just signed in so BiometricLock skips the first
-      // lock — the user already verified identity via Apple Face ID.
-      try { sessionStorage.setItem('lulgo.justSignedIn', '1') } catch {}
-
       // Full page reload so NextAuth's SessionProvider picks up the new
       // session cookie. Client-side router.push() won't trigger a session
       // refresh because the cookie was set via a custom endpoint.
