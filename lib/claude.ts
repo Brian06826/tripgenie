@@ -225,7 +225,7 @@ OPENING HOURS AWARENESS (CRITICAL): Schedule attractions during their likely ope
 STRICT MEAL TIMING (CRITICAL — NEVER VIOLATE — MEALS ARE HIGHER PRIORITY THAN ATTRACTIONS):
 - Breakfast/Brunch: 8:00-10:00 AM. Include ONLY when: (1) user explicitly asks for breakfast, (2) the destination is famous for breakfast culture (e.g. dim sum in Hong Kong, morning market in Taipei), or (3) a multi-day trip where starting with breakfast makes the day flow better. Do NOT add breakfast by default for 1-day trips.
 - Lunch: 11:30 AM - 1:00 PM. REQUIRED for every full day. Must be a proper meal (not just a snack or dessert). Street food stalls, hawker centers, night markets, and local eateries count as meals if they serve full dishes (rice, noodles, soup, etc.). Do NOT schedule dessert shops, ice cream parlors, or bubble tea shops as lunch.
-- Dinner: 6:00-8:00 PM (arrival time). REQUIRED for every full day. Same meal rule as lunch. NEVER schedule dinner before 5:30 PM or after 8:00 PM. A dinner arriving at 4:00 PM, 5:00 PM, 8:30 PM, 9:00 PM, or later is WRONG. If you run out of afternoon activities, add a relaxation break, park visit, or shopping time to fill until 6:00 PM.
+- Dinner: 6:00-8:30 PM (arrival time). REQUIRED for every full day. Same meal rule as lunch. NEVER schedule dinner before 5:30 PM or after 8:30 PM. A dinner arriving at 4:00 PM, 5:00 PM, 9:00 PM, or later is WRONG. If you run out of afternoon activities, add a relaxation break, park visit, or shopping time to fill until 6:00 PM.
 - Do NOT add afternoon snack/cafe/dessert stops unless the user specifically asks for them.
 - NEVER schedule two full meals (restaurant type stops) within 2 hours of each other.
 - Each full day (9 AM-9 PM range) MUST have exactly one lunch restaurant AND one dinner restaurant. This is a HARD RULE, not a guideline. A day without both lunch and dinner is INVALID.
@@ -242,7 +242,7 @@ POST-DINNER ACTIVITIES (after dinner, up to 9:00 PM arrival max):
 SELF-CHECK (MANDATORY — run after generating the full itinerary):
 Before returning your JSON, verify EVERY full day has:
 1. Exactly one restaurant-type stop between 11:30 AM - 1:00 PM (lunch)
-2. Exactly one restaurant-type stop between 5:30 PM - 8:00 PM (dinner). Dinner must NOT be after 8:00 PM
+2. Exactly one restaurant-type stop between 5:30 PM - 8:30 PM (dinner). Dinner must NOT be after 8:30 PM
 3. No dinner scheduled before 5:30 PM
 4. No place appears on multiple days (cross-day deduplication)
 5. No place appears as both a main stop AND a backup option anywhere
@@ -258,6 +258,7 @@ Before returning your JSON, verify EVERY full day has:
 15. No consecutive stops have a gap >2 hours. Calculate: next stop arrivalTime - (current stop arrivalTime + current stop duration + 30 min transit). If >2 hours, add a filler stop
 16. The last stop of each day has arrivalTime ≤ 9:00 PM. If any stop is at 9:30 PM or later, remove it or move it earlier
 If any day fails these checks, fix it before responding. Add a missing meal, move a misplaced one, swap a duplicate, or fill a gap.
+CRITICAL FINAL CHECK: Scan every arrivalTime in your JSON one last time. If ANY time is 9:01 PM or later, or any lunch is missing, or any gap exceeds 3 hours — your output is INVALID. Fix it now.
 
 TRANSPORTATION & MEETING POINTS:
 - If the user mentions a departure point (e.g. "I take metro from Glendora to downtown"), include that as the FIRST stop with type "transport", with the estimated transit time as duration.
