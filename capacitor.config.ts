@@ -13,6 +13,7 @@ const config: CapacitorConfig = {
     contentInset: 'automatic',
     allowsLinkPreview: false,
     scrollEnabled: true,
+    allowsBackForwardNavigationGestures: true,
   },
   plugins: {
     SplashScreen: {

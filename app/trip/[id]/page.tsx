@@ -10,6 +10,7 @@ import { TripEditor } from '@/components/TripEditor'
 import { SaveRecentTrip } from '@/components/SaveRecentTrip'
 import { OfflineIndicator } from '@/components/OfflineIndicator'
 import { TripReminderPrompt } from '@/components/TripReminderPrompt'
+import { BackButton } from '@/components/BackButton'
 
 export const dynamic = 'force-dynamic'
 export const fetchCache = 'force-no-store'
@@ -149,10 +150,12 @@ export default async function TripPage({ params }: Props) {
 
         {/* Content */}
         <div className="relative max-w-4xl mx-auto">
+          {/* Back + branding row */}
           <div className="flex items-center justify-between mb-3 overflow-hidden">
             <div className="flex items-center gap-2 min-w-0">
+              <BackButton className="text-white/80 hover:text-white -ml-2 mr-1" />
               <p className="text-xs text-orange font-semibold shrink-0">Lulgo</p>
-              <span className="text-[10px] text-white/40 truncate">
+              <span className="text-[10px] text-white/40 truncate hidden sm:inline">
                 {isChinese(trip.language)
                   ? (trip.language === 'zh-CN' ? 'AI 生成行程 · 60 秒规划你的旅程' : 'AI 生成行程 · 60 秒規劃你嘅旅程')
                   : 'AI-generated itinerary · Make your own in 60 seconds'}

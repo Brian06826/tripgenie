@@ -7,6 +7,7 @@ import { useUILocale } from '@/lib/i18n-context'
 import { t } from '@/lib/i18n'
 import { isNative as isNativeApp } from '@/lib/native'
 import AppleSignIn from '@/lib/native/apple-signin'
+import { BackButton } from '@/components/BackButton'
 
 function SignInButtons() {
   const params = useSearchParams()
@@ -61,7 +62,10 @@ function SignInButtons() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-orange-50 to-white px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-orange-50 to-white px-4 relative">
+      <div className="absolute top-4 left-4">
+        <BackButton className="text-gray-500 hover:text-gray-800" />
+      </div>
       <div className="bg-white rounded-2xl shadow-lg max-w-sm w-full p-8">
         <div className="text-center mb-6">
           <div className="text-4xl mb-3">✈️</div>
