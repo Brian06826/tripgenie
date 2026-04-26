@@ -418,7 +418,7 @@ export function ChatInput() {
             maxLength={500}
             disabled={loading}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e) } }}
-            className="w-full border border-gray-200 rounded-xl p-3 text-sm lg:text-base resize-none focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange disabled:opacity-50"
+            className="w-full border border-gray-200 rounded-xl p-3 text-base resize-none focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange disabled:opacity-50"
           />
           {/* Custom rotating placeholder */}
           {!prompt && (

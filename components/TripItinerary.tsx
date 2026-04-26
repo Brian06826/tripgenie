@@ -623,7 +623,7 @@ export function TripItinerary({
                               }}
                               placeholder={t(locale, 'itin.customPlaceholder')}
                               autoComplete="off"
-                              className="flex-1 text-xs border border-gray-200 rounded-full px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-orange focus:border-transparent"
+                              className="flex-1 text-base border border-gray-200 rounded-full px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-orange focus:border-transparent"
                             />
                             <button
                               onClick={() => { if (customAddText.trim()) handleAddPlace(dayIndex, placeIndex, 'custom', customAddText.trim()) }}

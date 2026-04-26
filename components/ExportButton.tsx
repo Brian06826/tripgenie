@@ -235,7 +235,7 @@ export function ExportButton({ trip }: Props) {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent"
               />
             </div>
             <div className="px-6 pb-5 pt-2 flex gap-3">

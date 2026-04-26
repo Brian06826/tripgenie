@@ -278,7 +278,7 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
           autoComplete="off"
           autoCorrect="off"
           name="hotel-search-field"
-          className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent disabled:opacity-50"
+          className="flex-1 text-base border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent disabled:opacity-50"
         />
         <button
           onClick={handleAddHotel}
@@ -302,7 +302,7 @@ export function HotelSuggestion({ destination, dayCity, days, language, tripId, 
           placeholder={t(locale, 'hotel.bookingLink')}
           disabled={isLoading}
           autoComplete="off"
-          className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 mt-2 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent disabled:opacity-50"
+          className="w-full text-base border border-gray-200 rounded-lg px-3 py-2 mt-2 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent disabled:opacity-50"
         />
       )}
 

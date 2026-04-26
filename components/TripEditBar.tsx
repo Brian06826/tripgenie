@@ -71,7 +71,7 @@ export function TripEditBar({ onSubmit, onUndo, onCancel, canUndo, isLoading, er
             onChange={e => setInput(e.target.value)}
             placeholder={t(locale, 'edit.placeholder')}
             disabled={isLoading}
-            className="flex-1 min-w-0 px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:border-orange focus:ring-1 focus:ring-orange disabled:bg-gray-50 disabled:text-gray-400 min-h-[44px]"
+            className="flex-1 min-w-0 px-4 py-2.5 border border-gray-200 rounded-xl text-base bg-white focus:outline-none focus:border-orange focus:ring-1 focus:ring-orange disabled:bg-gray-50 disabled:text-gray-400 min-h-[44px]"
           />
           {isLoading ? (
             <button

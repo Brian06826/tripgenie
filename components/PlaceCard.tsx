@@ -98,7 +98,7 @@ export function PlaceCard({
               defaultValue={to24h(place.arrivalTime)}
               onBlur={handleTimeCommit}
               onChange={handleTimeCommit}
-              className="inline-block w-28 text-xs font-semibold text-orange bg-orange/5 border border-orange/30 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-orange"
+              className="inline-block w-28 text-base font-semibold text-orange bg-orange/5 border border-orange/30 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-orange"
               autoFocus
             />
           ) : (
@@ -198,7 +198,7 @@ export function PlaceCard({
             onKeyDown={(e) => { if (e.key === 'Enter') handleSubmitEdit(); if (e.key === 'Escape') setEditing(false) }}
             placeholder={t(locale, 'place.editPlaceholder')}
             autoComplete="off"
-            className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent"
+            className="flex-1 text-base border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange focus:border-transparent"
           />
           <button
             onClick={handleSubmitEdit}
