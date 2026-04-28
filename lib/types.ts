@@ -11,6 +11,8 @@ export const ParkingSchema = z.object({
 export const BackupOptionSchema = z.object({
   name: z.string(),
   nameLocal: z.string().optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
   description: z.string(),
   googleRating: z.number().min(1).max(5).optional(),
   yelpRating: z.number().min(1).max(5).optional(),
