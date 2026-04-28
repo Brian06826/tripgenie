@@ -6,6 +6,7 @@ import { TripItinerary } from '@/components/TripItinerary'
 import { TripMap } from '@/components/TripMap'
 import { ShareButton } from '@/components/ShareButton'
 import { ExportButton } from '@/components/ExportButton'
+import { BackButton } from '@/components/BackButton'
 import { useUILocale } from '@/lib/i18n-context'
 import { t } from '@/lib/i18n'
 
@@ -23,7 +24,7 @@ export function ExampleTripViewer({ trip }: { trip: Trip }) {
   const tripUrl = `/trip/${trip.id}`
 
   return (
-    <div className="min-h-screen bg-gray-50 animate-in fade-in duration-500">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden animate-in fade-in duration-500">
       {/* Header */}
       <header className="relative z-10 text-white px-4 pt-8 pb-6">
         <div className="absolute inset-0 overflow-hidden">
@@ -33,7 +34,10 @@ export function ExampleTripViewer({ trip }: { trip: Trip }) {
           />
         </div>
         <div className="relative max-w-4xl mx-auto">
-          <p className="text-xs text-orange font-semibold mb-1">Lulgo</p>
+          <div className="flex items-center gap-2 mb-1">
+            <BackButton className="text-white/80 hover:text-white -ml-2 mr-1" />
+            <p className="text-xs text-orange font-semibold shrink-0">Lulgo</p>
+          </div>
           <h1 className="text-2xl font-bold leading-tight mb-1">{trip.title}</h1>
           <p className="text-sm opacity-80 mb-4">
             {trip.destination} · {trip.days.length} day{trip.days.length !== 1 ? 's' : ''}
