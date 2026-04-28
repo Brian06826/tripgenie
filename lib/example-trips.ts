@@ -27,6 +27,8 @@ export const EXAMPLE_LONG_BEACH: Trip = {
         {
           name: 'Aquarium of the Pacific',
           nameLocal: '太平洋水族館',
+          lat: 33.7625,
+          lng: -118.1961,
           type: 'attraction',
           arrivalTime: '9:00 AM',
           duration: '2–3 hours',
@@ -50,6 +52,8 @@ export const EXAMPLE_LONG_BEACH: Trip = {
           backupOptions: [
             {
               name: 'Queen Mary',
+              lat: 33.7531,
+              lng: -118.19,
               description: 'Historic ocean liner turned hotel and attraction with fascinating ship tours and panoramic harbour views.',
               googleRating: 4.2,
               yelpRating: 3.5,
@@ -59,6 +63,8 @@ export const EXAMPLE_LONG_BEACH: Trip = {
             },
             {
               name: 'El Dorado Nature Center',
+              lat: 33.8186,
+              lng: -118.0862,
               description: 'Peaceful 105-acre nature sanctuary with walking trails, a lake, and native bird watching — free to enter.',
               googleRating: 4.6,
               yelpRating: 4.5,
@@ -116,6 +122,8 @@ export const EXAMPLE_LONG_BEACH: Trip = {
         {
           name: 'Shoreline Village',
           nameLocal: '海岸村',
+          lat: 33.7614,
+          lng: -118.1893,
           type: 'attraction',
           arrivalTime: '2:00 PM',
           duration: '1.5 hours',
@@ -138,6 +146,8 @@ export const EXAMPLE_LONG_BEACH: Trip = {
           backupOptions: [
             {
               name: 'Bluff Park',
+              lat: 33.7533,
+              lng: -118.141,
               description: 'Scenic clifftop park above the ocean with benches, rose gardens, and sweeping Pacific views.',
               googleRating: 4.6,
               yelpRating: 4.5,
@@ -147,6 +157,8 @@ export const EXAMPLE_LONG_BEACH: Trip = {
             },
             {
               name: 'Long Beach Museum of Art',
+              lat: 33.7542,
+              lng: -118.1383,
               description: 'Intimate museum set in a historic clifftop villa overlooking the ocean, with rotating contemporary exhibitions.',
               googleRating: 4.5,
               yelpRating: 4.0,
@@ -159,6 +171,8 @@ export const EXAMPLE_LONG_BEACH: Trip = {
         {
           name: 'Belmont Shore — 2nd Street',
           nameLocal: '貝爾蒙特海岸',
+          lat: 33.759,
+          lng: -118.129,
           type: 'attraction',
           arrivalTime: '4:00 PM',
           duration: '1.5 hours',
@@ -181,6 +195,8 @@ export const EXAMPLE_LONG_BEACH: Trip = {
           backupOptions: [
             {
               name: 'Retro Row (4th Street)',
+              lat: 33.77,
+              lng: -118.167,
               description: 'Quirky antique shops, vintage clothing stores, and independent cafés along a mile-long stretch of eclectic 4th Street.',
               googleRating: 4.5,
               yelpRating: 4.0,
@@ -190,6 +206,8 @@ export const EXAMPLE_LONG_BEACH: Trip = {
             },
             {
               name: 'Naples Island Canals',
+              lat: 33.7555,
+              lng: -118.1175,
               description: 'Walk the waterfront paths around Long Beach\'s Venice-inspired canal island — best in the early evening light.',
               googleRating: 4.7,
               yelpRating: 4.5,
@@ -202,6 +220,8 @@ export const EXAMPLE_LONG_BEACH: Trip = {
         {
           name: 'The Attic on Broadway',
           nameLocal: '閣樓餐廳',
+          lat: 33.7687,
+          lng: -118.1875,
           type: 'restaurant',
           arrivalTime: '6:30 PM',
           duration: '1.5 hours',
@@ -226,6 +246,8 @@ export const EXAMPLE_LONG_BEACH: Trip = {
           backupOptions: [
             {
               name: 'Parkers Lighthouse',
+              lat: 33.7615,
+              lng: -118.1893,
               description: 'Upscale seafood restaurant with stunning waterfront views of the harbour and Queen Mary. Known for fresh Alaskan halibut and lobster bisque.',
               googleRating: 4.3,
               yelpRating: 3.5,
@@ -235,6 +257,8 @@ export const EXAMPLE_LONG_BEACH: Trip = {
             },
             {
               name: 'Spaghettini',
+              lat: 33.7872,
+              lng: -118.1475,
               description: 'Elegant Italian-American restaurant with live jazz on weekends, house-made pasta, and an extensive California wine list.',
               googleRating: 4.4,
               yelpRating: 4.0,
@@ -247,6 +271,8 @@ export const EXAMPLE_LONG_BEACH: Trip = {
         {
           name: 'Beachwood Brewing & Blendery',
           nameLocal: '海灘木釀酒廠',
+          lat: 33.7685,
+          lng: -118.1924,
           type: 'other',
           arrivalTime: '8:30 PM',
           duration: '1.5 hours',
@@ -269,6 +295,8 @@ export const EXAMPLE_LONG_BEACH: Trip = {
           backupOptions: [
             {
               name: 'The Pike Bar & Fish House',
+              lat: 33.7646,
+              lng: -118.1928,
               description: 'Lively waterfront bar with cold craft beers, fish tacos, and one of the best Happy Hours in downtown Long Beach.',
               googleRating: 4.2,
               yelpRating: 3.5,
@@ -278,6 +306,8 @@ export const EXAMPLE_LONG_BEACH: Trip = {
             },
             {
               name: 'Scoops Long Beach',
+              lat: 33.7598,
+              lng: -118.129,
               description: 'Small-batch ice cream shop with inventive rotating flavours like lavender honey and brown butter pecan. Perfect nightcap for couples.',
               googleRating: 4.6,
               yelpRating: 4.5,
@@ -306,6 +336,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
         {
           name: 'Old Town San Diego State Historic Park',
           nameLocal: '聖地亞哥老城歷史公園',
+          lat: 32.7542,
+          lng: -117.1964,
           type: 'attraction',
           arrivalTime: '9:00 AM',
           duration: '2 hours',
@@ -328,6 +360,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
           backupOptions: [
             {
               name: 'Mission Hills Neighborhood',
+              lat: 32.7535,
+              lng: -117.1725,
               description: 'Walkable residential neighbourhood with beautiful early-20th-century architecture, independent coffee shops, and antique stores.',
               googleRating: 4.5,
               yelpRating: 4.0,
@@ -337,6 +371,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
             },
             {
               name: 'Presidio Park',
+              lat: 32.7612,
+              lng: -117.1961,
               description: 'Serene hilltop park with sweeping views over Mission Valley, the Junípero Serra Museum, and shaded walking paths.',
               googleRating: 4.6,
               yelpRating: 4.0,
@@ -393,6 +429,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
         {
           name: 'Balboa Park — Botanical Building',
           nameLocal: '巴波亞公園植物館',
+          lat: 32.7312,
+          lng: -117.1476,
           type: 'attraction',
           arrivalTime: '2:00 PM',
           duration: '2 hours',
@@ -416,6 +454,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
           backupOptions: [
             {
               name: 'San Diego Museum of Art',
+              lat: 32.7304,
+              lng: -117.1498,
               description: 'The largest art museum in San Diego, housed in a gorgeous Spanish Plateresque building with works spanning 5,000 years.',
               googleRating: 4.6,
               yelpRating: 4.0,
@@ -425,6 +465,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
             },
             {
               name: 'San Diego Zoo',
+              lat: 32.7353,
+              lng: -117.149,
               description: 'World-famous zoo home to 3,700 animals and a must-see giant panda habitat. Buy tickets online to avoid the queue.',
               googleRating: 4.7,
               yelpRating: 4.5,
@@ -469,6 +511,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
             },
             {
               name: 'Puesto at the Headquarters',
+              lat: 32.716,
+              lng: -117.1697,
               description: 'Modern Mexican restaurant in the historic Headquarters building with creative tacos like crispy avocado and filet mignon.',
               googleRating: 4.5,
               yelpRating: 4.0,
@@ -481,6 +525,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
         {
           name: 'Gaslamp Quarter Evening Stroll',
           nameLocal: '煤氣燈區夜遊',
+          lat: 32.7108,
+          lng: -117.1603,
           type: 'other',
           arrivalTime: '8:00 PM',
           duration: '1.5 hours',
@@ -503,6 +549,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
           backupOptions: [
             {
               name: 'Little Italy Food Hall',
+              lat: 32.7228,
+              lng: -117.1686,
               description: 'Vibrant food hall with a dozen vendors, outdoor seating, and a lively bar scene on India St.',
               googleRating: 4.4,
               yelpRating: 4.0,
@@ -512,6 +560,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
             },
             {
               name: 'Stone Brewing World Bistro & Gardens — Liberty Station',
+              lat: 32.7395,
+              lng: -117.2117,
               description: 'Massive craft beer campus in a repurposed naval training center with 40+ taps and excellent wood-fired food.',
               googleRating: 4.5,
               yelpRating: 4.0,
@@ -530,6 +580,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
         {
           name: 'SeaWorld San Diego',
           nameLocal: '聖地亞哥海洋世界',
+          lat: 32.7641,
+          lng: -117.2264,
           type: 'attraction',
           arrivalTime: '9:00 AM',
           duration: '5–6 hours',
@@ -553,6 +605,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
           backupOptions: [
             {
               name: 'San Diego Zoo Safari Park',
+              lat: 33.0975,
+              lng: -117.001,
               description: 'Open-air safari experience in Escondido with rhinos, elephants, and giraffes you can get surprisingly close to.',
               googleRating: 4.7,
               yelpRating: 4.5,
@@ -562,6 +616,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
             },
             {
               name: 'USS Midway Museum',
+              lat: 32.7137,
+              lng: -117.1751,
               description: 'America\'s longest-serving 20th-century aircraft carrier turned world-class naval aviation museum, docked at the Embarcadero.',
               googleRating: 4.8,
               yelpRating: 4.5,
@@ -605,6 +661,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
             },
             {
               name: 'Slater\'s 50/50',
+              lat: 32.7640,
+              lng: -117.1427,
               description: 'Craft burger bar known for its signature 50/50 patty (half beef, half bacon) and an obscene list of beer options.',
               googleRating: 4.4,
               yelpRating: 4.0,
@@ -617,6 +675,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
         {
           name: 'Mission Beach Boardwalk',
           nameLocal: '使命海灘木板路',
+          lat: 32.7704,
+          lng: -117.2528,
           type: 'attraction',
           arrivalTime: '5:00 PM',
           duration: '1.5 hours',
@@ -639,6 +699,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
           backupOptions: [
             {
               name: 'Ocean Beach Pier',
+              lat: 32.7487,
+              lng: -117.2564,
               description: 'One of the longest wooden piers on the West Coast — free to walk, great for fishing and sunset watching.',
               googleRating: 4.6,
               yelpRating: 4.0,
@@ -648,6 +710,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
             },
             {
               name: 'Fiesta Island',
+              lat: 32.7698,
+              lng: -117.2224,
               description: 'Quiet park loop around a bay island, popular with dog owners and kayakers, great for a peaceful sunset drive or jog.',
               googleRating: 4.6,
               yelpRating: 4.5,
@@ -683,6 +747,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
           backupOptions: [
             {
               name: 'Brigantine Seafood & Oyster Bar',
+              lat: 32.7245,
+              lng: -117.1735,
               description: 'San Diego seafood institution since 1969 — fresh fish, oysters on the half shell, and a legendary Friday Fish Fry.',
               googleRating: 4.4,
               yelpRating: 4.0,
@@ -692,6 +758,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
             },
             {
               name: 'Crack Shack',
+              lat: 32.7224,
+              lng: -117.1699,
               description: 'Richard Blais\'s wildly popular fried chicken restaurant with craft cocktails, a bocce court, and the best chicken sandwich in the city.',
               googleRating: 4.5,
               yelpRating: 4.0,
@@ -703,6 +771,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
         },
         {
           name: 'Pacific Beach Bar & Grill',
+          lat: 32.7938,
+          lng: -117.2555,
           type: 'other',
           arrivalTime: '9:00 PM',
           duration: '1.5 hours',
@@ -724,6 +794,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
           backupOptions: [
             {
               name: 'Duck Dive',
+              lat: 32.7945,
+              lng: -117.2557,
               description: 'Beloved neighbourhood bar in Pacific Beach with an excellent beer list, pool tables, and a no-attitude crowd.',
               googleRating: 4.5,
               yelpRating: 4.0,
@@ -733,6 +805,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
             },
             {
               name: 'Prohibition',
+              lat: 32.7109,
+              lng: -117.1585,
               description: '1920s speakeasy-style cocktail bar in the Gaslamp with craft cocktails and intimate booth seating.',
               googleRating: 4.4,
               yelpRating: 4.0,
@@ -751,6 +825,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
         {
           name: 'La Jolla Cove',
           nameLocal: '拉霍亞灣',
+          lat: 32.8504,
+          lng: -117.2731,
           type: 'attraction',
           arrivalTime: '9:00 AM',
           duration: '2 hours',
@@ -774,6 +850,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
           backupOptions: [
             {
               name: 'Torrey Pines State Natural Reserve',
+              lat: 32.921,
+              lng: -117.2534,
               description: 'Dramatic coastal cliffs and one of the rarest pine trees in North America. The Beach Trail to the ocean is extraordinary.',
               googleRating: 4.8,
               yelpRating: 4.5,
@@ -783,6 +861,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
             },
             {
               name: 'Windansea Beach',
+              lat: 32.8295,
+              lng: -117.2812,
               description: 'Rugged, reef-heavy beach popular with surfers and those who want a less crowded La Jolla experience.',
               googleRating: 4.7,
               yelpRating: 4.5,
@@ -795,6 +875,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
         {
           name: 'The Cottage La Jolla',
           nameLocal: '拉霍亞小屋餐廳',
+          lat: 32.8478,
+          lng: -117.2736,
           type: 'restaurant',
           arrivalTime: '11:30 AM',
           duration: '1 hour',
@@ -818,6 +900,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
           backupOptions: [
             {
               name: "George's at the Cove",
+              lat: 32.8497,
+              lng: -117.2718,
               description: 'La Jolla landmark with jaw-dropping ocean views from the rooftop terrace. The California Modern menu is exceptional.',
               googleRating: 4.6,
               yelpRating: 4.0,
@@ -827,6 +911,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
             },
             {
               name: 'Brockton Villa',
+              lat: 32.8504,
+              lng: -117.2725,
               description: 'Historic beach cottage restaurant overlooking the cove, famous for Coast Toast (a french toast soufflé) and fresh omelets.',
               googleRating: 4.4,
               yelpRating: 4.0,
@@ -869,6 +955,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
             },
             {
               name: 'Birch Aquarium at Scripps',
+              lat: 32.8663,
+              lng: -117.251,
               description: 'Outstanding aquarium at Scripps Institution of Oceanography with massive kelp forest tank and sea horse nursery.',
               googleRating: 4.6,
               yelpRating: 4.0,
@@ -1056,6 +1144,8 @@ export const EXAMPLE_SAN_DIEGO: Trip = {
         },
         {
           name: 'USS Midway Museum',
+          lat: 32.7137,
+          lng: -117.1751,
           nameLocal: '中途島號航空母艦博物館',
           type: 'attraction',
           arrivalTime: '1:00 PM',
@@ -1429,6 +1519,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Tsukiji Outer Market',
           nameLocal: '築地場外市場',
+          lat: 35.6654,
+          lng: 139.7707,
           type: 'attraction',
           arrivalTime: '8:00 AM',
           duration: '2 hours',
@@ -1443,6 +1535,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Toyosu Market Visitor Gallery',
+              lat: 35.6456,
+              lng: 139.7814,
               description: 'The modern wholesale market that replaced Tsukiji\'s inner market, with observation decks overlooking the tuna auctions.',
               googleRating: 4.3,
               googleMapsUrl: mapsUrl('Toyosu Market', TK),
@@ -1453,6 +1547,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Sushi Dai',
           nameLocal: '寿司大',
+          lat: 35.6455,
+          lng: 139.7813,
           type: 'restaurant',
           arrivalTime: '10:30 AM',
           duration: '1 hour',
@@ -1469,6 +1565,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Daiwa Sushi',
+              lat: 35.6454,
+              lng: 139.7812,
               description: 'Sushi Dai\'s equally famous neighbour with slightly shorter queues and a similarly excellent omakase.',
               googleRating: 4.4,
               googleMapsUrl: mapsUrl('Daiwa Sushi Toyosu', TK),
@@ -1479,6 +1577,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Hama-rikyu Gardens',
           nameLocal: '浜離宮恩賜庭園',
+          lat: 35.6596,
+          lng: 139.7636,
           type: 'attraction',
           arrivalTime: '12:00 PM',
           duration: '1.5 hours',
@@ -1494,6 +1594,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Kyu Shiba Rikyu Gardens',
+              lat: 35.6553,
+              lng: 139.7583,
               description: 'A smaller, quieter Edo garden near Hamamatsucho Station with beautiful stone arrangements and fewer crowds.',
               googleRating: 4.3,
               googleMapsUrl: mapsUrl('Kyu Shiba Rikyu Gardens', TK),
@@ -1504,6 +1606,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Ginza Six',
           nameLocal: 'ギンザ シックス',
+          lat: 35.6696,
+          lng: 139.7639,
           type: 'attraction',
           arrivalTime: '2:00 PM',
           duration: '1 hour',
@@ -1519,6 +1623,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Mitsukoshi Ginza',
+              lat: 35.6711,
+              lng: 139.7660,
               description: 'Historic department store with an equally impressive depachika and rooftop Shinto shrine.',
               googleRating: 4.3,
               googleMapsUrl: mapsUrl('Mitsukoshi Ginza', TK),
@@ -1529,6 +1635,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Tempura Kondo',
           nameLocal: '天ぷら 近藤',
+          lat: 35.6709,
+          lng: 139.7631,
           type: 'restaurant',
           arrivalTime: '6:00 PM',
           duration: '1.5 hours',
@@ -1545,6 +1653,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Tenzushi Kyobashi',
+              lat: 35.6751,
+              lng: 139.7709,
               description: 'Another excellent tempura spot near Ginza with a more accessible price point and equally crisp technique.',
               googleRating: 4.3,
               googleMapsUrl: mapsUrl('Tenzushi Kyobashi', TK),
@@ -1555,6 +1665,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Yurakucho Yakitori Alley',
           nameLocal: '有楽町ガード下',
+          lat: 35.6744,
+          lng: 139.7619,
           type: 'restaurant',
           arrivalTime: '8:30 PM',
           duration: '1.5 hours',
@@ -1571,6 +1683,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Birdland Ginza',
+              lat: 35.6710,
+              lng: 139.7640,
               description: 'Upscale yakitori counter using high-quality Okutama shamo chicken — a refined alternative to the alley stalls.',
               googleRating: 4.4,
               googleMapsUrl: mapsUrl('Birdland Ginza', TK),
@@ -1587,6 +1701,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Fuunji',
           nameLocal: '風雲児',
+          lat: 35.6896,
+          lng: 139.6991,
           type: 'restaurant',
           arrivalTime: '11:00 AM',
           duration: '45 min',
@@ -1602,6 +1718,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Nagi Golden Gai',
+              lat: 35.6941,
+              lng: 139.7040,
               description: 'A cult-favourite ramen shop in Golden Gai serving rich niboshi (sardine) broth in a tiny standing-room counter.',
               googleRating: 4.3,
               googleMapsUrl: mapsUrl('Nagi Golden Gai Shinjuku', TK),
@@ -1612,6 +1730,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Shinjuku Gyoen National Garden',
           nameLocal: '新宿御苑',
+          lat: 35.6852,
+          lng: 139.7100,
           type: 'attraction',
           arrivalTime: '12:30 PM',
           duration: '1.5 hours',
@@ -1627,6 +1747,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Meiji Jingu',
+              lat: 35.6764,
+              lng: 139.6993,
               description: 'Tokyo\'s most important Shinto shrine set in a lush forested park — deeply peaceful even on busy days.',
               googleRating: 4.7,
               googleMapsUrl: mapsUrl('Meiji Jingu', TK),
@@ -1637,6 +1759,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Golden Gai',
           nameLocal: '新宿ゴールデン街',
+          lat: 35.6940,
+          lng: 139.7038,
           type: 'attraction',
           arrivalTime: '3:00 PM',
           duration: '1 hour',
@@ -1652,6 +1776,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Omoide Yokocho (Piss Alley)',
+              lat: 35.6936,
+              lng: 139.6988,
               description: 'Another atmospheric alley of tiny eateries near Shinjuku Station specialising in yakitori and offal skewers.',
               googleRating: 4.2,
               googleMapsUrl: mapsUrl('Omoide Yokocho Shinjuku', TK),
@@ -1662,6 +1788,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Shibuya Crossing',
           nameLocal: '渋谷スクランブル交差点',
+          lat: 35.6595,
+          lng: 139.7004,
           type: 'attraction',
           arrivalTime: '4:30 PM',
           duration: '30 min',
@@ -1677,6 +1805,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Shibuya Sky',
+              lat: 35.6580,
+              lng: 139.7016,
               description: 'A 230-metre-high open-air observation deck on top of Shibuya Scramble Square with stunning 360-degree city views.',
               googleRating: 4.5,
               googleMapsUrl: mapsUrl('Shibuya Sky', TK),
@@ -1687,6 +1817,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Ichiran Shibuya',
           nameLocal: '一蘭 渋谷店',
+          lat: 35.6610,
+          lng: 139.6988,
           type: 'restaurant',
           arrivalTime: '6:00 PM',
           duration: '45 min',
@@ -1703,6 +1835,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Afuri Shibuya',
+              lat: 35.6580,
+              lng: 139.6992,
               description: 'A lighter alternative known for yuzu shio ramen with a refreshing citrus broth — perfect if you want something less heavy.',
               googleRating: 4.3,
               googleMapsUrl: mapsUrl('Afuri Shibuya', TK),
@@ -1713,6 +1847,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Nonbei Yokocho',
           nameLocal: 'のんべい横丁',
+          lat: 35.6595,
+          lng: 139.6983,
           type: 'other',
           arrivalTime: '8:00 PM',
           duration: '2 hours',
@@ -1729,6 +1865,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Shibuya Yokocho',
+              lat: 35.6564,
+              lng: 139.6988,
               description: 'A modern food hall under the train tracks with regional Japanese cuisine stalls from every prefecture.',
               googleRating: 4.2,
               googleMapsUrl: mapsUrl('Shibuya Yokocho', TK),
@@ -1745,6 +1883,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Senso-ji Temple',
           nameLocal: '浅草寺',
+          lat: 35.7148,
+          lng: 139.7967,
           type: 'attraction',
           arrivalTime: '8:00 AM',
           duration: '1.5 hours',
@@ -1759,6 +1899,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Asakusa Shrine',
+              lat: 35.7146,
+              lng: 139.7979,
               description: 'The Shinto shrine adjacent to Senso-ji, often overlooked but equally beautiful and far less crowded.',
               googleRating: 4.5,
               googleMapsUrl: mapsUrl('Asakusa Shrine', TK),
@@ -1769,6 +1911,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Asakusa Kagetsudo',
           nameLocal: '浅草花月堂',
+          lat: 35.7128,
+          lng: 139.7950,
           type: 'restaurant',
           arrivalTime: '9:45 AM',
           duration: '30 min',
@@ -1785,6 +1929,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Kibi Dango Azuma',
+              lat: 35.7125,
+              lng: 139.7947,
               description: 'Traditional millet dango stall on Nakamise-dori serving warm, chewy rice dumplings with sweet soy glaze.',
               googleRating: 4.3,
               googleMapsUrl: mapsUrl('Kibi Dango Azuma Asakusa', TK),
@@ -1795,6 +1941,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Kappabashi Kitchen Street',
           nameLocal: 'かっぱ橋道具街',
+          lat: 35.7131,
+          lng: 139.7856,
           type: 'attraction',
           arrivalTime: '10:30 AM',
           duration: '1 hour',
@@ -1810,6 +1958,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Tokyo Skytree',
+              lat: 35.7101,
+              lng: 139.8107,
               description: 'Japan\'s tallest tower with observation decks at 350m and 450m offering sweeping views of the entire Kanto plain.',
               googleRating: 4.4,
               googleMapsUrl: mapsUrl('Tokyo Skytree', TK),
@@ -1820,6 +1970,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Ramen Jiro Akihabara',
           nameLocal: 'ラーメン二郎 秋葉原店',
+          lat: 35.6983,
+          lng: 139.7731,
           type: 'restaurant',
           arrivalTime: '12:30 PM',
           duration: '45 min',
@@ -1836,6 +1988,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Kikanbo',
+              lat: 35.6979,
+              lng: 139.7697,
               description: 'Fiery miso-based ramen near Akihabara with customisable spice levels — famous for its numb-and-spicy Sichuan style.',
               googleRating: 4.3,
               googleMapsUrl: mapsUrl('Kikanbo Tokyo', TK),
@@ -1846,6 +2000,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Akihabara Electric Town',
           nameLocal: '秋葉原電気街',
+          lat: 35.6984,
+          lng: 139.7731,
           type: 'attraction',
           arrivalTime: '2:00 PM',
           duration: '2 hours',
@@ -1861,6 +2017,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Mandarake Complex',
+              lat: 35.6990,
+              lng: 139.7711,
               description: 'Eight floors of manga, anime figures, vintage toys, and cosplay goods — the ultimate otaku treasure hunt.',
               googleRating: 4.4,
               googleMapsUrl: mapsUrl('Mandarake Complex Akihabara', TK),
@@ -1871,6 +2029,8 @@ export const EXAMPLE_TOKYO: Trip = {
         {
           name: 'Izakaya Torimoto',
           nameLocal: '鳥元 秋葉原店',
+          lat: 35.7135,
+          lng: 139.7770,
           type: 'restaurant',
           arrivalTime: '6:00 PM',
           duration: '2 hours',
@@ -1887,6 +2047,8 @@ export const EXAMPLE_TOKYO: Trip = {
           backupOptions: [
             {
               name: 'Ueno Yorozuya',
+              lat: 35.7082,
+              lng: 139.7741,
               description: 'A hidden gem under the Ameyoko market arches serving fresh seafood and cold sake in a bustling market atmosphere.',
               googleRating: 4.3,
               googleMapsUrl: mapsUrl('Ueno Yorozuya', TK),
@@ -1936,6 +2098,8 @@ export const EXAMPLE_SF: Trip = {
           backupOptions: [
             {
               name: 'Ghirardelli Square',
+              lat: 37.8058,
+              lng: -122.4228,
               description: 'Historic chocolate factory turned shopping and dining complex with free chocolate samples and beautiful bay views.',
               googleRating: 4.5,
               yelpRating: 4.0,
@@ -1948,6 +2112,8 @@ export const EXAMPLE_SF: Trip = {
         {
           name: 'Boudin Bakery',
           nameLocal: '寶丁酸麵包店',
+          lat: 37.8083,
+          lng: -122.4159,
           type: 'restaurant',
           arrivalTime: '11:30 AM',
           duration: '1 hour',
@@ -1979,6 +2145,8 @@ export const EXAMPLE_SF: Trip = {
         {
           name: 'Exploratorium',
           nameLocal: '探索館',
+          lat: 37.8017,
+          lng: -122.3974,
           type: 'attraction',
           arrivalTime: '1:00 PM',
           duration: '2.5 hours',
@@ -1997,6 +2165,8 @@ export const EXAMPLE_SF: Trip = {
           backupOptions: [
             {
               name: 'Aquarium of the Bay',
+              lat: 37.8086,
+              lng: -122.4098,
               description: 'Walk-through tunnel aquariums showcasing San Francisco Bay marine life — sharks, rays, and jellyfish right above your head.',
               googleRating: 4.2,
               yelpRating: 3.5,
@@ -2009,6 +2179,8 @@ export const EXAMPLE_SF: Trip = {
         {
           name: 'Cable Car Ride (Powell-Hyde Line)',
           nameLocal: '纜車',
+          lat: 37.7846,
+          lng: -122.408,
           type: 'attraction',
           arrivalTime: '4:00 PM',
           duration: '45 min',
@@ -2027,6 +2199,8 @@ export const EXAMPLE_SF: Trip = {
           backupOptions: [
             {
               name: 'F-Line Historic Streetcar',
+              lat: 37.7749,
+              lng: -122.4194,
               description: 'Vintage streetcars from around the world running along the Embarcadero — same nostalgic charm with no queue.',
               googleRating: 4.4,
               yelpRating: 4.0,
@@ -2058,6 +2232,8 @@ export const EXAMPLE_SF: Trip = {
           backupOptions: [
             {
               name: 'Golden Boy Pizza',
+              lat: 37.7997,
+              lng: -122.4079,
               description: 'Legendary no-frills slice shop in North Beach serving thick, cheesy Genovese-style pizza until 2 AM.',
               googleRating: 4.5,
               yelpRating: 4.0,
@@ -2085,6 +2261,8 @@ export const EXAMPLE_SF: Trip = {
         {
           name: 'Golden Gate Bridge',
           nameLocal: '金門大橋',
+          lat: 37.8199,
+          lng: -122.4783,
           type: 'attraction',
           arrivalTime: '9:00 AM',
           duration: '1.5 hours',
@@ -2107,6 +2285,8 @@ export const EXAMPLE_SF: Trip = {
           backupOptions: [
             {
               name: 'Battery Spencer Viewpoint',
+              lat: 37.8277,
+              lng: -122.4818,
               description: 'The most photographed viewpoint of the Golden Gate Bridge, located on the Marin side — a short drive across the bridge.',
               googleRating: 4.8,
               yelpRating: 4.5,
@@ -2119,6 +2299,8 @@ export const EXAMPLE_SF: Trip = {
         {
           name: 'Crissy Field',
           nameLocal: '克里西菲爾德',
+          lat: 37.8039,
+          lng: -122.465,
           type: 'attraction',
           arrivalTime: '11:00 AM',
           duration: '1 hour',
@@ -2137,6 +2319,8 @@ export const EXAMPLE_SF: Trip = {
           backupOptions: [
             {
               name: 'Palace of Fine Arts',
+              lat: 37.802,
+              lng: -122.4486,
               description: 'A stunning Beaux-Arts rotunda and lagoon originally built for the 1915 World\'s Fair — incredibly photogenic.',
               googleRating: 4.7,
               yelpRating: 4.5,
@@ -2149,6 +2333,8 @@ export const EXAMPLE_SF: Trip = {
         {
           name: 'The Codmother Fish & Chips',
           nameLocal: '鱈魚母魚薯店',
+          lat: 37.8088,
+          lng: -122.4155,
           type: 'restaurant',
           arrivalTime: '12:30 PM',
           duration: '45 min',
@@ -2168,6 +2354,8 @@ export const EXAMPLE_SF: Trip = {
           backupOptions: [
             {
               name: 'Super Duper Burgers',
+              lat: 37.7864,
+              lng: -122.4044,
               description: 'Local SF chain with grass-fed beef burgers, garlic fries, and organic milkshakes — kid-approved and affordable.',
               googleRating: 4.4,
               yelpRating: 4.0,
@@ -2180,6 +2368,8 @@ export const EXAMPLE_SF: Trip = {
         {
           name: 'California Academy of Sciences',
           nameLocal: '加州科學院',
+          lat: 37.7699,
+          lng: -122.4661,
           type: 'attraction',
           arrivalTime: '2:00 PM',
           duration: '2.5 hours',
@@ -2198,6 +2388,8 @@ export const EXAMPLE_SF: Trip = {
           backupOptions: [
             {
               name: 'de Young Museum',
+              lat: 37.7714,
+              lng: -122.4686,
               description: 'Fine arts museum directly across the courtyard with a free observation tower offering 360-degree city views.',
               googleRating: 4.5,
               yelpRating: 4.0,
@@ -2207,6 +2399,8 @@ export const EXAMPLE_SF: Trip = {
             },
             {
               name: 'Japanese Tea Garden',
+              lat: 37.77,
+              lng: -122.47,
               description: 'The oldest Japanese garden in the US, with pagodas, koi ponds, a zen garden, and a charming teahouse.',
               googleRating: 4.6,
               yelpRating: 4.5,
@@ -2219,6 +2413,8 @@ export const EXAMPLE_SF: Trip = {
         {
           name: 'Beach Chalet Brewery',
           nameLocal: '海灘小屋啤酒廠',
+          lat: 37.765,
+          lng: -122.5104,
           type: 'restaurant',
           arrivalTime: '5:30 PM',
           duration: '1.5 hours',
@@ -2238,6 +2434,8 @@ export const EXAMPLE_SF: Trip = {
           backupOptions: [
             {
               name: 'Outerlands',
+              lat: 37.7544,
+              lng: -122.5069,
               description: 'A cozy, wood-panelled neighbourhood restaurant in the Outer Sunset known for Dutch pancakes and hearty comfort food.',
               googleRating: 4.4,
               yelpRating: 4.0,
@@ -2266,6 +2464,8 @@ export const EXAMPLE_TAIPEI: Trip = {
         {
           name: 'Elephant Mountain (Xiangshan)',
           nameLocal: '象山步道',
+          lat: 25.0273,
+          lng: 121.5734,
           type: 'attraction',
           arrivalTime: '3:30 PM',
           duration: '1.5 hours',
@@ -2280,6 +2480,8 @@ export const EXAMPLE_TAIPEI: Trip = {
           backupOptions: [
             {
               name: 'Tiger Mountain (Hushan)',
+              lat: 25.031,
+              lng: 121.587,
               description: 'A quieter alternative trail adjacent to Elephant Mountain with equally beautiful views and far fewer crowds.',
               googleRating: 4.4,
               googleMapsUrl: mapsUrl('Tiger Mountain Hushan Taipei', TP),
@@ -2290,6 +2492,8 @@ export const EXAMPLE_TAIPEI: Trip = {
         {
           name: 'Taipei 101',
           nameLocal: '台北101',
+          lat: 25.034,
+          lng: 121.5645,
           type: 'attraction',
           arrivalTime: '5:30 PM',
           duration: '1.5 hours',
@@ -2305,6 +2509,8 @@ export const EXAMPLE_TAIPEI: Trip = {
           backupOptions: [
             {
               name: 'Songshan Cultural and Creative Park',
+              lat: 25.0437,
+              lng: 121.5604,
               description: 'A repurposed tobacco factory with galleries, design shops, and rotating exhibitions — great for a culture-focused alternative.',
               googleRating: 4.3,
               googleMapsUrl: mapsUrl('Songshan Cultural Creative Park', TP),
@@ -2315,6 +2521,8 @@ export const EXAMPLE_TAIPEI: Trip = {
         {
           name: 'Din Tai Fung (Xinyi)',
           nameLocal: '鼎泰豐 (信義店)',
+          lat: 25.033,
+          lng: 121.5637,
           type: 'restaurant',
           arrivalTime: '7:15 PM',
           duration: '1 hour',
@@ -2331,6 +2539,8 @@ export const EXAMPLE_TAIPEI: Trip = {
           backupOptions: [
             {
               name: 'Yongkang Beef Noodle',
+              lat: 25.0305,
+              lng: 121.5296,
               description: 'Legendary Taipei beef noodle soup shop with rich, deeply flavoured broth that locals swear is the city\'s best.',
               googleRating: 4.3,
               googleMapsUrl: mapsUrl('Yongkang Beef Noodle Taipei', TP),
@@ -2341,6 +2551,8 @@ export const EXAMPLE_TAIPEI: Trip = {
         {
           name: 'Shilin Night Market',
           nameLocal: '士林夜市',
+          lat: 25.0882,
+          lng: 121.5244,
           type: 'attraction',
           arrivalTime: '9:00 PM',
           duration: '2 hours',
@@ -2356,6 +2568,8 @@ export const EXAMPLE_TAIPEI: Trip = {
           backupOptions: [
             {
               name: 'Ningxia Night Market',
+              lat: 25.0556,
+              lng: 121.5153,
               description: 'A smaller, more food-focused night market beloved by locals for its taro balls, oyster omelettes, and lu rou fan.',
               googleRating: 4.3,
               googleMapsUrl: mapsUrl('Ningxia Night Market Taipei', TP),
@@ -2372,6 +2586,8 @@ export const EXAMPLE_TAIPEI: Trip = {
         {
           name: 'Jiufen Old Street',
           nameLocal: '九份老街',
+          lat: 25.1094,
+          lng: 121.8447,
           type: 'attraction',
           arrivalTime: '10:00 AM',
           duration: '3 hours',
@@ -2386,6 +2602,8 @@ export const EXAMPLE_TAIPEI: Trip = {
           backupOptions: [
             {
               name: 'Shifen Waterfall',
+              lat: 25.0477,
+              lng: 121.7775,
               description: 'Taiwan\'s broadest waterfall, nicknamed "Little Niagara," set in a lush river gorge — a scenic 30-min detour from Jiufen.',
               googleRating: 4.4,
               googleMapsUrl: mapsUrl('Shifen Waterfall', TP),
@@ -2396,6 +2614,8 @@ export const EXAMPLE_TAIPEI: Trip = {
         {
           name: 'A-Zhu Peanut Ice Cream Roll',
           nameLocal: '阿珠雪在燒',
+          lat: 25.1095,
+          lng: 121.844,
           type: 'restaurant',
           arrivalTime: '11:30 AM',
           duration: '15 min',
@@ -2412,6 +2632,8 @@ export const EXAMPLE_TAIPEI: Trip = {
           backupOptions: [
             {
               name: 'Jiufen Ah-Gan Yam Ball',
+              lat: 25.1093,
+              lng: 121.8445,
               description: 'A-Gan\'s chewy taro and yam balls in sweet soup are a beloved Jiufen classic — there\'s always a queue.',
               googleRating: 4.3,
               googleMapsUrl: mapsUrl('Jiufen Ah-Gan Yam Ball', TP),
@@ -2422,6 +2644,8 @@ export const EXAMPLE_TAIPEI: Trip = {
         {
           name: 'Songshan Ciyou Temple',
           nameLocal: '松山慈祐宮',
+          lat: 25.051,
+          lng: 121.5776,
           type: 'attraction',
           arrivalTime: '4:00 PM',
           duration: '30 min',
@@ -2437,6 +2661,8 @@ export const EXAMPLE_TAIPEI: Trip = {
           backupOptions: [
             {
               name: 'Longshan Temple',
+              lat: 25.0372,
+              lng: 121.4998,
               description: 'Taipei\'s most famous temple, dating to 1738, with stunning traditional architecture and an atmospheric prayer hall.',
               googleRating: 4.5,
               googleMapsUrl: mapsUrl('Longshan Temple Taipei', TP),
@@ -2447,6 +2673,8 @@ export const EXAMPLE_TAIPEI: Trip = {
         {
           name: 'Raohe Street Night Market',
           nameLocal: '饒河街觀光夜市',
+          lat: 25.0507,
+          lng: 121.5775,
           type: 'attraction',
           arrivalTime: '5:00 PM',
           duration: '2 hours',
@@ -2462,6 +2690,8 @@ export const EXAMPLE_TAIPEI: Trip = {
           backupOptions: [
             {
               name: 'Tonghua Night Market',
+              lat: 25.0275,
+              lng: 121.5531,
               description: 'A locals-favourite night market near Taipei 101 with excellent fried chicken, squid, and bubble tea stalls.',
               googleRating: 4.2,
               googleMapsUrl: mapsUrl('Tonghua Night Market Taipei', TP),
@@ -2472,6 +2702,8 @@ export const EXAMPLE_TAIPEI: Trip = {
         {
           name: 'Ningxia Night Market',
           nameLocal: '寧夏夜市',
+          lat: 25.0556,
+          lng: 121.5153,
           type: 'attraction',
           arrivalTime: '8:00 PM',
           duration: '1.5 hours',
@@ -2487,6 +2719,8 @@ export const EXAMPLE_TAIPEI: Trip = {
           backupOptions: [
             {
               name: 'Dadaocheng Night Market',
+              lat: 25.0583,
+              lng: 121.51,
               description: 'A lesser-known market in the historic Dadaocheng district with vintage vibes and traditional Taiwanese snacks.',
               googleRating: 4.2,
               googleMapsUrl: mapsUrl('Dadaocheng Taipei', TP),
@@ -2513,6 +2747,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'Times Square',
           nameLocal: '時代廣場',
+          lat: 40.758,
+          lng: -73.9855,
           type: 'attraction',
           arrivalTime: '9:00 AM',
           duration: '45 min',
@@ -2530,6 +2766,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'Bryant Park',
+              lat: 40.7536,
+              lng: -73.9832,
               description: 'A serene Midtown oasis with a public reading room, carousel, and excellent people-watching — steps from Times Square.',
               googleRating: 4.7,
               yelpRating: 4.5,
@@ -2542,6 +2780,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'Grand Central Terminal',
           nameLocal: '大中央車站',
+          lat: 40.7527,
+          lng: -73.9772,
           type: 'attraction',
           arrivalTime: '10:15 AM',
           duration: '45 min',
@@ -2560,6 +2800,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'New York Public Library',
+              lat: 40.7532,
+              lng: -73.9822,
               description: 'Iconic Beaux-Arts building with the famous stone lions, a stunning Rose Reading Room, and free exhibitions.',
               googleRating: 4.7,
               yelpRating: 4.5,
@@ -2591,6 +2833,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'Prince Street Pizza',
+              lat: 40.7233,
+              lng: -73.9942,
               description: 'Famous for the spicy spring pepperoni square — thick, crispy, and loaded with curling cup-and-char pepperoni.',
               googleRating: 4.4,
               yelpRating: 4.0,
@@ -2603,6 +2847,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'Museum of Modern Art (MoMA)',
           nameLocal: '現代藝術博物館',
+          lat: 40.7614,
+          lng: -73.9776,
           type: 'attraction',
           arrivalTime: '12:30 PM',
           duration: '2.5 hours',
@@ -2621,6 +2867,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'The Museum of Arts and Design (MAD)',
+              lat: 40.7672,
+              lng: -73.9819,
               description: 'A smaller, often overlooked gem at Columbus Circle with fascinating craft and design exhibitions.',
               googleRating: 4.4,
               yelpRating: 4.0,
@@ -2633,6 +2881,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'Central Park',
           nameLocal: '中央公園',
+          lat: 40.7829,
+          lng: -73.9654,
           type: 'attraction',
           arrivalTime: '3:30 PM',
           duration: '2 hours',
@@ -2651,6 +2901,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'The High Line',
+              lat: 40.748,
+              lng: -73.9997,
               description: 'An elevated linear park built on a historic freight rail line with art installations, gardens, and unique views of the city.',
               googleRating: 4.7,
               yelpRating: 4.5,
@@ -2663,6 +2915,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'The Halal Guys',
           nameLocal: '清真食攤',
+          lat: 40.7617,
+          lng: -73.9791,
           type: 'restaurant',
           arrivalTime: '6:00 PM',
           duration: '30 min',
@@ -2694,6 +2948,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'Top of the Rock',
           nameLocal: '洛克菲勒觀景台',
+          lat: 40.7593,
+          lng: -73.9794,
           type: 'attraction',
           arrivalTime: '7:30 PM',
           duration: '1 hour',
@@ -2712,6 +2968,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'Empire State Building',
+              lat: 40.7484,
+              lng: -73.9857,
               description: 'The classic Art Deco skyscraper with 86th and 102nd floor observatories — more iconic, but the views don\'t include itself.',
               googleRating: 4.6,
               yelpRating: 4.0,
@@ -2730,6 +2988,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'Brooklyn Bridge',
           nameLocal: '布魯克林大橋',
+          lat: 40.7061,
+          lng: -73.9969,
           type: 'attraction',
           arrivalTime: '8:30 AM',
           duration: '1 hour',
@@ -2747,6 +3007,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'Manhattan Bridge',
+              lat: 40.7075,
+              lng: -73.9908,
               description: 'The neighbouring bridge with a dedicated bike/pedestrian path and the classic view of the Brooklyn Bridge itself from DUMBO.',
               googleRating: 4.6,
               yelpRating: 4.0,
@@ -2759,6 +3021,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'DUMBO',
           nameLocal: '丹波區',
+          lat: 40.7033,
+          lng: -73.9884,
           type: 'attraction',
           arrivalTime: '9:45 AM',
           duration: '1 hour',
@@ -2777,6 +3041,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'Brooklyn Bridge Park',
+              lat: 40.7024,
+              lng: -73.9967,
               description: 'An 85-acre waterfront park with playgrounds, Jane\'s Carousel, and sweeping views of the Manhattan skyline.',
               googleRating: 4.8,
               yelpRating: 4.5,
@@ -2820,6 +3086,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'Chinatown & Little Italy',
           nameLocal: '華埠與小義大利',
+          lat: 40.7158,
+          lng: -73.997,
           type: 'attraction',
           arrivalTime: '12:30 PM',
           duration: '1.5 hours',
@@ -2838,6 +3106,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'Canal Street Market',
+              lat: 40.7188,
+              lng: -73.9992,
               description: 'A curated indoor food hall and retail market on Canal St with diverse Asian vendors and local designers.',
               googleRating: 4.2,
               yelpRating: 4.0,
@@ -2850,6 +3120,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'SoHo',
           nameLocal: '蘇豪區',
+          lat: 40.7233,
+          lng: -73.9985,
           type: 'attraction',
           arrivalTime: '2:30 PM',
           duration: '1.5 hours',
@@ -2868,6 +3140,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'Nolita',
+              lat: 40.7237,
+              lng: -73.9943,
               description: 'SoHo\'s quieter neighbour with independent boutiques, cute cafés, and a more local village feel.',
               googleRating: 4.3,
               yelpRating: 4.0,
@@ -2880,6 +3154,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'Tacombi',
           nameLocal: '塔孔比',
+          lat: 40.7233,
+          lng: -73.9939,
           type: 'restaurant',
           arrivalTime: '5:00 PM',
           duration: '1 hour',
@@ -2899,6 +3175,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'Los Tacos No. 1',
+              lat: 40.7428,
+              lng: -73.9895,
               description: 'A tiny taqueria in Chelsea Market with the best al pastor and adobada tacos in the city — always packed for good reason.',
               googleRating: 4.5,
               yelpRating: 4.5,
@@ -2911,6 +3189,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'Washington Square Park',
           nameLocal: '華盛頓廣場公園',
+          lat: 40.7308,
+          lng: -73.9973,
           type: 'attraction',
           arrivalTime: '6:30 PM',
           duration: '45 min',
@@ -2929,6 +3209,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'The High Line',
+              lat: 40.748,
+              lng: -73.9997,
               description: 'The elevated park on a former rail line with art installations and city views — enter at Gansevoort St for the full walk.',
               googleRating: 4.7,
               yelpRating: 4.5,
@@ -2947,6 +3229,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'The Metropolitan Museum of Art',
           nameLocal: '大都會藝術博物館',
+          lat: 40.7794,
+          lng: -73.9632,
           type: 'attraction',
           arrivalTime: '9:30 AM',
           duration: '3 hours',
@@ -2964,6 +3248,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'Guggenheim Museum',
+              lat: 40.783,
+              lng: -73.959,
               description: 'Frank Lloyd Wright\'s spiralling masterpiece on Museum Mile — walk the ramp for a unique art-viewing experience.',
               googleRating: 4.5,
               yelpRating: 4.0,
@@ -2976,6 +3262,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'Levain Bakery',
           nameLocal: '勒凡烘焙坊',
+          lat: 40.78,
+          lng: -73.9803,
           type: 'restaurant',
           arrivalTime: '1:00 PM',
           duration: '30 min',
@@ -3007,6 +3295,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'American Museum of Natural History',
           nameLocal: '美國自然歷史博物館',
+          lat: 40.7813,
+          lng: -73.974,
           type: 'attraction',
           arrivalTime: '2:00 PM',
           duration: '2 hours',
@@ -3025,6 +3315,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'New-York Historical Society',
+              lat: 40.7793,
+              lng: -73.9742,
               description: 'A quieter museum next door with fascinating NYC history exhibits and a great collection of Tiffany lamps.',
               googleRating: 4.6,
               yelpRating: 4.0,
@@ -3037,6 +3329,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'Williamsburg',
           nameLocal: '威廉斯堡',
+          lat: 40.7081,
+          lng: -73.9571,
           type: 'attraction',
           arrivalTime: '4:30 PM',
           duration: '1.5 hours',
@@ -3055,6 +3349,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'Bushwick',
+              lat: 40.6943,
+              lng: -73.9213,
               description: 'The adjacent neighbourhood famous for massive street art murals, cool galleries, and a grittier creative energy.',
               googleRating: 4.2,
               yelpRating: 4.0,
@@ -3067,6 +3363,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'Peter Luger Steak House',
           nameLocal: '彼得盧格牛排館',
+          lat: 40.7098,
+          lng: -73.9623,
           type: 'restaurant',
           arrivalTime: '6:30 PM',
           duration: '1.5 hours',
@@ -3086,6 +3384,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'Lilia',
+              lat: 40.7176,
+              lng: -73.9553,
               description: 'A Michelin-starred Italian restaurant in a converted auto body shop — the mafaldini with pink peppercorns is divine.',
               googleRating: 4.5,
               yelpRating: 4.5,
@@ -3095,6 +3395,8 @@ export const EXAMPLE_NYC: Trip = {
             },
             {
               name: 'Tatiana by Kwame Onwuachi',
+              lat: 40.672,
+              lng: -73.9718,
               description: 'A celebrated fine-dining restaurant blending Afro-Caribbean and American flavours inside Lincoln Center.',
               googleRating: 4.5,
               yelpRating: 4.5,
@@ -3107,6 +3409,8 @@ export const EXAMPLE_NYC: Trip = {
         {
           name: 'Domino Park',
           nameLocal: '多米諾公園',
+          lat: 40.7135,
+          lng: -73.968,
           type: 'attraction',
           arrivalTime: '8:30 PM',
           duration: '45 min',
@@ -3125,6 +3429,8 @@ export const EXAMPLE_NYC: Trip = {
           backupOptions: [
             {
               name: 'Brooklyn Brewery Taproom',
+              lat: 40.7217,
+              lng: -73.9576,
               description: 'The iconic Brooklyn Brewery taproom in Williamsburg with guided tours and a rotating selection of seasonal brews.',
               googleRating: 4.3,
               yelpRating: 4.0,
