@@ -84,7 +84,7 @@ export function HomeContent() {
       <OfflineIndicator />
       {/* Hero header */}
       <header
-        className="text-white px-4 pt-8 pb-6 text-center relative z-0"
+        className="text-white px-4 pt-4 pb-6 text-center relative z-0"
         style={{ background: 'linear-gradient(180deg, var(--color-navy-dark) 0%, var(--color-navy) 60%, var(--color-navy-mid) 100%)' }}
       >
         <div className="absolute top-4 right-4 flex items-center gap-3">
