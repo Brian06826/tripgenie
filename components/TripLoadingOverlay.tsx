@@ -734,7 +734,7 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
       </div>
 
       {/* Plane flight zone */}
-      <div className="relative w-full mt-8 sm:mt-14" style={{ height: 72 }}>
+      <div className="relative w-full mt-2 sm:mt-8" style={{ height: 72 }}>
         {/* Dashed flight path */}
         <div
           className="absolute left-0 right-0"
@@ -775,7 +775,7 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center pb-6">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center pb-[env(safe-area-inset-bottom)]">
         <p className="text-white/40 text-xs tracking-[0.18em] uppercase font-semibold mb-4">
           Lulgo ✨
         </p>
@@ -836,7 +836,7 @@ export function TripLoadingOverlay({ lang, phase, estimatedSeconds, vibe = 'defa
         {onCancel && (
           <button
             onClick={onCancel}
-            className="mt-8 text-white/40 text-xs hover:text-white/70 transition-colors underline underline-offset-2"
+            className="mt-4 text-white/40 text-xs hover:text-white/70 transition-colors underline underline-offset-2"
           >
             {isChinese ? '取消' : 'Cancel'}
           </button>
