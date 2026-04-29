@@ -141,19 +141,22 @@ export function ChatInput() {
     return () => clearInterval(interval)
   }, [prompt])
 
-  // Poll for trip completion — used as fallback when SSE disconnects
+  // Poll for trip completion via status endpoint
   const startPolling = useCallback((tripId: string) => {
     if (pollRef.current) clearInterval(pollRef.current)
     pollRef.current = setInterval(async () => {
       try {
-        const res = await fetch(`/trip/${tripId}`, { method: 'HEAD' })
-        if (res.ok) {
+        const res = await fetch(`/api/trip-status/${tripId}`)
+        if (!res.ok) return
+        const data = await res.json()
+        if (data.status === 'ready') {
           if (pollRef.current) clearInterval(pollRef.current)
           pollRef.current = null
           pendingTripIdRef.current = null
           sessionStorage.removeItem('tg_pending_trip')
           router.push(`/trip/${tripId}`)
         }
+        // status === 'generating' → keep polling
       } catch {}
     }, 3000)
   }, [router])
@@ -166,8 +169,10 @@ export function ChatInput() {
       setError('')
       const tripId = pendingTripIdRef.current || sessionStorage.getItem('tg_pending_trip')
       if (!tripId) return
-      // Trip was being generated — try to navigate directly (server saved it to Redis)
+      // Trip was being generated — poll for completion
       pendingTripIdRef.current = tripId
+      setLoading(true)
+      setLoadingPhase('generating')
       startPolling(tripId)
     }
     document.addEventListener('visibilitychange', handleVisibility)
@@ -182,18 +187,23 @@ export function ChatInput() {
     const tripId = sessionStorage.getItem('tg_pending_trip')
     if (!tripId) return
     // Check if this trip already exists — if so, redirect
-    fetch(`/trip/${tripId}`, { method: 'HEAD' }).then(res => {
-      if (res.ok) {
+    fetch(`/api/trip-status/${tripId}`).then(res => res.json()).then(data => {
+      if (data.status === 'ready') {
         sessionStorage.removeItem('tg_pending_trip')
         router.push(`/trip/${tripId}`)
+      } else if (data.status === 'generating') {
+        // Still generating — show loading and poll
+        pendingTripIdRef.current = tripId
+        setLoading(true)
+        setLoadingPhase('generating')
+        startPolling(tripId)
       } else {
-        // Trip doesn't exist yet, clear stale marker
         sessionStorage.removeItem('tg_pending_trip')
       }
     }).catch(() => {
       sessionStorage.removeItem('tg_pending_trip')
     })
-  }, [router])
+  }, [router, startPolling])
   // Detect language: simplified Chinese, traditional Chinese, or English
   const hasChinese = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(prompt)
   // Simplified-only chars — each has a distinct Traditional counterpart (e.g. 简→簡, 体→體)
@@ -297,10 +307,15 @@ export function ChatInput() {
           let event: { type: string; tripId?: string; message?: string; dayNumber?: number; totalDays?: number }
           try { event = JSON.parse(line.slice(6)) } catch { continue }
 
-          if (event.type === 'preview' && event.tripId) {
-            // Trip saved to Redis — remember ID for app-switch recovery
+          if (event.type === 'tripId' && event.tripId) {
+            // Server generated tripId upfront — save for recovery
             pendingTripIdRef.current = event.tripId
             sessionStorage.setItem('tg_pending_trip', event.tripId)
+          }
+          if (event.type === 'preview' && event.tripId) {
+            // Trip saved to Redis — navigate immediately
+            pendingTripIdRef.current = null
+            sessionStorage.removeItem('tg_pending_trip')
             if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null }
             router.push(`/trip/${event.tripId}`)
             return
@@ -338,11 +353,10 @@ export function ChatInput() {
         setLoading(false)
         return
       }
-      // If we have a pending tripId, the trip may have been saved to Redis
-      // even though the SSE stream disconnected (e.g. app switch on mobile)
+      // If we have a pending tripId, the server continues generating in the background.
+      // Poll the status endpoint until the trip is ready.
       const pendingId = pendingTripIdRef.current || sessionStorage.getItem('tg_pending_trip')
       if (pendingId) {
-        // Start polling — the trip might finish in the background
         startPolling(pendingId)
         return // keep loading overlay visible while polling
       }
@@ -512,7 +526,7 @@ export function ChatInput() {
       {/* Error state */}
       {error && (
         <div className="mt-3 bg-red-50 border border-red-100 rounded-xl p-3">
-          <p className="text-sm text-red-600 mb-2">⚠️ {error}</p>
+          <p className="text-sm text-red-600 mb-2">{error}</p>
           <button
             type="button"
             onClick={() => { setError(''); handleSubmit({ preventDefault: () => {} } as React.FormEvent) }}
@@ -526,7 +540,6 @@ export function ChatInput() {
       {/* Payment success toast */}
       {paymentToast && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white text-sm px-5 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-fade-in">
-          <span>✅</span>
           <span>{paymentToast}</span>
           <button
             onClick={() => setPaymentToast(null)}

@@ -58,16 +58,29 @@ export async function POST(request: Request) {
     )
   }
 
+  // Generate tripId upfront so the client can track this job even if SSE disconnects
+  const tripId = nanoid(8)
+
   const encoder = new TextEncoder()
+  // Track whether client is still connected
+  let clientConnected = true
 
   const stream = new ReadableStream({
     async start(controller) {
       function send(data: object) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
+        if (!clientConnected) return
+        try {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
+        } catch {
+          // Client disconnected — continue server-side processing
+          clientConnected = false
+        }
       }
 
+      // Send tripId immediately so client can recover if app is backgrounded
+      send({ type: 'tripId', tripId })
       send({ type: 'heartbeat' })
-      const pulse = setInterval(() => { try { send({ type: 'heartbeat' }) } catch {} }, 5000)
+      const pulse = setInterval(() => send({ type: 'heartbeat' }), 5000)
 
       try {
         // Get userId if logged in (optional — anonymous trips work fine)
@@ -85,8 +98,6 @@ export async function POST(request: Request) {
         // Clamp late times (>9:30 PM) and fix night markets before 5 PM, then sort chronologically
         clampLateTimes(generation)
         sortPlacesByTime(generation)
-
-        const tripId = nanoid(8)
 
         // Build preview trip with URLs (no geocoding/optimization yet)
         const previewDays = generation.days.map(day => ({
@@ -113,7 +124,7 @@ export async function POST(request: Request) {
           days: previewDays,
         }
 
-        // Save preview and tell client to navigate immediately
+        // Save preview so client can navigate (or poll and find it)
         await saveTrip(tripId, previewTrip)
         if (userId) await addTripToUserIndex(userId, tripId)
         send({ type: 'preview', tripId })
@@ -218,7 +229,7 @@ export async function POST(request: Request) {
         send({ type: 'error', message })
       } finally {
         clearInterval(pulse)
-        controller.close()
+        try { controller.close() } catch {}
       }
     },
   })
